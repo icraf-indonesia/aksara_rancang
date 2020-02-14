@@ -2,6 +2,7 @@
 library(shiny)
 library(shinydashboard)
 library(shinyLP)
+library(shinyjs)
 # library(shinyBS)
 
 library(digest)
@@ -12,6 +13,7 @@ library(plotly)
 library(dplyr)
 library(DT)
 library(formattable)
+library(rtf)
 library(rhandsontable)
 #library(ggradar)
 # library(RColorBrewer)
@@ -25,7 +27,8 @@ ui <- source('interface.R')
 server <- function(input, output, session) {
   # debug mode
   debugMode <- 1
-
+  notif_id <- NULL
+  
   provList <- readRDS("data/provList")
   # usersList <- load("usersList")
   
@@ -154,7 +157,8 @@ server <- function(input, output, session) {
       periodIO = periodIO,
       rtffile = rtffile
     )
-    updateTabItems(session, "tabs", selected = "pageOne")
+    notif_id <<- showNotification("Anda berhasil masuk", duration = 4, closeButton = TRUE, type = "warning")
+    # updateTabItems(session, "tabs", selected = "pageOne")
     return(listData)
   })
   
@@ -297,6 +301,7 @@ server <- function(input, output, session) {
                        otherEm=otherEm,
                        population=population
                     ) 
+    
     return(list_table)
   }
   
@@ -603,6 +608,9 @@ server <- function(input, output, session) {
           geom_bar(stat="identity", colour="black") + theme_void() +
           coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
         ggplotly(gplot)
+        
+        # plot_ly(data=graph, x = ~Analisis, y = ~Sektor, type = 'bar', orientation = 'h') %>% layout(xaxis = list(title = ""), yaxis = list(title = "", showticklabels=F))
+        
         # plot_ly(graph, x=~Analisis, y=~Sektor, fill=~Sektor) %>%
         #   add_bars(orientation = 'h',name=~Sektor) %>%
         #   layout(barmode = 'stack',
@@ -744,17 +752,17 @@ server <- function(input, output, session) {
     } else if (input$categorySector=="Lahan"){
       if(input$pprkLand == "Matriks Distribusi Lahan"){
         # removeUI(selector = '#plotlyResults') 
-        tables <- landtable
+        tables <- subset(landtable, select=-Kategori)
         tables
       } else if(input$pprkLand == "Koefisien Kebutuhan Lahan") {
-        tables <- subset(landtable, select=c(Sektor, Kategori, LRC))
+        tables <- subset(landtable, select=c(Sektor, LRC, Kategori))
         tables
       } else if(input$pprkLand == "Koefisien Produktivitas Lahan") {
-        tables <- subset(landtable, select=c(Sektor, Kategori, LPC))
+        tables <- subset(landtable, select=c(Sektor, LPC, Kategori))
         tables
       } else {
         # removeUI(selector = '#plotlyResults')
-        tables <- subset(landtable, select=c(Sektor, Total.kebutuhan.lahan))
+        tables <- landtable[,c("Sektor", colnames(landtable)[ncol(landtable)-2])]
         tables
       }
     } else {
@@ -769,8 +777,9 @@ server <- function(input, output, session) {
         tables
       } 
     }
-    datatable(tables, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
-      formatRound(columns=c(1:length(tables)),2)
+    datatable(tables, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE) %>%
+      formatRound(columns=c(1:length(tables)),2) %>%
+      formatStyle(colnames(tables)[2], background = styleColorBar(tables[,2], 'lightblue'), backgroundSize = '98% 88%', backgroundRepeat = 'no-repeat', backgroundPosition = 'center')
   }) #extensions = "FixedColumns", options=list(pageLength=50,scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)
 
   output$downloadTable <- downloadHandler(
@@ -830,7 +839,7 @@ server <- function(input, output, session) {
   output$downloadReport <- downloadHandler(
     filename = "report.doc",
     content = function(file){
-      done(rtffile)
+      file.copy(paste0("data/", allDataProv$prov, "/", allDataProv$prov, "_analisa_deskriptif.doc"), file)
     }
   )
   
@@ -880,17 +889,10 @@ server <- function(input, output, session) {
     io_table <- rbind(io_table, addval_table, total_addval_table)
     io_table
     
-    datatable(io_table, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
+    datatable(io_table, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
       formatStyle('Sektor',target = "row", backgroundColor = styleEqual(c("JUMLAH INPUT ANTARA"), c('orange'))) %>%
             formatStyle(columns = "Total Permintaan Antara", target = "cell", backgroundColor = "#F7080880") %>%
       formatRound(columns=c(1:length(io_table)),2)
-    
-    # datatable(io_table, options = list(
-    #   pageLength=25,
-    #   rowCallback = JS('function(row, data, index, rowId) {',
-    #                    'console.log(rowId)','if(rowId = 1 && rowId < Position("JUMLAH INPUT ANTARA")) {',
-    #                    'row.style.backgroundColor = "pink";','}','}')
-    # ))
   })
   
   output$SatelitTenagaKerja <- renderDataTable({
@@ -900,7 +902,7 @@ server <- function(input, output, session) {
     sec <- allInputs()
   }
     labour <- sec$labour
-  })
+  }, options=list(pageLength=100, rownames=FALSE))
 
   output$SatelitEnergi <- renderDataTable({
     if(debugMode){
@@ -909,7 +911,7 @@ server <- function(input, output, session) {
       sec <- allInputs()
     }
     energy <- sec$energy
-  })
+  }, options=list(pageLength=100, rownames=FALSE))
   
   output$SatelitLimbah <- renderDataTable({
     if(debugMode){
@@ -918,7 +920,7 @@ server <- function(input, output, session) {
       sec <- allInputs()
     }
     waste <- sec$waste
-  })
+  }, options=list(pageLength=100, rownames=FALSE))
   
   ###*bau input####
   generate_table<-function(table, first_year, second_year, value=0.05){
@@ -932,6 +934,7 @@ server <- function(input, output, session) {
   observeEvent(input$generateBAUTable, {
     allDataProv$bau_scenario <- data.frame(Lapangan_usaha=as.character(allDataProv$sector[,1])) # reset table
     allDataProv$bau_scenario <- generate_table(allDataProv$bau_scenario, as.numeric(input$dateFrom), as.numeric(input$dateTo))
+    notif_id <<- showNotification("Tabel berhasil dimuat", duration = 4, closeButton = TRUE, type = "warning")
   })
   output$tableBAUType <- renderRHandsontable({
     rhandsontable(allDataProv$bau_scenario) %>% hot_cols(format="0%") # load table
@@ -954,7 +957,7 @@ server <- function(input, output, session) {
       allDataProv$bau_scenario <- hot_to_r(input$tableBAUType)
     
     }
-    
+    notif_id <<- showNotification("Tabel berhasil disimpan", duration = 4, closeButton = TRUE, type = "warning")
     # 
     # print(allDataProv$bau_scenario)
     # 
@@ -1070,6 +1073,7 @@ server <- function(input, output, session) {
     coef_grise <- (100+gdpRate)/100
     bau_scenario$Lapangan_usaha <- NULL
     bau_scenario_matrix <- as.matrix(bau_scenario)
+    bau_scenario_matrix <- (100+bau_scenario_matrix)/100
     
     stepN <- endT-startT
     for(s in 1:stepN){
@@ -1232,10 +1236,10 @@ server <- function(input, output, session) {
     # wasteEmissionOutput <- wasteEmissionOutput[wasteEmissionOutput$year != 0, ]
     
     # 9. Total Emission
-    totalEmissionOutput <- otherEm
+    totalEmissionOutput <- otherEm[which(otherEm$Year>=startT & otherEm$Year<= endT),]
     emissionEnergyCons <- numeric()
     emissionIndWaste <- numeric()
-    for(t in 0: stepN){
+    for(t in 0:stepN){
       t_curr <- startT + t
       add_MEcons <- sum(energyEmissionOutput[energyEmissionOutput$year==t_curr, "Temission"])
       add_MWdisp <- sum(wasteEmissionOutput[wasteEmissionOutput$year==t_curr, "Temission"])
@@ -1246,6 +1250,8 @@ server <- function(input, output, session) {
     totalEmissionOutput$emissionWasteDisp <- emissionIndWaste
     totalEmissionOutput$TotalEmission <- rowSums(totalEmissionOutput[, 2:ncol(totalEmissionOutput)])
     totalEmissionOutput$CummulativeEmission <- cumsum(totalEmissionOutput$TotalEmission)
+    
+    notif_id <<- showNotification("Simulasi skenario bisnis seperti biasa telah berhasil", duration = 4, closeButton = TRUE, type = "warning")
     
     list_bau <- list(population = population,
                      otherEm = otherEm,
@@ -1285,7 +1291,7 @@ server <- function(input, output, session) {
     labour_table <- results$labour_table
     energy_consumption_table <- results$energy_consumption_table 
     energy_emission_table <- results$energy_emission_table 
-    waste_consumption_table <- results$waste_consumption_table  
+    waste_disposal_table <- results$waste_disposal_table  
     waste_emission_table <- results$waste_emission_table 
     total_emission_table <- results$total_emission_table
     
@@ -1321,9 +1327,9 @@ server <- function(input, output, session) {
       # ggplot(data=graph, aes(x=sector, y=income)) +
       #   geom_bar(colour="blue", stat="identity") +
       #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-      GDP_all <- aggregate(x = GDP_table$GDP, by = list(GDP_table$year), FUN = sum)
-      colnames(GDP_all) = c("year", "PDRB")
-      gplot6<-ggplot(data=GDP_all, aes(x=year, y=PDRB, group=1)) + geom_line() + geom_point
+      income_all <- aggregate(x = income_table$income, by = list(income_table$year), FUN = sum)
+      colnames(income_all) = c("year", "income")
+      gplot6<-ggplot(data=income_all, aes(x=year, y=income, group=1)) + geom_line() + geom_point()
       ggplotly(gplot6)
       
     } else if(input$bauResults == "Proyeksi Tenaga Kerja"){
@@ -1362,11 +1368,11 @@ server <- function(input, output, session) {
 
     } else if(input$bauResults == "Proyeksi Buangan Limbah"){
       removeUI(selector = '#baupdrb')
-      graph <- waste_consumption_table[waste_consumption_table$year==input$selectedYear,]
+      graph <- waste_disposal_table[waste_disposal_table$year==input$selectedYear,]
       # ggplot(data=graph, aes(x=sector, y=Tconsumption)) +
       #   geom_bar(colour="blue", stat="identity") +
       #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-      waste_all <- aggregate(x = waste_consumption_table$Tconsumption, by = list(waste_consumption_table$year), FUN = sum)
+      waste_all <- aggregate(x = waste_disposal_table$Tconsumption, by = list(waste_disposal_table$year), FUN = sum)
       colnames(waste_all) = c("year", "Waste")
       gplot10<-ggplot(data=waste_all, aes(x=year, y=Waste, group=1)) + geom_line() + geom_point()
       ggplotly(gplot10)
@@ -1384,14 +1390,14 @@ server <- function(input, output, session) {
 
     } else if(input$bauResults == "Proyeksi Total Emisi"){
       removeUI(selector = '#baupdrb')
-      gplot12<-ggplot(data=total_emission_table, aes(x=Year, y=TotalEmission, group=1)) + geom_line() + geom_point()
+      gplot12<-ggplot(data=total_emission_table[total_emission_table$Year > input$dateFrom,], aes(x=Year, y=TotalEmission, group=1)) + geom_line() + geom_point()
       ggplotly(gplot12)
     } else if(input$bauResults == "Proyeksi Intensitas Emisi"){
       removeUI(selector = '#baupdrb')
       GDP_all <- aggregate(x = GDP_table$GDP, by = list(GDP_table$year), FUN = sum)
       colnames(GDP_all) = c("year", "PDRB")
       GDP_all$emisi <- total_emission_table$TotalEmission
-      GDP_all$intensitas <- GDP_all$emisi / GDP_all$PDRB
+      GDP_all$intensitas <-  GDP_all$emisi / GDP_all$PDRB 
       gplot13<-ggplot(data=GDP_all[GDP_all$year > input$dateFrom,], aes(x=year, y=intensitas, group=1)) + geom_line() + geom_point()
       ggplotly(gplot13)
     }
@@ -1406,7 +1412,7 @@ server <- function(input, output, session) {
     labour_table <- results$labour_table
     energy_consumption_table <- results$energy_consumption_table 
     energy_emission_table <- results$energy_emission_table 
-    waste_consumption_table <- results$waste_consumption_table  
+    waste_disposal_table <- results$waste_disposal_table  
     waste_emission_table <- results$waste_emission_table 
     total_emission_table <- results$total_emission_table
     
@@ -1428,7 +1434,7 @@ server <- function(input, output, session) {
       tables <- energy_emission_table[energy_emission_table$year==input$selectedYear,]
       tables
     } else if(input$bauResults == "Proyeksi Buangan Limbah"){
-      tables <- waste_consumption_table[waste_consumption_table$year==input$selectedYear,]
+      tables <- waste_disposal_table[waste_disposal_table$year==input$selectedYear,]
       tables
     } else if(input$bauResults == "Proyeksi Emisi Terkait Buangan Limbah"){
       tables <- waste_emission_table[waste_emission_table$year==input$selectedYear,]
@@ -1453,7 +1459,7 @@ server <- function(input, output, session) {
       labour_table <- results$labour_table
       energy_consumption_table <- results$energy_consumption_table 
       energy_emission_table <- results$energy_emission_table 
-      waste_consumption_table <- results$waste_consumption_table  
+      waste_disposal_table <- results$waste_disposal_table  
       waste_emission_table <- results$waste_emission_table 
       total_emission_table <- results$total_emission_table
       
@@ -1470,7 +1476,7 @@ server <- function(input, output, session) {
       } else if(input$bauResults == "Proyeksi Emisi Terkait Konsumsi Energi"){
         tables <- energy_emission_table[energy_emission_table$year==input$selectedYear,]
       } else if(input$bauResults == "Proyeksi Buangan Limbah"){
-        tables <- waste_consumption_table[waste_consumption_table$year==input$selectedYear,]
+        tables <- waste_disposal_table[waste_disposal_table$year==input$selectedYear,]
       } else if(input$bauResults == "Proyeksi Emisi Terkait Buangan Limbah"){
         tables <- waste_emission_table[waste_emission_table$year==input$selectedYear,]
       } else if(input$bauResults == "Proyeksi Total Emisi"){
@@ -1505,7 +1511,7 @@ server <- function(input, output, session) {
       sec <- allInputs()
     }
     analysisResult <- sec$result
-    selectizeInput('selectMultiSector', 'Sektor terkait:', choices=list(
+    selectizeInput('selectMultiSector', 'Lapangan usaha terkait:', choices=list(
       Sektor=as.character(analysisResult$Sektor)
     ), multiple=TRUE)
   })
@@ -1582,7 +1588,7 @@ server <- function(input, output, session) {
           #   updateNumericInput(
           #     session,
           #     inputId=numOfInput[i],
-          #     label=paste0("Sektor ke-", i),
+          #     label=paste0("Lapangan usaha ke-", i),
           #     value=valInv
           #   )
           #   values$finalDemandSeriesTableInv[i,  startCol] = valInv
@@ -1609,6 +1615,7 @@ server <- function(input, output, session) {
     # } else {
     }
     
+    # print(output)
     output
   })
   
@@ -1634,6 +1641,7 @@ server <- function(input, output, session) {
     ef_energy <- sec$ef_energy
     waste <-sec$waste
     ef_waste <- sec$ef_waste  
+    bau_scenario <- allDataProv$bau_scenario
     
     importRow <- 1
     incomeRow <- 2
@@ -1724,6 +1732,9 @@ server <- function(input, output, session) {
     
     coef_primary_input <- addval_matrix %*% tinput_invers
     coef_grise <- (100+input$gdpRate)/100
+    bau_scenario$Lapangan_usaha <- NULL
+    bau_scenario_matrix <- as.matrix(bau_scenario)
+    bau_scenario_matrix <- (100+bau_scenario_matrix)/100
     
     stepN <- endT - startT
     stepInv <- yearIntervention - startT
@@ -1747,7 +1758,12 @@ server <- function(input, output, session) {
       if(startT+tu == yearIntervention){
         mProjFinDem <- mfinalDemandSeriesTable[, mProjT]
       } else {
-        mProjFinDem <- mfinalDemandSeriesTable[, mProjT] * coef_grise
+        if(input$typeIntervention=='Tipe 1'){
+          mProjFinDem <- mfinalDemandSeriesTable[, mProjT] * coef_grise
+        } else {
+          mProjFinDem <- bau_scenario_matrix[, mProjT] * mfinalDemandSeriesTable[, mProjT]
+        }
+        
       }
       mProjOutput <- leontief %*% as.numeric(as.character(mProjFinDem))
       mtOutputseries <- cbind(mtOutputseries, mProjOutput)
@@ -1873,7 +1889,7 @@ server <- function(input, output, session) {
     # mWasteEmissionOutput <- mWasteEmissionOutput[mWasteEmissionOutput$year != 0, ]
     
     # 9. Total Emission
-    mTotalEmissionOutput <- otherEm
+    mTotalEmissionOutput <- otherEm[which(otherEm$Year>=startT & otherEm$Year<= endT),]
     mEmissionEnergyCons <- numeric()
     mEmissionIndWaste <- numeric()
     for(t in 0: stepN){
@@ -1887,6 +1903,8 @@ server <- function(input, output, session) {
     mTotalEmissionOutput$emissionWasteDisp <- mEmissionIndWaste
     mTotalEmissionOutput$TotalEmission <- rowSums(mTotalEmissionOutput[, 2:ncol(mTotalEmissionOutput)])
     mTotalEmissionOutput$CummulativeEmission <- cumsum(mTotalEmissionOutput$TotalEmission)
+    
+    notif_id <<- showNotification("Simulasi skenario intervensi aksi telah berhasil", duration = 4, closeButton = TRUE, type = "warning")
     
     list_intervensi <- list(GDP_table = mGDPOutput,
                             mGDPseries = mGDPseries,  
@@ -2097,8 +2115,6 @@ server <- function(input, output, session) {
     emissionBAU <- resBAU$total_emission_table
     emissionInv <- resInv$total_emission_table
     
-    yearIntervention <- input$yearInter
-    
     cumSumBAU <- subset(emissionBAU, select=c(Year, CummulativeEmission))
     cumSumInv <- subset(emissionInv, select=c(Year, CummulativeEmission))
     
@@ -2110,6 +2126,7 @@ server <- function(input, output, session) {
     gplot23<-ggplot(tblCumSumScenario, aes(x=Year, y=CummulativeEmission, group=Scenario)) +
             geom_line(aes(color=Scenario))+
             geom_point(aes(color=Scenario))+
+            labs(x = "Tahun", y = "Emisi")+
             ggtitle("Grafik Proyeksi Emisi")
     final_results$plot23<-gplot23
     ggplotly(gplot23)
@@ -2121,8 +2138,6 @@ server <- function(input, output, session) {
     
     gdpBAU <- resBAU$GDP_table
     gdpInv <- resInv$GDP_table
-    
-    yearIntervention <- input$yearInter
     
     totalGDPBAUPerYear <- aggregate(gdpBAU$GDP, by=list(Year=gdpBAU$year), FUN=sum)
     totalGDPInvPerYear <- aggregate(gdpInv$GDP, by=list(Year=gdpInv$year), FUN=sum)
@@ -2141,6 +2156,7 @@ server <- function(input, output, session) {
     gplot24<-ggplot(tblCumSumScenario, aes(x=Year, y=TotalGDP, group=Scenario)) +
             geom_line(aes(color=Scenario))+
             geom_point(aes(color=Scenario))+
+            labs(x = "Tahun", y = "PDRB")+
             ggtitle("Grafik Proyeksi PDRB")
     final_results$plot24<-gplot24
     ggplotly(gplot24)
@@ -2153,8 +2169,6 @@ server <- function(input, output, session) {
     emissionBAU <- resBAU$total_emission_table
     emissionInv <- resInv$total_emission_table
 
-    yearIntervention <- input$yearInter
-
     cumSumBAU <- subset(emissionBAU, select=c(Year, CummulativeEmission))
     cumSumInv <- subset(emissionInv, select=c(Year, CummulativeEmission))
 
@@ -2166,8 +2180,6 @@ server <- function(input, output, session) {
 
     gdpBAU <- resBAU$GDP_table
     gdpInv <- resInv$GDP_table
-
-    yearIntervention <- input$yearInter
 
     totalGDPBAUPerYear <- aggregate(gdpBAU$GDP, by=list(Year=gdpBAU$year), FUN=sum)
     totalGDPInvPerYear <- aggregate(gdpInv$GDP, by=list(Year=gdpInv$year), FUN=sum)
@@ -2188,6 +2200,7 @@ server <- function(input, output, session) {
     gplot25<-ggplot(tblIntensity, aes(x=Year, y=intensitas, group=Scenario)) +
             geom_line(aes(color=Scenario))+
             geom_point(aes(color=Scenario))+
+            labs(x = "Tahun", y = "Intensitas Emisi")+
             ggtitle("Grafik Proyeksi Intensitas Emisi")
     final_results$plot25<-gplot25
     ggplotly(gplot25)
@@ -2227,19 +2240,92 @@ server <- function(input, output, session) {
       "tabs",
       ".sidebar-menu",
       "#pengaturan",
-      # "#categoryProvince + .selectize-control"
-      # ""
+      ".sidebar-menu",
+      "#historis > li > a[data-value=pageOne]",
+      "#popDensTable",
+      "#yearIO",
+      ".nav-tabs-custom",
+      "#historis > li > a[data-value=pageTwo]",
+      "#categorySector + .selectize-control",
+      "#pprkResults + .selectize-control",
+      "#downloadReport",
+      ".sidebar-menu",
+      "#bau > li > a[data-value=pageFour]",
+      "#typeIntervention + .selectize-control",
+      "#dateFrom",
+      "#dateTo",
+      "#generateBAUTable",
+      ".js-irs-0",
+      "#saveTableBauType",
+      "#tableBAUType",
+      "#buttonBAU",
+      "#bau > li > a[data-value=pageFive]",
+      "#bauResults + .selectize-control",
+      "#plotlyResultsBAU",
+      ".sidebar-menu",
+      "#intervensi > li > a[data-value=pageSeven]",
+      "#interTableOutput + .selectize-control",
+      "#scenarioName",
+      "#yearInter + .selectize-control",
+      "#selectizeSector",
+      "#rowIntervention",
+      "#buttonInter",
+      "#intervensi > li > a[data-value=pageEight]",
+      "#percentOfEmRed",
+      "#percentOfGDPGrowth",
+      "#curveEmRed",
+      "#curveGDPGrowth",
+      "#curveIntensityEmission",
+      "#downloadResults" 
+      
     ),
     intro = c(
       "Selamat datang di panduan interaktif redcluwe.id.<br/><br/>Anda akan melakukan simulasi pertumbuhan ekonomi provinsi dengan data yang tersedia. Elemen yang tersorot akan ditampilkan sesuai dengan respon Anda, sementara elemen lainnya akan berwarna gelap. Pada setiap langkah panduan yang dilewati, anda juga akan diminta untuk menjalankan sebuah perintah maupun memasukkan suatu input yang diberi tanda \"<strong>Petunjuk</strong>\".<br/><br/>Klik <strong>Berikutnya</strong> untuk mengikuti keseluruhan panduan ini.",
       "Berikut ini adalah menu-menu yang akan digunakan sebagai input simulasi pertumbuhan ekonomi dan pilihan untuk menampilkan halaman hasil simulasi.<br/><br/><strong>Petunjuk:</strong> Silahkan klik menu <strong>Pengaturan</strong> untuk memilih data sesuai provinsi yang akan dilakukan simulasi kemudian klik <strong>Berikutnya</strong>.",
       "Pilih nama provinsi, kemudian isi kolom nama pengguna, nama lengkap pengguna, dan password.<br/><br/><strong>Petunjuk:</strong> Silahkan klik tombol <strong>Masuk</strong>.",
-      "<strong>Petunjuk:</strong> Silahkan klik tombol <strong>Masuk</strong>."
-      # "This is another slider.",
-      # "This is a select input.",
-      # "This is another select input.",
-      # "Text for dropdown 1",
-      # "Text for dropdown 2"
+      "<strong>Petunjuk:</strong> Silahkan klik menu <strong>Historis</strong>.",
+      "<strong>Petunjuk:</strong> Silahkan klik sub-menu <strong>Input</strong>.",
+      "<strong>Petunjuk:</strong> Isi jumlah penduduk pada provinsi yang akan dijalankan.",
+      "Tahun produksi dari Tabel Input-Output provinsi yang dipilih.",
+      "Tabel IO provinsi adalah tabel transaksi barang dan jasa yang terjadi di provinsi tersebut pada satu titik waktu dari tahun tabel tersebut diproduksi. Tabel IO yang digunakan adalah <strong>Tabel Transaksi Domestik Atas Dasar Harga Produsen</strong> dengan satuan moneter <strong>Miliar Rupiah</strong>.
+          <br/><br/>Matriks satelit tenaga kerja menunjukkan jumlah tenaga kerja untuk setiap sektor ekonomi.
+          <br/><br/>Matriks satelit energi menunjukkan jumlah pemakaian tiap jenis bahan bakar untuk tiap sektor ekonomi dalam satuan <strong>terra Joule</strong>.
+          <br/><br/>Matriks satelit limbah menunjukkan jumlah limbah yang diproduksi sektor ekonomi menurut jenis pengelolaan limbah dalam satuan <strong>ton/m3</strong>.",
+      "<strong>Petunjuk:</strong> Silahkan klik sub-menu <strong>Result</strong> untuk menampilkan analisis dampak ekonomi wilayah untuk data historis.",
+      "<strong>Petunjuk:</strong> Pilih kategori hasil yang ingin ditampilkan. Terdapat empat kategori yaitu: Ekonomi, Energi, Limbah, Lahan.",
+      "<strong>Petunjuk:</strong> Pilih output yang tersedia sesuai kategori yang sudah dipilih seperti PDRB, Linkage, maupun Angka Pengganda.",
+      "<strong>Petunjuk:</strong> Silahkan klik Unduh Ringkasan untuk menyimpan hasil analisis historis dampak ekonomi wilayah.",
+      "<strong>Petunjuk:</strong> Silahkan klik menu <strong>Skenario Bisnis Seperti Biasa</strong> untuk melakukan proyeksi laju pertumbuhan ekonomi wilayah pada rentang tahun tertentu dan lapangan usaha tertentu dengan kondisi BAU.",
+      "<strong>Petunjuk:</strong> Silahkan klik sub-menu <strong>Input</strong>.",
+      "<strong>Petunjuk:</strong> Pilih salah satu dari tiga pilihan tipe intervensi BAU.
+          <br/><br/><strong>Tipe 1</strong>, menentukan persentase pertumbuhan ekonomi di setiap rentang tahun intervensi pada seluruh lapangan usaha yang ada di provinsi tersebut.
+          <br/><br/><strong>Tipe 2</strong>, menentukan persentase pertumbuhan ekonomi pada seluruh lapangan usaha provinsi namun dengan laju yang bervariasi pada setiap rentang tahunnya.
+          <br/><br/><strong>Tipe 3</strong>, menentukan persentase pertumbuhan ekonomi yang bervariasi untuk lapangan usaha yang berbeda dan juga di setiap rentang tahunnya.",
+      "<strong>Petunjuk:</strong> Pilih tahun awal intervensi.",
+      "<strong>Petunjuk:</strong> Pilih tahun akhir intervensi.",
+      "<strong>Petunjuk:</strong> Silahkan klik Buat Tabel untuk menampilkan tabel lapangan usaha ekonomi provinsi dengan rentahun terpilih.",
+      "<strong>Petunjuk:</strong> Silahkan tentukan persentase laju pertumbuhan ekonomi dengan menggeser slider ke kanan atau ke kiri.",
+      "<strong>Petunjuk:</strong> Silahkan klik Simpan Tabel.",
+      "Tabel intervensi laju pertumbuhan ekonomi per lapangan usaha akan tampil sesuai dengan input rentang tahun dan persentase yang telah ditentukan sebelumnya.",
+      "<strong>Petunjuk:</strong> Silahkan klik Jalankan Simulasi.",
+      "<strong>Petunjuk:</strong> Silahkan klik sub-menu <strong>Result</strong> untuk menampilkan hasil proyeksi analisis dampak ekonomi wilayah untuk skenario BAU.",
+      "<strong>Petunjuk:</strong> Pilih output proyeksi yang ingin ditampilkan seperti Proyeksi PDRB, Upah per Kapita, Upah Gaji, Tenaga Kerja, Konsumsi Energi, Emisi Terkait Konsumsi Energi, Buangan Limbah, Emisi Terkait Buangan Limbah, Total Emisi, Intensitas Emisi",
+      "Grafik ini menunjukkan output proyeksi dari analisis yang ditampilkan.",
+      "<strong>Petunjuk:</strong> Silahkan klik menu <strong>Skenario Aksi</strong>.",
+      "<strong>Petunjuk:</strong> Silahkan klik sub-menu <strong>Input</strong>.",
+      "<strong>Petunjuk:</strong> Pilih tipe intervensi.",
+      "<strong>Petunjuk:</strong> Silahkan isi nama aksi perencanaan rendah karbon.",
+      "<strong>Petunjuk:</strong> Pilih tahun skenario aksi.",
+      "<strong>Petunjuk:</strong> Pilih lapangan usaha terkait yang akan dilakukan intervensi.",
+      "<strong>Petunjuk:</strong> Silahkan isi nilai perubahan permintaan akhir untuk masing-masing aksi intervensi dari lapangan usaha terkait.",
+      "<strong>Petunjuk:</strong> Silahkan klik Jalankan Simulasi.",
+      "<strong>Petunjuk:</strong> Silahkan klik sub-menu <strong>Result</strong> untuk menampilkan hasil proyeksi analisis dampak ekonomi dan lingkungan wilayah untuk skenario aksi di tahun tertentu.",
+      "Persentase penurunan emisi pada tahun skenario aksi.",
+      "Persentase pertumbuhan PDRB pada tahun skenario aksi",
+      "Grafik ini menunjukkan perbandingan proyeksi emisi skenario BAU dengan skenario aksi PRK.",
+      "Grafik ini menunjukkan perbandingan proyeksi PDRB skenario BAU dengan skenario aksi PRK.",
+      "Grafik ini menunjukkan perbandingan proyeksi intensitas emisi skenario BAU dengan skenario aksi PRK.",
+      "<strong>Petunjuk:</strong> Silahkan klik Unduh Hasil Analisis untuk menyimpan hasil analisis pada menu Skenario Aksi."
     )
   ))
   
@@ -2247,7 +2333,7 @@ server <- function(input, output, session) {
     introjs(session, 
       options = list(steps=steps(),
                      "nextLabel"="Berikutnya",
-                     "prevLabel"="Kembali",
+                     "prevLabel"="Sebelumnya",
                      "skipLabel"="Lewati",
                      "doneLabel"="Selesai",
                      "scrollToElement"=TRUE,
@@ -2258,6 +2344,20 @@ server <- function(input, output, session) {
     )
   )
   
+  runjs('
+        var el2 = document.querySelector(".skin-green");
+        el2.className = "skin-green sidebar-mini";
+        var clicker = document.querySelector(".sidebar-toggle");
+        clicker.id = "switchState";
+  ')
+  onclick('switchState', runjs({'
+        var title = document.querySelector(".logo")
+        if (title.style.visibility == "hidden") {
+          title.style.visibility = "visible";
+        } else {
+          title.style.visibility = "hidden";
+        }
+  '}))
 }
 
 ###*run the apps#### 
