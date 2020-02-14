@@ -1,0 +1,73 @@
+ID,Sektor,Labour
+1,Tanaman Pangan,85
+2,Tanaman Hortikultura Semusim,98
+3,Perkebunan Semusim,0
+4,Tanaman Hortikultura Tahunan dan Lainnya,1505
+5,Perkebunan Tahunan,0
+6,Peternakan,191
+7,Jasa Pertanian dan Perburuan ,34
+8,Kehutanan dan Penebangan Kayu,0
+9,Perikanan,3547
+10,Pertambangan Minyak & Gas Bumi,4202
+11,Pertambangan Lainnya,0
+12,Jasa Pertambangan dan Penggalian Lainnya,1265
+13,Industri Batubara dan Pengilangan Migas,167
+14,Industri Pengolahan dan pengawetan hewan ikan sayur-sayuran dan buah-buahan,1516
+15,Industri minyak dari nabati dan hewani,11236
+16,Industri Makanan dan Minuman Terbuat dari Susu,2618
+17,Industri tepung,9865
+18,Industri roti biskuit mie dan sejenisnya,3823
+19,Industri makanan lainnya,1708
+20,Makanan hewan yang diolah,1174
+21,Industri Minuman,1310
+22,Pengolahan Tembakau,0
+23,Industri Tekstil,6778
+24,Industri Pakaian Jadi,34330
+25,Industri Kulit Barang dan Kulit dan Alas Kaki,1188
+26,Industri Kayu Barang dari Kayu dan Gabus dan Barang Anyaman dari Bambu Rotan dan Sejenisnya,1206
+27,Industri Kertas dan Barang dari Kertas,10812
+28,Industri percetakan dan Reproduksi Media Rekaman,8832
+29,Industri Bahan Kimia dan Barang dari Bahan Kimia,45029
+30,Industri Farmasi Produk Obat Kimia dan Obat Tradisional,24359
+31,Industri Karet Barang dari Karet dan Plastik,11623
+32,Industri Barang Galian bukan Logam,6857
+33,Industri Logam Dasar,18653
+34,Industri Barang Logam Bukan Mesin dan Peralatannya,15455
+35,Industri Komputer Barang Elektronik dan Optik,1542
+36,Industri Peralatan Listrik,13600
+37,Industri Mesin dan Perlengkapan YTDL,4006
+38,Industri Kendaraan Bermotor Trailer Semi Trailer dan Alat Angkutan Lainnya,211876
+39,Industri Furnitur,6451
+40,Industri Pengolahan Lainnya,6195
+41,Jasa Reparasi dan Pemasangan Mesin dan Peralatan,52
+42,Ketenagalistrikan,33755
+43,Gas,6031
+44,Pengadaan Air,2189
+45,Bangunan Gedung dan Sipil,239955
+46,Instalasi Gedung & Instalasi Bangunan Sipil,284427
+47,Konstruksi Khusus,185304
+48,Perdagangan Mobil Sepeda Motor dan Reparasinya,118314
+49,Perdagangan Besar dan Eceran,501209
+50,Angkutan Rel,1781
+51,Angkutan Darat,41795
+52,Angkutan Laut,9307
+53,Angkutan Sungai Danau dan Penyeberangan,68
+54,Angkutan Udara,405
+55,Pergudangan dan Jasa Penunjang Angkutan Pos dan Kurir,44403
+56,Penyediaan Akomodasi,21643
+57,Penyediaan Makan Minum,162768
+58,Penerbitan Produksi Gambar Bergerak Video dan Program Televisi Perekaman Suara dan Penerbitan Musik  penyiaran dan pemrograman  kegiatan konsultasi dan pemrograman komputer  serta kegiatan jasa informasi,42858
+59,Telekomunikasi,168712
+60,Bank,258930
+61,Asuransi dan Dana Pensiun,105407
+62,Jasa Keuangan Lainnya,42363
+63,Jasa Penunjang Keuangan,16271
+64,Real Estate,168952
+65,Jasa Perusahaan,190622
+66,Administrasi Pemerintahan Pertahanan dan Jaminan Sosial Wajib,798626
+67,Jasa Pendidikan,491619
+68,Jasa Kesehatan dan Kegiatan Sosial,143027
+69,Kesenian Hiburan dan Rekreasi Swasta,57821
+70,Reparasi Barang Pribadi Lainnya,2729
+71,Jasa Perorangan Yang Melayani Rumah Tangga; Kegiatan Yang Menghasilkan Barang dan Jasa Oleh Rumah Tangga Yang Digunakan Sendiri,101613
+72,Kegiatan ekonomi Lainnya,7939

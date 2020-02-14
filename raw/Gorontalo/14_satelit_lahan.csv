@@ -1,0 +1,57 @@
+Sektor,Kategori,Hutan rawa primer,Hutan rawa sekunder,Hutan mangrove primer,Hutan mangrove sekunder,Hutan tanaman,Perkebunan,Semak belukar,Semak belukar rawa,Savanna / Padang rumput,Pertanian lahan kering,Pertanian lahan kering  campur semak / kebun campur,Sawah,Tambak,Pemukiman,Transmigrasi,Lahan terbuka,Pertambangan,Tubuh air,Rawa,Awan,Bandara,Total Kebutuhan Lahan,LPC,LRC
+Padi,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,0,9666.3,0,0,0,0,36032,0,0,0,0,0,0,0,45698.3,41.06399353,0.024352235
+Jagung,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,0,0,0,0,10665.8,0,0,0,0,0,0,0,0,0,10665.8,278.3110986,0.003593101
+Kedelai,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,0,0,0,0,10665.8,0,0,0,0,0,0,0,0,0,10665.8,3.060723256,0.326720163
+Tanaman Pangan Lainnya,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,0,0,0,0,0,20398.5,0,0,0,0,0,0,0,0,20398.5,4.328600336,0.231021559
+Bawang Merah,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,0,0,0,0,0,20398.5,0,0,0,0,0,0,0,0,20398.5,0.302658628,3.304052514
+Tomat,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,0,0,0,0,0,20398.5,0,0,0,0,0,0,0,0,20398.5,0.805022735,1.242200943
+Cabe Rawit,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,0,0,0,0,0,20398.5,0,0,0,0,0,0,0,0,20398.5,21.80918101,0.045852249
+Sayur-sayuran Lainnya,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,0,0,0,0,0,20398.5,0,0,0,0,0,0,0,0,20398.5,3.696465504,0.270528698
+Buah-buahan,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,0,0,0,0,0,20398.5,0,0,0,0,0,0,0,0,20398.5,4.905652584,0.203846478
+Tebu,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,3299.6,0,0,0,0,0,0,0,0,0,0,0,0,0,3299.6,34.05193831,0.029366904
+Kelapa,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,3299.6,0,0,0,0,0,0,0,0,0,0,0,0,0,3299.6,137.8675145,0.00725334
+Cengkeh,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,3299.6,0,0,0,0,0,0,0,0,0,0,0,0,0,3299.6,23.95062462,0.041752565
+Kakao,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,3299.6,0,0,0,0,0,0,0,0,0,0,0,0,0,3299.6,29.27551379,0.034158239
+"Tanaman Hias, Tanaman Biofarmaka, dan Tanaman Perkebunan Lainnya",Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,3299.6,0,0,0,0,0,0,0,0,0,0,0,0,0,3299.6,22.59117646,0.04426507
+Sapi,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Ternak Lainnya dan Hasil-hasilnya,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Ayam,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Unggas dan Hasil-hasilnya,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Jasa Pertanian dan Perburuan,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,0,0,0,0,10665.8,0,0,0,0,0,0,0,0,0,10665.8,10.52883809,0.094977242
+Kehutanan dan Penebangan Kayu,Pertanian Kehutanan dan Perikanan,55086.6,122850.6,0,0,403.4,2227.2,54,0,0,0,0,0,0,0,0,0,0,0,0,0,0,180621.8,1.191005292,0.839626832
+"Tuna, Cakalang, Tongkol, Selar, dan Layang",Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2062.4,0,0,0,0,732.8,0,2795.2,433.6181298,0.002306177
+Kakap dan Kerapu,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,515.6,0,0,0,0,183.2,0,698.8,90.46986719,0.011053404
+Udang,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,515.6,0,0,0,0,183.2,0,698.8,91.55000932,0.010922992
+Nila,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,515.6,0,0,0,0,183.2,0,698.8,293.1144126,0.003411637
+Bandeng,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,515.6,0,0,0,0,183.2,0,698.8,347.095803,0.002881049
+Perikanan Lainnya,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,515.6,0,0,0,0,183.2,0,698.8,688.7184308,0.001451972
+Pertambangan dan Penggalian ,Pertambangan dan Penggalian ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,66.8,71.7,0,0,138.5,2763.700861,0.000361834
+Industri Batubara dan Pengilangan Migas,Pertambangan dan Penggalian ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,66.8,71.7,0,0,138.5,0,0
+Pemotongan Hewan,Pertanian Kehutanan dan Perikanan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,615.6711364,0.001624244
+Kopra,Industri Pengolahan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,175.6116889,0.005694382
+Penggilingan Padi dan Penyosohan Beras,Industri Pengolahan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,2713.890953,0.000368475
+Gula,Industri Pengolahan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,1364.38308,0.000732932
+Industri Makanan Lainnya dan Minuman,Industri Pengolahan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,1336.488172,0.00074823
+Industri Kain Kerawang,Industri Pengolahan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,18.10898369,0.05522121
+Industri Tekstil dan Pakaian Jadi Lainnya,Industri Pengolahan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,66.90034412,0.014947606
+"Industri Kayu, Barang dari Kayu dan Gabus dan Barang Anyaman dari Bambu, Rotan dan Sejenisnya ",Industri Pengolahan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,588.3784675,0.001699586
+Industri Barang Galian bukan Logam,Industri Pengolahan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,255.6170574,0.003912102
+Industri Furnitur,Industri Pengolahan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,367.0859397,0.002724158
+"Industri Pengolahan Lainnya, Jasa Reparasi dan Pemasangan Mesin dan Peralatan",Industri Pengolahan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,220.8276997,0.004528417
+Pengadaan Listrik Gas dan Air,Pengadaan Listrik Gas,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,618.3091626,0.001617314
+Konstruksi,Konstruksi,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,8002.828934,0.000124956
+Perdagangan Mobil Sepeda Motor dan Reparasinya,Perdagangan Besar dan Eceran Reparasi Mobil dan Sepeda Motor,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,982.239473,0.001018082
+Perdagangan Besar dan Eceran Bukan Mobil dan Sepeda Motor,Perdagangan Besar dan Eceran Reparasi Mobil dan Sepeda Motor,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,4695.095247,0.000212988
+Angkutan Darat,Transportasi dan Pergudangan ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,2329.663174,0.000429247
+Angkutan Laut Sungai Danau dan Penyeberangan,Transportasi dan Pergudangan ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,423.767905,0.002359782
+Angkutan Udara,Transportasi dan Pergudangan ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,1171.348949,0.000853717
+Pergudangan dan Jasa Penunjang Angkutan Pos dan Kurir,Transportasi dan Pergudangan ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,194.2825736,0.005147142
+Penyediaan Akomodasi,Penyediaan Akomodasi dan Makan Minum,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,463.9663149,0.002155329
+Penyediaan Makan Minum,Penyediaan Akomodasi dan Makan Minum,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,1845.099418,0.000541976
+Informasi dan Komunikasi,Informasi dan Komunikasi,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,1614.093343,0.000619543
+Jasa Keuangan dan Asuransi,Jasa Keuangan dan Asuransi,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,1957.291075,0.00051091
+Real Estate dan Jasa Perusahaan,Real Estat,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,1026.282744,0.00097439
+Administrasi Pemerintahan Pertahanan dan Jaminan Sosial Wajib,Administrasi Pemerintahan Pertahanan dan Jaminan Sosial Wajib,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,5566.92992,0.000179632
+Jasa Pendidikan Jasa Kesehatan dan Kegiatan Sosial,Jasa Pendidikan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,5277.987285,0.000189466
+Jasa Lainnya,Jasa Lainnya,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,575,0,0,0,0,0,575,958.2755382,0.001043541
+Kegiatan yang tak jelas batasnya,Jasa Lainnya,220346.4,286651.4,0,0,1613.6,5196.8,216,16498,86996.7,1490,0,74660.6,81594,0,5671.6,0,0,534.4,95.6,2015.2,347,783927.3,0,0

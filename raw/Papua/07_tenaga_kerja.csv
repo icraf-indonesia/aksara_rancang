@@ -1,0 +1,85 @@
+ID,Sektor,Labour
+1,Padi,35209
+2,Jagung,33235
+3,Ubi Jalar,143577
+4,Umbi-Umbian Lainnya,19788
+5,Kacang-Kacangan Dan Serelia,2707
+6,Sayur-Sayuran,64214
+7,Buah-Buahan,18771
+8,Karet,798
+9,Kelapa Sawit,27272
+10,Kelapa,9219
+11,Kopi,2118
+12,Kakao,10827
+13,Pinang,69
+14,Tanaman Perkebunan Lainnya,1313
+15,Sagu,21
+16,Ternak Besar,13422
+17,Ternak Kecil Lainnya,1458
+18,Babi,34658
+19,Unggas Dan Hasil-Hasilnya,29093
+20,Jasa Pertanian Dan Perburuan,8397
+21,Kayu,126100
+22,Hasil Hutan Lainnya,23590
+23,Ikan Laut,519596
+24,Hasil Perikanan Laut Lainnya,5995
+25,Perikanan Darat,2474
+26,Bijih Tembaga,33773
+27,Bijih Logam Mulia,15418
+28,Barang Pertambangan Dan Penggalian Lainnya,1996
+29,"Industri Pengolahan, Pengawetan Produk Daging  dan Unggas",68
+30,Industri Tempe Kedelai,10
+31,Industri Penggilingan Pengupasan Dan Pembersihan Padi-Padian Dan Biji-Bijian,94
+32,Industri Penggilingan Beras Dan Jagung Dan Industri Tepung Beras Dan Jagung,120
+33,Industri Produk Roti Dan Kue,2
+34,Industri Gula,0
+35,Industri Kue Basah,127
+36,Industri Makanan Dari Kedele Dan Kacang-Kacangan Lainnya Bukan Kecap Tempe Dan Tahu,2
+37,Kerupuk Keripik Peyek,4
+38,Industri Makanan Lainnya,37
+39,Air Minum Dan Mineral,27
+40,Minum Lainnya,2
+41,Tekstil Dan Pakaian Jadi,27
+42,"Kulit, Barang Dari Kulit Dan Alas Kaki ",2
+43,"Kayu Olahan, Barang Dari Kayu, Gabus, Barang Anyaman Dari Bambu, Rotan, Dan Sejenisnya ",546
+44,"Barang Kimia, Farmasi, Dan Obat Tradisional",1
+45,Furniture,76
+46,"Kertas, Barang Dari Kertas, Barang Percetakan, Dan Reproduksi Media Rekaman ",53
+47,"Karet, Barang Dari Karet, Dan Plastik",27
+48,Barang Galian Bukan Logam,65
+49,"Barang Dari Logam, Komputer, Barang Elektronik, Optik Dan Peralatan Listrik",26
+50,Alat Angkutan,10
+51,"Barang Industri Pengolahan Lainnya, Jasa Reparasi, Dan Pemasangan Mesin Dan Peralatan",39
+52,Ketenagalistrikan ,32
+53,"Pengadaan Air, Pengolahan Sampah Dan Daur Ulang",26
+54,"Hasil Gas Alam Dan Buatan, Pengadaan Uap Air/Air Panas, Udara Dingin Dan Produk Es",1
+55,Konstruksi,9875
+56,"Perdagangan Mobil, Sepeda Motor, Dan Reparasinya",5223
+57,Perdagangan Besar Dan Eceran,45156
+58,Jasa Angkutan Darat Jalan Raya,8783
+59,Jasa Angkutan Laut Untuk Penumpang,322
+60,Jasa Angkutan Laut Untuk Barang,4321
+61,Jasa Angkutan Sungai Danau Dan Penyeberangan Untuk Penumpang,31
+62,Jasa Angkutan Sungai Danau Dan Penyeberangan Untuk Barang,51
+63,Jasa Angkutan Udara Untuk Penumpang,3804
+64,Jasa Angkutan Udara Untuk Barang,37
+65,Jasa Penunjang Angkutan,783
+66,Penyediaan Akomodasi,916
+67,Penyediaan Makan Dan Minum,1376
+68,Jasa Informasi Dan Komunikasi ,11913
+69,Jasa Keuangan Perbankan,8933
+70,Jasa Keuangan Lainnya,1104
+71,Jasa Asuransi Dan Dana Pensiun,51
+72,Jasa Penunjang Keuangan,1
+73,Jasa Real Estate,2216
+74,Jasa Hukum Dan Akuntansi,977
+75,"Jasa Ahli, Teknis Dan Jasa Bisnis Lainnya ",34
+76,Jasa Persewaan,1900
+77,Jasa Pendukung,54
+78,Pemerintahan Umum,119708
+79,Jasa Pendidikan Pemerintah,21890
+80,Jasa Pendidikan Swasta,1717
+81,Jasa Kesehatan Dan Kegiatan Sosial Pemerintah,14374
+82,Jasa Kesehatan Swasta,398
+83,"Kesenian, Hiburan Dan Rekreasi",244
+84,Jasa Lainnya,3674

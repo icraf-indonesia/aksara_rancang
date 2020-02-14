@@ -1,0 +1,113 @@
+ID,Sektor,Labour
+1, Padi ,140031
+2, Jagung ,26962
+3, Ketela Pohon ,6208
+4, Umbi-Umbian Lainnya ,1309
+5, Kacang Tanah ,2678
+6, Kedelai ,2133
+7, Kacang-Kacangan Lainnya ,1183
+8, Sayur-Sayuran ,12644
+9, Buah-Buahan ,19488
+10, Padi-Padian dan Bahan Makanan Lainnya ,1287
+11, Karet ,60
+12, Tebu ,4832
+13, Kelapa ,4430
+14, Kelapa Sawit ,7311
+15, Kopi ,12127
+16, Cengkeh ,12189
+17, Kakao ,59377
+18, Jambu Mete ,1835
+19, Hasil Perkebunan Lainnya ,14447
+20, Hasil Pertanian Lainnya ,302
+21, Sapi ,19520
+22, Ternak Lainnya dan Hasil-Hasilnya (termasuk Susu Segar) ,3556
+23, Unggas dan Hasil-Hasilnya ,9538
+24, Ulat Sutera ,43
+25, Hasil Pemeliharaan Hewan Lainnya ,546
+26, Kayu ,1500
+27, Hasil Hutan Lainnya ,537
+28, Ikan Laut dan Hasil Lainnya ,94139
+29, Budidaya Udang ,23379
+30, Budidaya Bandeng ,22847
+31, Ikan Darat dan Hasil Perairan Darat Lainnya ,13319
+32, Jasa Pertanian ,5543
+33, Gas Alam ,1252
+34, Bijih Nikel ,141671
+35, Barang Tambang Lainnya ,0
+36, Garam Kasar ,758
+37, Barang Galian Segala Jenis ,26566
+38, Daging Jeroan dan Sejenisnya ,7960
+39, Daging Olahan dan Awetan ,504
+40, Buah-Buahan dan Sayur-Sayuran Olahan dan Awetan ,41
+41, Ikan Olahan dan Awetan ,16594
+42, Kopra dan Minyak Hewani dan Nabati ,78148
+43, Beras ,24032
+44, Tepung Terigu ,8367
+45, Tepung Lainnya ,8477
+46," Roti, Biskuit, dan Sejenisnya ",1563
+47," Mie, Makaroni, dan Sejenisnya ",4050
+48, Gula ,3908
+49," Biji-Bijian Kupasan, Coklat Bubuk, dan Kembang Gula ",460
+50, Kopi Giling dan Kupasan ,3833
+51, Makanan Lainnya ,1028
+52, Pakan Ternak ,370
+53, Minuman (termasuk Minuman Beralkohol) ,2727
+54, Tembakau Olahan dan Rokok ,9
+55, Kapuk Bersih ,77
+56, Benang Sutra ,505
+57, Benang ,73
+58, Tekstil Sutera ,194
+59, Tekstil ,722
+60, Tekstil Jadi dan Pakaian Jadi ,580
+61," Permadani,Tali, dan Tekstil Lainnya ",761
+62," Kulit Samakan dan Olahan, serta Barang-Barang dari Kulit dan Alas Kaki ",85
+63, Kayu Gergajian dan Awetan ,11837
+64, Kayu Lapis dan Sejenisnya ,20238
+65, Bahan Bangunan dari Kayu ,9754
+66," Perabot Rumah Tangga Terbuat dari Kayu, Bambu, dan Rotan ",7163
+67," Kertas dan Barang-Barang dari Kertas dan Karton, termasuk Barang-Barang Cetakan ",5065
+68, Pupuk dan Pestisida ,46
+69, Barang-Barang Kimia Lainnya ,538
+70, Barang-Barang Hasil Kilang Minyak ,0
+71, Karet dan Barang-Barang dari Karet ,10031
+72, Barang-Barang Plastik ,608
+73, Bahan Bangunan dari Keramik dan Tanah Liat ,69
+74, Semen ,66374
+75, Barang-Barang Lainnya dari Bahan Bukan Logam ,30924
+76, Besi dan Baja Dasar ,201
+77, Barang-Barang dari Besi dan Baja Dasar ,1860
+78, Seng ,903
+79, Barang-Barang dari Logam kecuali Mesin dan Peralatannya ,1017
+80, Mesin dan Peralatan dan Perlengkapannya termasuk Alat Listrik dan Bahan-Bahan Keperluan Listrik ,239
+81, Alat Angkutan Laut ,709
+82, Alat Angkutan Darat ,4
+83, Alat Pengangkutan Lainnya ,16
+84, Barang-Barang Industri Lainnya ,2059
+85, Listrik dan Gas ,36684
+86, Air Bersih ,4418
+87, Bangunan Tempat Tinggal dan Bukan Tempat Tinggal ,89710
+88, Prasarana Pertanian ,1776
+89, Jalan Jembatan dan Pelabuhan ,79311
+90," Bangunan dan Instalasi Listrik, Gas, Air Minum, dan Komunikasi ",5711
+91, Bangunan Lainnya ,23554
+92, Jasa Perdagangan ,330077
+93, Jasa Perbengkelan ,4508
+94, Jasa Restoran ,42090
+95, Jasa Perhotelan ,5140
+96, Jasa Angkutan Jalan Raya ,62594
+97, Jasa Angkutan Laut ,22482
+98, Jasa Angkutan Udara ,27484
+99, Jasa Penunjang Angkutan ,9994
+100, Jasa Komunikasi ,27875
+101, Bank ,78584
+102, Lembaga Keuangan Lainnya ,31468
+103, Asuransi dan Dana Pensiun ,6275
+104, Sewa Bangunan dan Sewa Tanah ,8415
+105, Jasa Perusahaan ,8484
+106, Jasa Pemerintahan Umum ,1249429
+107, Jasa Pendidikan ,19324
+108, Jasa Kesehatan ,5599
+109, Jasa Kemasyarakatan Lainnya ,1269
+110, Jasa Hiburan Rekreasi dan Kebudayaan ,2939
+111, Jasa Perorangan dan Rumah Tangga ,6792
+112, Barang dan Jasa yang Tidak Masuk Dimanapun ,0

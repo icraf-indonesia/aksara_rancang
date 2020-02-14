@@ -1,0 +1,59 @@
+ID,Sektor,Labour
+1,Padi ,35660
+2,Jagung ,8734
+3,Tanaman Pangan Lainnya ,13142
+4,Tanaman Hortikultura Semusim ,12555
+5,Tanaman Hortikultura Tahunan dan Lainnya ,20706
+6,Perkebunan Semusim ,11
+7,Kelapa ,26884
+8,Cengkih ,27070
+9,Perkebunan Tahunan ,20345
+10,Peternakan dan Hasil-hasilnya ,23624
+11,Jasa Pertanian dan Perburuan   ,2841
+12,Kehutanan dan Penebangan Kayu ,7334
+13,Perikanan ,122526
+14,"Pertambangan Minyak, Gas dan Panas Bumi ",3789
+15,Pertambangan Batubara dan Lignit ,0
+16,Pertambangan Bijih Logam ,13683
+17,Pertambangan dan Penggalian Lainnya ,37928
+18,Industri Batubara dan Pengilangan Migas ,0
+19,Industri Makanan dan Minuman  ,94749
+20,Pengolahan Tembakau ,0
+21,Industri Tekstil dan Pakaian Jadi ,305
+22,"Industri Kulit, Barang dari Kulit dan Alas Kaki  ",19
+23,"Industri Kayu, Barang dari Kayu dan Gabus dan Barang Anyaman dari Bambu, Rotan dan Sejenisnya  ",1119
+24,"Industri Kertas dan Barang dari Kertas, Percetakan dan Reproduksi Media Rekaman  ",2396
+25,"Industri Kimia, Farmasi dan Obat Tradisional ",1445
+26,"Industri Karet, Barang dari Karet dan Plastik ",25
+27,Industri Barang Galian bukan Logam ,3214
+28,Industri Logam Dasar  ,1520
+29,"Industri Barang dari Logam, Komputer, Barang Elektronik, Optik dan Peralatan Listrik ",4906
+30,Industri Mesin dan Perlengkapan YTDL ,0
+31,Industri Alat Angkutan ,567
+32,Industri Furnitur ,1318
+33,"Industri pengolahan lainnya, jasa reparasi dan pemasangan mesin dan peralatan ",479
+34,Listrik ,2451
+35,Pengadaan Gas dan Produksi Es ,47
+36,Air Bersih ,848
+37,Konstruksi ,113013
+38,"Perdagangan Mobil, Sepeda Motor dan Reparasinya ",42907
+39,"Perdagangan Besar dan Eceran, Bukan Mobil dan Sepeda Motor ",87796
+40,Angkutan Rel  ,0
+41,Angkutan Darat ,17733
+42,Angkutan Laut  ,11226
+43,Angkutan Sungai Danau dan Penyeberangan ,137
+44,Angkutan Udara ,6057
+45,"Pergudangan dan Jasa Penunjang Angkutan, Pos dan Kurir ",2447
+46,Penyediaan Akomodasi  ,16468
+47,Penyediaan Makan Minum ,6917
+48,Informasi dan Komunikasi ,41574
+49,Jasa Perantara Keuangan  ,35680
+50,Asuransi dan Dana Pensiun ,1393
+51,Jasa Keuangan Lainnya ,11455
+52,Jasa Penunjang Keuangan ,17
+53,Real Estate ,57998
+54,Jasa Perusahaan ,770
+55,"Administrasi Pemerintahan, Pertahanan dan Jaminan Sosial Wajib ",0
+56,Jasa Pendidikan ,6115
+57,Jasa Kesehatan dan Kegiatan Sosial ,14294
+58,Jasa lainnya ,14522

@@ -1,0 +1,111 @@
+ID,Sektor,Labour
+1,Padi,1617109
+2,Jagung,520320
+3,Kedelai,57792
+4,Tanaman Pangan Lainnya,268643
+5,Tanaman Holtikultura Semusim,101695
+6,Tebu,85309
+7,Tembakau,19957
+8,Perkebunan Semusim Lainnya,565
+9,Tanaman Holtikultura Tahunan,485897
+10,Tanaman Holtikultura Lainnya,15870
+11,Kelapa,392784
+12,Kopi,96874
+13,T e h,10983
+14,Kakao,34720
+15,Karet,62967
+16,Perkebunan Tahunan Lainnya,119026
+17,Sapi,1044701
+18,Kerbau,527
+19,Domba dan Kambing,130852
+20,Ayam,128350
+21,Unggas Lainnya,2540
+22,Susu Segar,79480
+23,Telur,68175
+24,Ternak Lainnya,1541
+25,Jasa Pertanian dan Perburuan,85478
+26,Kayu Jati,73968
+27,Kayu Rimba,148610
+28,Hasil Hutan Lainnya,12646
+29,Ikan Laut dan Hasil Perikanan Laut,632110
+30,Ikan Darat dan Hasil Perikanan Darat,676077
+31,Pertambangan Minyak Bumi,38813
+32,Pertambangan Gas Alam dan Panas Bumi,3877
+33,Pertambangan Bijih Logam,405
+34,Pertambangan dan Penggalian Lainnya,92089
+35,Industri Batubara dan Pengilangan Minyak,3062
+36,Industri Pengolahan dan Pengawetan Daging,43171
+37,Industri Pengolahan dan Pengawetan Ikan dan Biota Air,49013
+38,Industri Pengolahan dan Pengawetan Buah-buahan dan Sayuran,6944
+39,Industri Minyak Makan dan Lemak Nabati dan Hewani,93521
+40,Industri Pengolahan Susu Produk dari Susu dan Es Krim,27708
+41,Industri Beras,215676
+42,Industri Penggilingan Padi-Padian (Kecuali Beras) Tepung dan Pati,122498
+43,Industri Roti dan Kue,137306
+44,Industri Gula,41187
+45,Industri Makanan Lainnya,55870
+46,Industri Makanan Hewan,6277
+47,Industri Minuman,29879
+48,Industri Rokok,542277
+49,Industri Tembakau Olahan,52467
+50,Industri Tekstil,23219
+51,Industri Pakaian Jadi,16606
+52,Industri Kulit dan Barang dari Kulit,11229
+53,Industri Alas Kaki,39660
+54,Industri Kayu Barang dari Kayu dan Gabus (Tidak Termasuk Furnitur) dan Barang Anyaman dari Bambu Rotan dan Sejenisnya,200371
+55,Industri Kertas dan Barang dari Kertas,111766
+56,Industri Percetakan dan Reproduksi Media Rekaman,5662
+57,Industri Kimia Dasar,34881
+58,Industri Pupuk dan Pestisida,14654
+59,Industri Barang Kimia Lainnya,181751
+60,Industri Farmasi Produk Obat Kimia dan Obat Tradisional,29776
+61,Industri Karet dan Barang dari Karet,71048
+62,Industri Barang dari Plastik,35863
+63,Industri kaca dan Barang dari Kaca,23710
+64,Industri Barang Galian Bukan Logam Lainnya,96678
+65,Industri Logam Dasar,108028
+66,Industri Barang Logam Bukan Mesin dan Peralatannya,140320
+67,Industri Komputer Barang Elektronik dan Optik,2832
+68,Industri Peralatan Listrik,1124
+69,Industri Mesin dan Perlengkapan ,11936
+70,Industri Kendaraan Bermotor Traller dan Semi Traller,8977
+71,Industri Alat Angkutan Lainnya,41709
+72,Industri Furnitur,106301
+73,Industri Pengolahan Lainnya,20330
+74,Jasa Reparasi dan Pemasangan Mesin dan Peralatan ,1352
+75,Ketenagalistrikan,6694
+76,Gas,13764
+77,Pengadaan Air,6049
+78,Pengolahan Sampah dan Daur Ulang Pembuangan dan Pembersihan Limbah dan Sampah,6023
+79,Konstruksi Gedung,686996
+80,Konstruksi Bangunan Sipil,579926
+81,Konstruksi Khusus,202551
+82,Poerdagangan Mobil dan Sepeda Motor,509483
+83,Reparasi Mobil dan Motor,530836
+84,Perdagangan Besar Bukan Mobil dan Sepeda Motor,735541
+85,Perdagangan Eceran Bukan Mobil dan Motor,1323834
+86,Angkutan Rel,3845
+87,Angkutan Darat,103408
+88,Angkutan Laut,32028
+89,Angkutan Sungai Danau dan Penyebrangan,5771
+90,Angkutan Udara,107988
+91,Pergudangan,18579
+92,Jasa Penunjang Angkutan,58985
+93,Pos dan Kurir,31108
+94,Penyediaan Akomodasi,204387
+95,Penyediaan Makanan dan Minuman,712726
+96,Informasi dan Komunikasi,336001
+97,Bank,170625
+98,Asuransi dan Dana Pensiun,41950
+99,Jasa Keuangan Lainnya,55097
+100,Jasa Penunjang Keuangan,742
+101,Real Estat,34649
+102,Jasa Profesional Ilmiah dan Teknis,55904
+103,Jasa Perusahaan Lainnya,62580
+104,Administrasi Pemerintahan Pertahanan dan Jaminan Sosial Wajib,971701
+105,Jasa Pendidikan,1036983
+106,Jasa Kesehatan,184073
+107,Jasa Kegiatan Sosial,58368
+108,Jasa Kesenian Hiburan dan Rekreasi,13432
+109,Jasa Perorangan dan Rumah Tangga,316925
+110,Kegiatan Jasa Lainnya,17617

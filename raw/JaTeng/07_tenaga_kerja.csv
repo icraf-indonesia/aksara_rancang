@@ -1,0 +1,89 @@
+ID,Sektor,Labour
+1,Padi,1373705
+2,Jagung,218659
+3,Ketela Pohon,92603
+4,Umbi Lainnya,48186
+5,Bawang Merah,187010
+6,Sayur-Sayuran,538421
+7,Pisang,69723
+8,Buah-Buahan,198927
+9,Kacang Tanah,26884
+10,Kacang Lainnya,43147
+11,Bahan Makanan Lainnya,17550
+12,Karet,52408
+13,Tebu,15119
+14,Kelapa,213
+15,Tembakau,168908
+16,Kopi,28482
+17,Cengkeh,34653
+18,Hasil Tanaman Serat,18472
+19,Perkebunan Teh ,6142
+20,Hasil Perkebunan Lainnya,114177
+21,Hasil Pertanian Lainnya,63497
+22,Ternak dan Hasil-hasilnya,45719
+23,Unggas dan Hasil-hasilnya,1465542
+24,Kayu,105756
+25,Hasil Hutan Lainnya,33532
+26,Ikan Laut dan Hasil Laut Lainnya,44722
+27,Ikan Darat dan Hasil Perairan Darat,148634
+28,Jasa Pertanian,12594
+29,Garam Kasar,3888
+30,Pertambangan Lainnya,987
+31,Barang Galian Segala Jenis,63559
+32,Ind. Pengolahan dan Pengawetan Makanan,44481
+33,Ind. Minyak dan Lemak,113068
+34,Ind. Penggilingan Padi,135042
+35,Ind. Tepung Terigu dan Tepung Lainnya,20354
+36,Ind. Roti dan Kue Kering Lainya,45859
+37,Ind. Kopi Giling dan Kupasan,18733
+38,Ind. Makanan Lainnya,71846
+39,Ind. Bumbu Masak dan Penyedap Makanan,6246
+40,Ind. Makanan Ternak,28566
+41,Ind. Gula Tebu dan Gula Kelapa,206262
+42,Ind. Minuman,25109
+43,Ind. Rokok,214883
+44,Ind. Pengolahan Tembakau selain rokok,12733
+45,Ind. Pemintalan,18688
+46,Ind. Tekstil,224831
+47,Ind. Tekstil Jadi dan Tekstil Lainnya,8499
+48,Ind. Pakaian Jadi,26871
+49,Ind. Kulit dan Alas Kaki,120274
+50,Ind. Kayu dan Bahan Bangunan dari Kayu,110192
+51,Ind. Perabot Rumah Tangga dari Kayu,103908
+52,Ind. Kertas dan Barang dari Kertas,13544
+53,Penerbitan dan Percetakan,13066
+54,Ind. Farmasi dan Jamu Tradisional,65211
+55,Ind. Kimia dan Pupuk,46516
+56,Ind. Pengilangan Minyak,1205084
+57,Ind. Karet dan Barang dari Karet,35620
+58,Ind. Plastik dan Barang dari Plastik,36127
+59,Ind. Barang Mineral Bukan Logam,39007
+60,Ind. Semen,15756
+61,Ind. Kapur dan Barang dari Semen,10349
+62,Ind. Dasar Baja dan Besi,3383
+63,Ind. Logam Bukan Besi dan Barang dari Logam,16229
+64,Ind. Mesin dan Perlengkapan Listrik,22407
+65,Ind. Alat Angkutan dan Perbaikannya,18580
+66,Ind. Barang Lainnya,7197
+67,Listrik dan Gas,18702
+68,Air Minum,1759
+69,Bangunan Tempat Tinggal dan Bukan Tempat Tinggal,343003
+70,Bangunan Lainnya,623350
+71,Perdagangan,3694115
+72,Jasa Restoran,33094
+73,Jasa Perhotelan,216404
+74,Jasa Angkutan Kereta Api,12938
+75,Jasa Angkutan Jalan Raya,462323
+76,Angkutan Air,38743
+77,Angkutan Udara,10078
+78,Jasa Penunjang Angkutan,16819
+79,Jasa Komunikasi,76768
+80,Jasa Bank,141045
+81,Jasa Lembaga Keuangan Lainnya,173834
+82,Real Estate dan Jasa Perusahaan,44427
+83,Pemerintahan Umum dan Pertahanan,1887534
+84,Jasa Pendidikan Swasta,143704
+85,Jasa Kesehatan Swasta,12155
+86,Jasa Hiburan,6421
+87,Jasa-Jasa Lainnya,166403
+88,Kegiatan yang belum jelas batasannya,0
