@@ -37,23 +37,22 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
                                "Papua"="Papua", "Papua Barat"="Papua_Barat", "Sulawesi Selatan"="Sulawesi_Selatan", "Sulawesi Tengah"="Sulawesi_Tengah",
                                "Sulawesi Tenggara"="Sulawesi_Tenggara", "Sulawesi Barat"="Sulawesi_Barat", "Sulawesi Utara"="Sulawesi_Utara"))
              ),
-             textInput("fullname", label = "Nama Lengkap", placeholder = "Tuliskan nama anda"),
              textInput("username", label = "Nama Pengguna", placeholder = "Masukkan nama pengguna tanpa spasi"),
              passwordInput("password", label = "Password", placeholder= "Masukkan password"),
              actionButton("inputLogin", label = "Masuk")
     ),
     ###sidebar-historis####
     menuItem("Historis", icon = icon("history"), id="historis",
-              menuSubItem("Input", tabName = "pageOne"),
+              menuSubItem("Data historis", tabName = "pageOne"),
               # fileInput("energyTable", "Tabel Sumber Energi per Sektor", buttonLabel="Browse...", placeholder="Tidak ada file terpilih"),
               # fileInput("emissionFactorEnergiTable", "Faktor Emisi Energi", buttonLabel="Browse...", placeholder="Tidak ada file terpilih"),
               # fileInput("wasteTable", "Tabel Produk Limbah per Sektor", buttonLabel="Browse...", placeholder="Tidak ada file terpilih"),
               # fileInput("emissionFactorWasteTable", "Faktor Emisi Limbah", buttonLabel="Browse...", placeholder="Tidak ada file terpilih"),
               # fileInput("landDemandTable", "Tabel Permintaan Lahan", buttonLabel="Browse...", placeholder="Tidak ada file terpilih"),
               # fileInput("landDistTable", "Tabel Distribusi Lahan", buttonLabel="Browse...", placeholder="Tidak ada file terpilih"),
-              numericInput("popDensTable", "Populasi Penduduk (Jiwa)", min=0, value=1000000),
+              # numericInput("popDensTable", "Populasi Penduduk (Jiwa)", min=0, value=1000000),
              
-              menuSubItem("Results", tabName = "pageTwo"),
+              menuSubItem("Hasil analisis", tabName = "pageTwo"),
               selectInput("categorySector", label="Kategori",
                 choices=c("Ekonomi", "Energi", "Limbah", "Lahan")
               ),
@@ -87,28 +86,33 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
     ),
     ###sidebar-bau####
     menuItem("Skenario Bisnis Seperti Biasa", icon = icon("exchange"), id="bau",
-              menuSubItem("Input", tabName = "pageFour"),
-              selectInput("typeIntervention", "Tipe Intervensi", choices = c("Tipe 1", "Tipe 2", "Tipe 3")),
-              selectInput("dateFrom", "Tahun awal:", choices = 1990:2100, selected=2010),
-              selectInput("dateTo", "Tahun akhir:", choices = 1990:2100, selected=2030), 
+                menuSubItem("Pilih tipe proyeksi", tabName = "pageEleven"),
+                selectInput('selectProjType', label=" ", 
+                         choices=c("Proyeksi BAU berdasarkan pertumbuhan ekonomi", "Proyeksi BAU berdasarkan perubahan tutupan lahan")),
+                tags$div(id='inputProjType')
+             
+              # menuSubItem("Input", tabName = "pageFour"),
+              # selectInput("typeIntervention", "Tipe Intervensi", choices = c("Tipe 1", "Tipe 2")),
+              # selectInput("dateFrom", "Tahun awal:", choices = 1990:2100, selected=2015),
+              # selectInput("dateTo", "Tahun akhir:", choices = 1990:2100, selected=2030), 
               # fileInput("populationTable", "Tabel Populasi per Tahun", buttonLabel="Browse...", placeholder="No file selected"),
               # fileInput("emissionSectorRADTable", "Tabel Emisi Sumber Lain", buttonLabel="Browse...", placeholder="No file selected"),
-              actionButton("generateBAUTable", "Buat Tabel"),
-              menuSubItem("Results", tabName = "pageFive"),
-              selectInput("bauResults",
-                        label="Pilih output yang ingin ditampilkan",
-                        choices=c("Proyeksi PDRB", 
-                                  "Proyeksi Upah per Kapita",
-                                  "Proyeksi Upah Gaji",
-                                  "Proyeksi Tenaga Kerja",
-                                  "Proyeksi Konsumsi Energi",
-                                  "Proyeksi Emisi Terkait Konsumsi Energi",
-                                  "Proyeksi Buangan Limbah",
-                                  "Proyeksi Emisi Terkait Buangan Limbah",
-                                  "Proyeksi Total Emisi",
-                                  "Proyeksi Intensitas Emisi"
-                                  )
-                        )
+              # actionButton("generateBAUTable", "Buat Tabel"),
+              # menuSubItem("Hasil analisis", tabName = "pageFive"),
+              # selectInput("bauResults",
+              #           label="Pilih output yang ingin ditampilkan",
+              #           choices=c("Proyeksi PDRB", 
+              #                     "Proyeksi Upah per Kapita",
+              #                     "Proyeksi Upah Gaji",
+              #                     "Proyeksi Tenaga Kerja",
+              #                     "Proyeksi Konsumsi Energi",
+              #                     "Proyeksi Emisi Terkait Konsumsi Energi",
+              #                     "Proyeksi Buangan Limbah",
+              #                     "Proyeksi Emisi Terkait Buangan Limbah",
+              #                     "Proyeksi Total Emisi",
+              #                     "Proyeksi Intensitas Emisi"
+              #                     )
+              #           )
     ),
     ###sidebar-intervention####
     menuItem("Skenario Aksi", icon = icon("random"), id="intervensi",
@@ -123,7 +127,7 @@ sidebar <- dashboardSidebar(width = "300px", collapsed = FALSE,
               textInput("scenarioName", "Nama skenario aksi:", value=""),
               selectInput("yearInter", "Tahun skenario aksi:", choices = 1990:2100, selected=2015),
               uiOutput("selectizeSector"),
-              menuSubItem("Results", tabName = "pageEight")
+              menuSubItem("Hasil analisis", tabName = "pageEight")
     ),
     menuItem("Tentang redcluwe.id", icon = icon("question-circle"), tabName="help")
   )
@@ -153,6 +157,12 @@ body <- dashboardBody(
           ),
           tabPanel("Tabel Satelit Limbah", id="boxWaste",
             div(style="overflow-x: scroll", dataTableOutput('SatelitLimbah'))
+          ),
+          tabPanel("Tabel Satelit Lahan", id="boxLand",
+            div(style="overflow-x: scroll", dataTableOutput('SatelitLahan'))
+          ),
+          tabPanel("Tutupan Lahan", id="boxLC",
+            div(style="overflow-x: scroll", dataTableOutput('TutupanLahan'))
           )
         )
       )
@@ -168,6 +178,8 @@ body <- dashboardBody(
       fluidRow(
         column(width=12,
           box(width=NULL,
+            h3(textOutput("tableDesc")),
+            hr(),
             div(style="overflow-x: scroll", dataTableOutput('tableResults')),
             downloadButton('downloadTable', 'Download Table (.csv)')
           )
@@ -183,20 +195,36 @@ body <- dashboardBody(
       )
     ),
     ###*tab-bau####
+    tabItem(tabName="pageEleven", 
+      fluidRow(
+        h3(style="padding-left: 15px;", "Pilih Data Input BAU"), 
+        tabBox(id="tabPanelBAUData", width=12,
+                     tabPanel("Tabel LDM Proporsi", id="TabPanelBAUDataLDMProp",
+                              div(style="overflow-x: scroll", 
+                                  uiOutput("LDMFileOptions"),
+                                  dataTableOutput("LDMListTable"),
+                                  dataTableOutput("LDMTampil"),
+                                  uiOutput('LDMTableTampilUI'),
+                                  uiOutput('modalLDMUI'))
+                                  )
+        )
+      )
+    ),
     tabItem(tabName = "pageFour",
       conditionalPanel(
-        condition = "input.typeIntervention=='Tipe 2'",
-        selectInput("yearBAUInv", "Pilih tahun:", choices = 2010:2030, selected=2011)
+        condition = "input.typeIntervention=='Tipe 1'",
+        h3("Tipe 1: Pertumbuhan ekonomi sama untuk setiap lapangan usaha, namun berbeda setiap tahun"),
+        selectInput("yearBAUInv", "Pilih tahun:", choices = 2010:2030, selected=2015),
+        sliderInput("gdpRate", "Laju pertumbuhan ekonomi:", min=0, max=10, post="%", value=5, step=0.01, width = "600px")
       ),
       conditionalPanel(
-        condition = "input.typeIntervention=='Tipe 1' | input.typeIntervention=='Tipe 2'",
-        sliderInput("gdpRate", "Laju pertumbuhan ekonomi:", min=0, max=1, post=" x 100%", value=0.05, step=0.01, width = "600px")
+        condition = "input.typeIntervention=='Tipe 2'",
+        h3("Tipe 2: Pertumbuhan ekonomi berbeda baik untuk setiap lapangan usaha, maupun setiap tahun proyeksi")
       ),
       actionButton("saveTableBauType", "Simpan Tabel"),
+      actionButton("buttonBAU", "Jalankan Simulasi"),
       hr(),
-      rHandsontableOutput('tableBAUType'),
-      hr(),
-      actionButton("buttonBAU", "Jalankan Simulasi")
+      rHandsontableOutput('tableBAUType')
     ),
     tabItem(tabName = "pageFive",
         fluidRow(
@@ -219,6 +247,40 @@ body <- dashboardBody(
             )
           )
         )
+    ),
+    tabItem(tabName = "pageTen",
+            fluidRow(
+              column(width=12,
+                     tags$div(id='bauplaceholder'),
+                     hr()
+              )
+            ),
+            conditionalPanel(
+              condition="input.lahanResults!='Proyeksi Neraca Perdagangan'",
+              uiOutput("yearSelection2")
+            ),
+            plotlyOutput("plotlyResultsBAU_lahan"),
+            hr(),
+            fluidRow(
+              column(width=12,
+                     box(width=NULL,
+                         dataTableOutput('tableResultsBAU_lahan'),
+                         downloadButton('downloadTableBAU_lahan', 'Download Table (.csv)')
+                     )
+              )
+            )
+    ),
+    tabItem(tabName = "pageNine",
+            # actionButton("saveTableLDMProp", "Simpan Tabel"),
+            # hr(),
+            # rHandsontableOutput('tableLDMProp'),
+            # hr(),
+            # actionButton("buttonBAULahan", "Jalankan Simulasi")
+            actionButton("saveInputBAULahanLandCover", "Simpan Tabel"),
+            actionButton("buttonBAULahan", "Jalankan Simulasi"),
+            hr(), 
+            rHandsontableOutput("inputBAULahanLandCover"), 
+            hr()
     ),
     ###*tab-intervention####
     tabItem(tabName = "pageSeven",
@@ -287,7 +349,8 @@ body <- dashboardBody(
         h3("redcluwe.id"),
         tags$p("Reducing Carbon Intensity of Landuse, Waste and Energy (redcluwe.id) adalah alat bantu proses transformasi Rencana Aksi Daerah - Gas Rumah Kaca (RAD-GRK) menjadi Perencanaan Pembangunan Rendah Karbon (PPRK)."),
         tags$p("Untuk menjalankan panduan interaktif menggunakan redcluwe.id, silahkan klik menu di kanan atas aplikasi ini.")
-      )
+      ), 
+      dataTableOutput('tableUserLog')
     )
   ),
   useShinyjs()

@@ -15,6 +15,8 @@ library(DT)
 library(formattable)
 library(rtf)
 library(rhandsontable)
+library(stringr)
+library(gridExtra)
 #library(ggradar)
 # library(RColorBrewer)
 
@@ -32,6 +34,24 @@ server <- function(input, output, session) {
   provList <- readRDS("data/provList")
   # usersList <- load("usersList")
   
+  LDMProp_new<-reactiveValues(
+    tablo = NULL,
+    coba= NULL
+  )
+  
+  tabel<-reactiveValues(
+    manualSave=NULL
+  )
+  
+  ldmRV<-reactiveValues(
+    LDMListFile = unique(list.files(paste0("LDMData/Prov/"))),   # ganti mas alfa
+    LDMTotFile= unique(length(list.files("LDMData/Prov/")))   # ganti mas alfa
+  )
+  
+  editable<-reactiveValues(
+    BAULahan_landCover=NULL
+  )
+  
   allDataProv <- reactiveValues(
     username = NULL,
     prov = NULL,
@@ -48,6 +68,9 @@ server <- function(input, output, session) {
     addvalcom = NULL,
     population = NULL,
     otherEm = NULL,
+    LUtahun=NULL,
+    LDMProp=NULL,
+    LDMProp_his=NULL,
     # landDemand = NULL,
     # landDemand_prop = NULL,
     I_A = NULL,
@@ -58,13 +81,34 @@ server <- function(input, output, session) {
     periodIO = NULL,
     rtffile = NULL,
     bau_scenario = NULL,
-    prk_scenario = data.frame(time=NULL, action= NULL, year=NULL, username=NULL, provinsi=NULL, sector=NULL, fd_value=NULL)
+    prk_scenario = data.frame(time=NULL, action=NULL, year=NULL, username=NULL, provinsi=NULL, sector=NULL, fd_value=NULL)
   )
   
-  final_results <- reactiveValues(table1=NULL, plot23=NULL, plot24=NULL, plot25=NULL)
+  finalResults <- reactiveValues(table1=NULL, plot23=NULL, plot24=NULL, plot25=NULL)
+  
+  historicalResults <- reactiveValues()
+  bauResults <- reactiveValues()
+  interventionResults <- reactiveValues()
+  
+  userActivities <- reactiveValues(
+    latestAct = NULL,
+    message = NULL,
+    dateTime = NULL,
+    listOfActs = data.frame(latestAct=NULL, message=NULL, dateTime=NULL)
+  )
+  
+  recordActivities <- function(latestAct, message, dateTime){
+    userActivities$latestAct=latestAct
+    userActivities$message=message
+    userActivities$dateTime=dateTime
+    userActivities$listOfActs<-rbind(
+      userActivities$listOfActs, 
+      data.frame(latestAct=latestAct, message=message, dateTime=dateTime)
+    )
+  }
   
   ###*user setting####
-  userAuth <- eventReactive(input$inputLogin, {
+  observeEvent(input$inputLogin, {
     fullname <- input$fullname
     username <- input$username
     password <- input$password
@@ -93,11 +137,15 @@ server <- function(input, output, session) {
     ef_waste <- readRDS(paste0(datapath, "ef_waste"))
     findemcom <- readRDS(paste0(datapath, "findemcom"))
     addvalcom <- readRDS(paste0(datapath, "addvalcom"))
+    currentPopulation <- readRDS(paste0(datapath, "currentPopulation"))
     population <- readRDS(paste0(datapath, "population"))
     otherEm <- readRDS(paste0(datapath, "otherEm"))
+    LU_tahun<-readRDS(paste0(datapath,"LU_tahun"))
+    LDMProp_his<-readRDS(paste0(datapath,"LDMProp"))
+    # row.names(LDMProp_his)<-sector[,1]
     # landDemand <- readRDS(paste0(datapath, "landDemand"))
     # landDemand_prop <- readRDS(paste0(datapath, "landDemand_prop"))
-    landtable <- readRDS(paste0(datapath, "landtable"))
+    # landtable <- readRDS(paste0(datapath, "landtable"))
     I_A <- readRDS(paste0(datapath, "I_A"))
     leontief <- readRDS(paste0(datapath, "leontief"))
     GDPAll <- readRDS(paste0(datapath, "GDPAll"))
@@ -120,7 +168,11 @@ server <- function(input, output, session) {
     allDataProv$findemcom = findemcom 
     allDataProv$addvalcom = addvalcom 
     allDataProv$population = population 
+    allDataProv$currentPopulation = currentPopulation
     allDataProv$otherEm = otherEm 
+    allDataProv$LU_tahun = LU_tahun
+    allDataProv$LDMProp_his = LDMProp_his
+    allDataProv$LDMProp = data.frame()
     # allDataProv$landDemand = landDemand 
     # allDataProv$landDemand_prop = landDemand_prop 
     allDataProv$I_A = I_A 
@@ -132,62 +184,40 @@ server <- function(input, output, session) {
     allDataProv$rtffile = rtffile 
     allDataProv$bau_scenario = data.frame(Lapangan_usaha=as.character(sector[,1]))
     
-    listData <- list(
-      sector = as.data.frame(sector[,1]),
-      indem = indem,
-      findem = findem,
-      addval = addval,
-      labour = labour,
-      energy = energy,
-      waste = waste,
-      ef_energy = ef_energy,
-      ef_waste = ef_waste,
-      findemcom = findemcom,
-      addvalcom = addvalcom,
-      population = population,
-      otherEm = otherEm,
-      # landDemand = landDemand,
-      # landDemand_prop = landDemand_prop,
-      landtable = landtable,
-      I_A = I_A,
-      leontief = leontief,
-      GDPAll = GDPAll,
-      linkagesTable = linkagesTable,
-      multiplierAll = multiplierAll,
-      periodIO = periodIO,
-      rtffile = rtffile
-    )
+    recordActivities("Login redcluwe.id", "Berhasil", paste0(Sys.time()))
+    
     notif_id <<- showNotification("Anda berhasil masuk", duration = 4, closeButton = TRUE, type = "warning")
-    # updateTabItems(session, "tabs", selected = "pageOne")
-    return(listData)
+    updateTabItems(session, "tabs", selected = "pageOne")
   })
   
   blackBoxInputs <- function(){
-    allData <- userAuth()
-    
-    sector <- allData$sector
-    indem <- allData$indem
-    findem <- allData$findem
-    addval <- allData$addval
-    labour <- allData$labour
-    energy <- allData$energy
-    waste <- allData$waste
-    ef_energy <- allData$ef_energy
-    ef_waste <- allData$ef_waste
-    findemcom <- allData$findemcom
-    addvalcom <- allData$addvalcom
-    population <- allData$population
-    otherEm <- allData$otherEm
-    # landDemand <- allData$landDemand
-    # landDemand_prop <- allData$landDemand_prop
-    landtable <- allData$landtable
-    I_A <- allData$I_A
-    leontief <- allData$leontief
-    GDPAll <- allData$GDPAll
-    linkagesTable <- allData$linkagesTable
-    multiplierAll <- allData$multiplierAll
-    periodIO <- allData$periodIO
-    rtffile <- allData$rtffile
+    sector <- allDataProv$sector
+    indem <- allDataProv$indem
+    findem <- allDataProv$findem
+    addval <- allDataProv$addval
+    labour <- allDataProv$labour
+    energy <- allDataProv$energy
+    waste <- allDataProv$waste
+    ef_energy <- allDataProv$ef_energy
+    ef_waste <- allDataProv$ef_waste
+    findemcom <- allDataProv$findemcom
+    addvalcom <- allDataProv$addvalcom
+    population <- allDataProv$population
+    currentPopulation <- allDataProv$currentPopulation
+    otherEm <- allDataProv$otherEm
+    LU_tahun <- allDataProv$LU_tahun
+    LDMProp_his <- allDataProv$LDMProp_his
+    LDMProp <- allDataProv$LDMProp
+    # landDemand <- allDataProv$landDemand
+    # landDemand_prop <- allDataProv$landDemand_prop
+    # landtable <- allDataProv$landtable
+    I_A <- allDataProv$I_A
+    leontief <- allDataProv$leontief
+    GDPAll <- allDataProv$GDPAll
+    linkagesTable <- allDataProv$linkagesTable
+    multiplierAll <- allDataProv$multiplierAll
+    periodIO <- allDataProv$periodIO
+    rtffile <- allDataProv$rtffile
     
     # Row explicit definition for Income (Wages & Salary)
     income_row <- 2
@@ -199,6 +229,7 @@ server <- function(input, output, session) {
     
     indem_colsum <- colSums(indem_matrix)
     addval_colsum <- colSums(addval_matrix)
+    # total_output <- indem_colsum+addval_colsum
     fin_con <- 1/(indem_colsum+addval_colsum)
     fin_con[is.infinite(fin_con)] <- 0
     tinput_invers <- diag(fin_con)
@@ -206,66 +237,106 @@ server <- function(input, output, session) {
     # Backward Linkage
     DBL <- colSums(leontief)
     DBL <- DBL/(mean(DBL))
+    
     # Forward Linkage
     DFL <- rowSums(leontief)
     DFL <- DFL/(mean(DFL))
+    
     # GDP
     GDP <- colSums(addval_matrix[2:num_addval,])
+    
     # Multiplier Output
     multiplierOutput <- colSums(leontief)
+    
     # Multiplier Income
-    income_coef <- tinput_invers %*% as.matrix(addval_matrix[income_row,])
-    income_matrix <- diag(as.vector(income_coef), ncol = dimensi, nrow = dimensi)
-    InvIncome_matrix <- diag(as.vector(1/income_coef), ncol = dimensi, nrow = dimensi)
-    multiplierIncome <- income_matrix %*% leontief %*% InvIncome_matrix
-    multiplierIncome <- as.matrix(colSums(multiplierIncome), dimensi, 1)
+    income_coef <- as.matrix(addval_matrix[income_row,]) / as.matrix((indem_colsum+addval_colsum))
+    multiplierIncome <- leontief %*% income_coef
+    # income_coef <- tinput_invers %*% as.matrix(addval_matrix[income_row,])
+    # income_matrix <- diag(as.vector(income_coef), ncol = dimensi, nrow = dimensi)
+    # InvIncome_matrix <- diag(as.vector(1/income_coef), ncol = dimensi, nrow = dimensi)
+    # multiplierIncome <- income_matrix %*% leontief %*% InvIncome_matrix 
+    # multiplierIncome <- as.matrix(colSums(multiplierIncome), dimensi, 1)
     multiplierIncome[is.na(multiplierIncome)] <- 0
+    
     # Labour
-    labour_coef <- tinput_invers %*% as.matrix(labour[,3])
-    labour_matrix <- diag(as.vector(labour_coef), ncol = dimensi, nrow = dimensi)
-    InvLabour_matrix <- diag(as.vector(1/labour_coef), ncol = dimensi, nrow = dimensi)
-    multiplierLabour <- labour_matrix %*% leontief %*% InvLabour_matrix
-    multiplierLabour <- as.matrix(colSums(multiplierLabour), dimensi, 1)
+    labour_coef <- as.matrix(labour[,3]) / as.matrix((indem_colsum+addval_colsum))
+    multiplierLabour <- leontief %*% labour_coef
+    # labour_coef <- tinput_invers %*% as.matrix(labour[,3])
+    # labour_matrix <- diag(as.vector(labour_coef), ncol = dimensi, nrow = dimensi)
+    # InvLabour_matrix <- diag(as.vector(1/labour_coef), ncol = dimensi, nrow = dimensi)
+    # multiplierLabour <- labour_matrix %*% leontief %*% InvLabour_matrix
+    # multiplierLabour <- as.matrix(colSums(multiplierLabour), dimensi, 1)
     multiplierLabour[is.na(multiplierLabour)] <- 0
+    
     # Multiplier Energy Used
-    energy_coef <- tinput_invers %*% as.matrix(energy[,3])
-    energy_matrix <- diag(as.vector(energy_coef), ncol = dimensi, nrow = dimensi)
-    InvEnergy_matrix <- diag(as.vector(1/energy_coef), ncol = dimensi, nrow = dimensi)
-    multiplierEnergy <- energy_matrix %*% leontief %*% InvEnergy_matrix
-    multiplierEnergy <- as.matrix(colSums(multiplierEnergy), dimensi, 1)
+    energy_coef <- as.matrix(energy[,3]) / as.matrix((indem_colsum+addval_colsum))
+    multiplierEnergy <- leontief %*% energy_coef
+    # energy_coef <- tinput_invers %*% as.matrix(energy[,3])
+    # energy_matrix <- diag(as.vector(energy_coef), ncol = dimensi, nrow = dimensi)
+    # InvEnergy_matrix <- diag(as.vector(1/energy_coef), ncol = dimensi, nrow = dimensi)
+    # multiplierEnergy <- energy_matrix %*% leontief %*% InvEnergy_matrix
+    # multiplierEnergy <- as.matrix(colSums(multiplierEnergy), dimensi, 1)
     multiplierEnergy[is.na(multiplierEnergy)] <- 0
+    
     # Multiplier Waste Product
-    waste_coef <- tinput_invers %*% as.matrix(waste[,3])
-    waste_matrix <- diag(as.vector(energy_coef), ncol = dimensi, nrow = dimensi)
-    InvWaste_matrix <- diag(as.vector(1/waste_coef), ncol = dimensi, nrow = dimensi)
-    multiplierWaste <- waste_matrix %*% leontief %*% InvWaste_matrix
-    multiplierWaste <- as.matrix(colSums(multiplierWaste), dimensi, 1)
+    waste_coef <- as.matrix(waste[,3]) / as.matrix((indem_colsum+addval_colsum))
+    multiplierWaste <- leontief %*% waste_coef
+    # waste_coef <- tinput_invers %*% as.matrix(waste[,3])
+    # waste_matrix <- diag(as.vector(energy_coef), ncol = dimensi, nrow = dimensi)
+    # InvWaste_matrix <- diag(as.vector(1/waste_coef), ncol = dimensi, nrow = dimensi)
+    # multiplierWaste <- waste_matrix %*% leontief %*% InvWaste_matrix
+    # multiplierWaste <- as.matrix(colSums(multiplierWaste), dimensi, 1)
     multiplierWaste[is.na(multiplierWaste)] <- 0
+    
     # Ratio Wages / Business Surplus
     ratio_ws <- t(as.matrix(addval[2,] / addval[3,]))
     ratio_ws[is.na(ratio_ws)] <- 0
     ratio_ws[ratio_ws == Inf] <- 0
     colnames(ratio_ws) <- "ratio_ws"
+    
     # Koefisien Intensitas Energi
     # total sectoral energy cons / sectoral GDP
     coef_energy <- as.matrix(energy[,3]) / sum(addval_matrix[2:num_addval,])
+    
     # Koefisien Produk Limbah
     coef_waste <- as.matrix(waste[,3]) / sum(addval_matrix[2:num_addval,])
+    
     # Emission from energy
     f_energy_diag <- diag(ef_energy[,2], ncol = nrow(ef_energy), nrow = nrow(ef_energy))
     em_energy <- as.matrix(energy[,4:ncol(energy)]) %*% f_energy_diag
     em_energy_total <- rowSums(em_energy)
+    
     # Emission from waste
     f_waste_diag <- diag(ef_waste[,2], ncol = nrow(ef_waste), nrow = nrow(ef_waste))
     em_waste <- as.matrix(waste[,4:ncol(waste)]) %*% f_waste_diag
     em_waste_total <- rowSums(em_waste)
+    
     # Wages
     wages <- as.matrix(t(addval[2,]))
     colnames(wages) <- "wages"
     
     # Income per capita
-    income_per_capita <- sum(as.matrix(addval_matrix[income_row,])) / input$popDensTable
+    income_per_capita <- sum(as.matrix(addval_matrix[income_row,])) / currentPopulation
       
+    # for calculate landTable, LPC, LRC historis 
+    LU_tahun<-as.data.frame(LU_tahun[,3:ncol(LU_tahun)])
+    LU_tahun<-as.matrix(LU_tahun)
+    LDMProp_his<-as.matrix(LDMProp_his[,2:ncol(LDMProp_his)])
+    GDPAll<-as.data.frame(GDPAll)
+    diagLU_his<-as.matrix(diag(LU_tahun[,1]))
+    landTable_his<-LDMProp_his %*% diagLU_his
+    landReq_his<-as.matrix(rowSums(landTable_his))
+    
+    LPC_his<-GDPAll[,4]/landReq_his
+    LPC_his[is.infinite(LPC_his)]<-0
+    LRC_his<-1/LPC_his
+    LRC_his[is.infinite(LRC_his)]<-0
+    landTable_his<-cbind(sector, landTable_his, landReq_his, LPC_his, LRC_his)
+    colnames(landTable_his)<-c("Sektor", "Kategori", colnames(LDMProp_his),"Total Kebutuhan Lahan", "LPC", "LRC")
+    tahun<-as.vector(str_extract_all(colnames(LU_tahun), '[0-9]+'))
+    tahun<-as.data.frame(tahun)
+    tahun<-t(tahun)
+    
     result <- cbind(sector,
                     DBL,
                     DFL, 
@@ -273,6 +344,7 @@ server <- function(input, output, session) {
                     multiplierOutput, 
                     multiplierIncome,
                     multiplierLabour,
+                    labour_coef,
                     multiplierEnergy,
                     multiplierWaste,
                     wages,
@@ -296,10 +368,19 @@ server <- function(input, output, session) {
                        waste=waste,
                        ef_waste=ef_waste,
                        ef_energy=ef_energy,
-                       landtable=landtable,
+                       landcover=allDataProv$LU_tahun,
                        income_per_capita=income_per_capita,
                        otherEm=otherEm,
-                       population=population
+                       population=population,
+                       LU_tahun=LU_tahun,
+                       LDM=allDataProv$LDMProp_his,
+                       GDPAll=GDPAll,
+                       # landTable_t0=landTable_t0,
+                       # landReq=landReq,
+                       tahun=tahun, 
+                       landTable_his=landTable_his,
+                       leontief=leontief, 
+                       LDMProp_his = LDMProp_his
                     ) 
     
     return(list_table)
@@ -499,8 +580,8 @@ server <- function(input, output, session) {
     }
     analysisResult <- sec$result
     income_per_capita <- sec$income_per_capita
-    landtable <- sec$landtable
     graph <- data.frame(Sektor="", Analysis="")
+    landTable_his<-sec$landTable_his
     
     if(input$categorySector=="Ekonomi"){
       if(input$pprkResults == "PDRB"){
@@ -512,7 +593,7 @@ server <- function(input, output, session) {
         insertUI(
           selector="#placeholder",
           ui = tags$div(
-            valueBox(format(GDPTotal, nsmall = 1, big.mark = ","), "Juta Rupiah", icon = icon("credit-card"), width = 12),
+            valueBox(format(GDPTotal, nsmall = 2, big.mark = ".", decimal.mark = ","), "Juta Rupiah", icon = icon("credit-card"), width = 12),
             id='pdrb'
           )
         )
@@ -550,7 +631,7 @@ server <- function(input, output, session) {
         insertUI(
           selector="#placeholder",
           ui = tags$div(
-            valueBox(paste0(income_per_capita), "Juta Rupiah/Jiwa", icon = icon("credit-card"), width = 8),
+            valueBox(format(income_per_capita, nsmall = 2, big.mark = ".", decimal.mark = ","), "Juta Rupiah/Jiwa", icon = icon("credit-card"), width = 8),
             id='capita'
           )
         )
@@ -646,7 +727,7 @@ server <- function(input, output, session) {
       removeUI(selector = '#pdrb')
       removeUI(selector = '#capita')
       if(input$pprkLand == "Koefisien Kebutuhan Lahan") {
-        graph <- subset(landtable, select=c(Sektor, Kategori, LRC))
+        graph <- subset(landTable_his, select=c(Sektor, Kategori, LRC))
         colnames(graph) <- c("Sektor", "Kategori", "LRC")
         gplot2<-ggplot(data=graph, aes(x=Sektor, y=LRC, fill=Kategori)) +
           geom_bar(colour="black", stat="identity")+ coord_flip() + theme_void() +
@@ -658,7 +739,7 @@ server <- function(input, output, session) {
         #          xaxis = list(title = "Koefisien Kebutuhan Lahan"),
         #          yaxis = list(title ="Sectors"))
       } else if(input$pprkLand == "Koefisien Produktivitas Lahan") {
-        graph <- subset(landtable, select=c(Sektor, Kategori, LPC))
+        graph <- subset(landTable_his, select=c(Sektor, Kategori, LPC))
         colnames(graph) <- c("Sektor", "Kategori", "LPC")
         gplot2<-ggplot(data=graph, aes(x=Sektor, y=LPC, fill=Kategori)) +
           geom_bar(colour="black", stat="identity")+ coord_flip() + theme_void() +
@@ -698,6 +779,41 @@ server <- function(input, output, session) {
     }
   })
   
+  output$tableDesc <- renderText({
+    if(input$categorySector=="Ekonomi"){
+      if(input$pprkResults == "PDRB"){
+        return(NULL)
+      } else if(input$pprkResults == "Backward Linkage"){
+        paste0("Direct Backward Linkage (DBL) menunjukkan tingkat keterkaitan kebelakang dari sebuah sektor ekonomi.
+               Nilai DBL yang tinggi dari sebuah sektor menunjukkan bahwa sektor tersebut banyak menggunakan output yang dihasilkan oleh sektor lain dalam menghasilkan outputnya sendiri")
+      } else if(input$pprkResults == "Forward Linkage"){
+        paste0("Direct Forward Linkage (DBL) menunjukkan tingkat keterkaitan kedepan dari sebuah sektor ekonomi.
+        Nilai DFL yang tinggi dari sebuah sektor menunjukkan bahwa output dari sektor tersebut banyak digunakan oleh sektor lain.")
+      } else if(input$pprkResults == "Angka Pengganda Output"){
+        paste0("Angka Pengganda Output menunjukkan dampak perubahan permintaan akhir sebuah sektor terhadap total output masing-masing sektor di sebuah daerah.
+        Angka Pengganda Output yang tinggi menunjukkan seberapa besarnya pengaruh sebuah sektor terhadap kondisi perekonomian daerah")
+      } else if(input$pprkResults == "Angka Pengganda Pendapatan Rumah Tangga"){
+        paste0("Angka Pengganda Pendapatan Rumah Tangga menunjukkan dampak perubahan permintaan akhir sebuah sektor terhadap total income yang dihasilkan masing-masing sektor di sebuah daerah.")
+      } else if(input$pprkResults == "Angka Pengganda Tenaga Kerja"){
+        paste0("Angka Pengganda Tenaga Kerja menunjukkan dampak perubahan permintaan akhir sebuah sektor ekonomi terhadap penyerapan tenaga kerja suatu provinsi.")
+      } else if(input$pprkResults == "Upah gaji"){
+        return(NULL)
+      } else if(input$pprkResults == "Rasio Upah gaji per Surplus Usaha"){
+        return(NULL)
+      } else if(input$pprkResults == "Pendapatan per kapita"){
+        return(NULL)
+      } else if(input$pprkResults == "Perbandingan Angka Pengganda"){
+        
+      }
+    } else if(input$categorySector=="Energi"){
+      
+    } else if(input$categorySector=="Lahan"){
+      
+    } else {
+      
+    }
+  })
+  
   output$tableResults <- renderDataTable({
     if(debugMode){
       sec <- blackBoxInputs()
@@ -705,7 +821,7 @@ server <- function(input, output, session) {
       sec <- allInputs()
     }
     analysisResult <- sec$result
-    landtable <- sec$landtable
+    landTable_his <- sec$landTable_his
     
     if(input$categorySector=="Ekonomi"){
       if(input$pprkResults == "PDRB"){
@@ -752,17 +868,17 @@ server <- function(input, output, session) {
     } else if (input$categorySector=="Lahan"){
       if(input$pprkLand == "Matriks Distribusi Lahan"){
         # removeUI(selector = '#plotlyResults') 
-        tables <- subset(landtable, select=-Kategori)
+        tables <- subset(landTable_his <- sec$landTable_his, select=-Kategori)
         tables
       } else if(input$pprkLand == "Koefisien Kebutuhan Lahan") {
-        tables <- subset(landtable, select=c(Sektor, LRC, Kategori))
+        tables <- subset(landTable_his <- sec$landTable_his, select=c(Sektor, LRC, Kategori))
         tables
       } else if(input$pprkLand == "Koefisien Produktivitas Lahan") {
-        tables <- subset(landtable, select=c(Sektor, LPC, Kategori))
+        tables <- subset(landTable_his <- sec$landTable_his, select=c(Sektor, LPC, Kategori))
         tables
       } else {
         # removeUI(selector = '#plotlyResults')
-        tables <- landtable[,c("Sektor", colnames(landtable)[ncol(landtable)-2])]
+        tables <- landTable_his <- sec$landTable_his[,c("Sektor", colnames(landTable_his <- sec$landTable_his)[ncol(landTable_his <- sec$landTable_his)-2])]
         tables
       }
     } else {
@@ -777,7 +893,7 @@ server <- function(input, output, session) {
         tables
       } 
     }
-    datatable(tables, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE) %>%
+    datatable(tables, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, scrollY="70vh", fixedColumns=list(leftColumns=1)), rownames=FALSE, height=540) %>%
       formatRound(columns=c(1:length(tables)),2) %>%
       formatStyle(colnames(tables)[2], background = styleColorBar(tables[,2], 'lightblue'), backgroundSize = '98% 88%', backgroundRepeat = 'no-repeat', backgroundPosition = 'center')
   }) #extensions = "FixedColumns", options=list(pageLength=50,scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)
@@ -792,6 +908,7 @@ server <- function(input, output, session) {
         sec <- allInputs()
       }
       analysisResult <- sec$result
+      landTable_his <- sec$landTable_his
       
       if(input$categorySector=="Ekonomi"){
         if(input$pprkResults == "PDRB"){
@@ -823,6 +940,17 @@ server <- function(input, output, session) {
         } else if(input$pprkResults == "Emisi dari Penggunaan Energi"){
           tables <- subset(analysisResult, select = c(Sektor, em_energy_total))
         } 
+      } else if (input$categorySector== "Lahan"){
+        if(input$pprkLand == "Matriks Distribusi Lahan"){
+          tables <- subset(landTable_his, select=-Kategori)
+        } else if(input$pprkLand == "Koefisien Kebutuhan Lahan") {
+          tables <- subset(landTable_his, select=c(Sektor, LRC, Kategori))
+        } else if(input$pprkLand == "Koefisien Produktivitas Lahan") {
+          tables <- subset(landTable_his, select=c(Sektor, LPC, Kategori))
+        } else {
+          # removeUI(selector = '#plotlyResults')
+          tables <- landTable_his[,c("Sektor", colnames(landTable_his)[ncol(landTable_his)-2])]
+        }
       } else {
         if(input$pprkResults == "Angka Pengganda Buangan Limbah"){
           tables <- subset(analysisResult, select = c(Sektor, multiplierWaste))
@@ -856,8 +984,8 @@ server <- function(input, output, session) {
     findemcom <- sec$findemcom
     addvalcom <- sec$addvalcom
     
-    io_table <- cbind(sector, indem)
-    colnames(io_table) <- c("Sektor", t(sector))
+    io_table <- cbind(as.data.frame(sector[,1]), indem)
+    colnames(io_table) <- c("Sektor", t(as.data.frame(sector[,1])))
     io_table$`Total Permintaan Antara` <- rowSums(indem)
     
     colnames(findem) <- c(t(findemcom))
@@ -889,7 +1017,7 @@ server <- function(input, output, session) {
     io_table <- rbind(io_table, addval_table, total_addval_table)
     io_table
     
-    datatable(io_table, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
+    datatable(io_table, extensions = "FixedColumns", options=list(paging=FALSE, scrollX=TRUE, scrollY='70vh', fixedColumns=list(leftColumns=1)), rownames=FALSE) %>%
       formatStyle('Sektor',target = "row", backgroundColor = styleEqual(c("JUMLAH INPUT ANTARA"), c('orange'))) %>%
             formatStyle(columns = "Total Permintaan Antara", target = "cell", backgroundColor = "#F7080880") %>%
       formatRound(columns=c(1:length(io_table)),2)
@@ -902,7 +1030,7 @@ server <- function(input, output, session) {
     sec <- allInputs()
   }
     labour <- sec$labour
-  }, options=list(pageLength=100, rownames=FALSE))
+  }, options=list(paging=FALSE, scrollY='70vh'))
 
   output$SatelitEnergi <- renderDataTable({
     if(debugMode){
@@ -911,7 +1039,7 @@ server <- function(input, output, session) {
       sec <- allInputs()
     }
     energy <- sec$energy
-  }, options=list(pageLength=100, rownames=FALSE))
+  }, extensions = "FixedColumns", options=list(paging = FALSE, scrollY='70vh', scrollX=TRUE, fixedColumns=list(leftColumns=3)))  
   
   output$SatelitLimbah <- renderDataTable({
     if(debugMode){
@@ -920,10 +1048,28 @@ server <- function(input, output, session) {
       sec <- allInputs()
     }
     waste <- sec$waste
-  }, options=list(pageLength=100, rownames=FALSE))
+  }, extensions = "FixedColumns", options=list(paging = FALSE, scrollY='70vh', scrollX=TRUE, fixedColumns=list(leftColumns=3)))
+  
+  output$SatelitLahan <- renderDataTable({
+    if(debugMode){
+      sec <- blackBoxInputs()
+    } else {
+      sec <- allInputs()
+    }
+    LDM <- sec$LDM
+  }, extensions = "FixedColumns", options=list(paging = FALSE, scrollY='70vh', scrollX=TRUE, fixedColumns=list(leftColumns=3)))
+  
+  output$TutupanLahan <- renderDataTable({
+    if(debugMode){
+      sec <- blackBoxInputs()
+    } else {
+      sec <- allInputs()
+    }
+    landcover <- sec$landcover
+  }, extensions = "FixedColumns", options=list(paging = FALSE, scrollY='70vh', scrollX=TRUE, fixedColumns=list(leftColumns=3)))
   
   ###*bau input####
-  generate_table<-function(table, first_year, second_year, value=0.05){
+  generate_table<-function(table, first_year, second_year, value=0.00){
     n <- second_year-first_year
     eval(parse(text=(paste0("table$y", first_year, " <- value"))))
     for(i in 1:n){
@@ -934,36 +1080,493 @@ server <- function(input, output, session) {
   observeEvent(input$generateBAUTable, {
     allDataProv$bau_scenario <- data.frame(Lapangan_usaha=as.character(allDataProv$sector[,1])) # reset table
     allDataProv$bau_scenario <- generate_table(allDataProv$bau_scenario, as.numeric(input$dateFrom), as.numeric(input$dateTo))
+    recordActivities(paste0("Membuat tabel proyeksi BAU tahun ", input$dateFrom, "-", input$dateTo), "Berhasil", paste0(Sys.time()))
     notif_id <<- showNotification("Tabel berhasil dimuat", duration = 4, closeButton = TRUE, type = "warning")
   })
   output$tableBAUType <- renderRHandsontable({
-    rhandsontable(allDataProv$bau_scenario) %>% hot_cols(format="0%") # load table
+    rhandsontable(allDataProv$bau_scenario, fixedColumnsLeft=1, height=640) %>% hot_cols(format="0%") # load table
   })
   observeEvent(input$saveTableBauType, {
+    # if(input$typeIntervention=='Tipe 1'){
+    #   allDataProv$bau_scenario <- generate_table(allDataProv$bau_scenario, as.numeric(input$dateFrom), as.numeric(input$dateTo), value=as.numeric(input$gdpRate/100))
+    # } 
     if(input$typeIntervention=='Tipe 1'){
-      
-      allDataProv$bau_scenario <- generate_table(allDataProv$bau_scenario, as.numeric(input$dateFrom), as.numeric(input$dateTo), value=as.numeric(input$gdpRate))
-    
-    } else if(input$typeIntervention=='Tipe 2'){
-      
       column_year <- paste0("y", input$yearBAUInv)
       bau_scenario <- allDataProv$bau_scenario
-      eval(parse(text=(paste0("bau_scenario$", column_year, "<-as.numeric(input$gdpRate)"))))
+      eval(parse(text=(paste0("bau_scenario$", column_year, "<-as.numeric(input$gdpRate/100)"))))
       
       allDataProv$bau_scenario<-bau_scenario
-    
     } else {
-    
       allDataProv$bau_scenario <- hot_to_r(input$tableBAUType)
-    
     }
+    
+    recordActivities(paste0("Menyimpan tabel proyeksi BAU tahun ", input$dateFrom, "-", input$dateTo), "Berhasil", paste0(Sys.time()))
     notif_id <<- showNotification("Tabel berhasil disimpan", duration = 4, closeButton = TRUE, type = "warning")
     # 
     # print(allDataProv$bau_scenario)
     # 
   })
   
-  allInputsBAU <- eventReactive(input$buttonBAU, {
+  ### start LAHAN #####
+  ListLDMButton_fun <- function(FUN, len, id, ...) {
+    inputs <- character(len)
+    for (i in seq_len(len)) {
+      inputs[i] <- as.character(FUN(paste0(id, i), ...))
+    }
+    inputs
+  }
+  
+  ### buat tabel daftar nama file LDM reaktif ###
+  LDMListTableReact <- reactive({
+    data.frame(
+      Nama_File = c("LDM historis", ldmRV$LDMListFile),
+      Lihat_File = ListLDMButton_fun(actionButton, length(ldmRV$LDMListFile)+1,
+                                     'button_',
+                                     label = "Tampilkan",
+                                     onclick = paste0('Shiny.onInputChange( \"select_button\" , this.id)')
+      )
+    )
+  })
+  
+  ### buat list options ###
+  output$LDMFileOptions<- renderUI({
+    LDMListTableReact <- LDMListTableReact()
+    namaFile<-as.character(LDMListTableReact$Nama_File)
+    selectInput("LDMPropUse", "Pilih tabel LDM proporsi yang akan digunakan dalam perhitungan:", choices=namaFile)
+  })
+  
+  ### tampilkan tabel list file LDM###
+  output$LDMListTable <- renderDataTable({
+    LDMListTableReact()
+  }, escape = FALSE)
+  
+  ### pilh nama file dan file yang akan ditampilkan###
+  LDMTableTampil<-eventReactive(input$select_button,{
+    sec<-blackBoxInputs()
+    LDMProp_his<-sec$LDMProp_his
+    selectedRow <- as.numeric(strsplit(input$select_button,"_")[[1]][2])
+    
+    if(selectedRow==1){
+      fileName = "LDM historis"
+      selectedFile = LDMProp_his
+      list<-list(fileName=fileName,
+                 selectedFile=selectedFile)
+      print("kondisi1")
+    }
+    else if(selectedRow != 1){
+      fileName<- LDMListTableReact()[selectedRow,1]
+      selectedFile<-readRDS(paste0("LDMData/Prov/",fileName))   # ganti mas alfa
+      list<-list(fileName=fileName, 
+                 selectedFile=selectedFile)
+      print("kondisi2")
+    }
+    list
+  })
+  
+  ### tampilkan UI tabel LDM yang dipilih ###
+  output$LDMTableTampilUI<-renderUI({
+    LDMTableTampil<-LDMTableTampil()
+    selectedFile<-LDMTableTampil$selectedFile
+    fileName<-LDMTableTampil$fileName
+    
+    if(identical(fileName, "LDM historis")){
+      tagList(tags$br(),
+              tags$br(),
+              tags$h3(paste0(fileName)),
+              tags$br(),
+              actionButton('modalLDMbutton', 'Sunting Tabel'),
+              tags$br(),
+              tags$br(),
+              datatable(selectedFile, extensions = "FixedColumns", options=list(pageLength=50, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=TRUE))
+    } else {
+      tagList(tags$br(),
+              tags$br(),
+              tags$h3(paste0(fileName)),
+              tags$br(),
+              actionButton('modalLDMbutton', 'Sunting Tabel'),
+              actionButton('deleteLDMTable','Hapus Tabel'),
+              tags$br(),
+              tags$br(),
+              datatable(selectedFile))
+    }
+  })
+  
+  #### tampilkan modal dialog modalLDM ketika sunting tabel dipilih ####
+  observeEvent(input$modalLDMbutton,{
+    sec<-blackBoxInputs()
+    LDMProp_his<-sec$LDMProp_his
+    sector<-sec$sector
+    colnamesLDM<-colnames(LDMProp_his)
+    showModal(modalDialog(sidebarLayout(sidebarPanel(
+      fluidRow(
+        selectInput("tupla",
+                    label="jenis tutupan lahan",
+                    choices=colnamesLDM),
+        selectInput("sektor",
+                    label="sektor",
+                    choices=sector)),
+      rHandsontableOutput('editLDM'),
+      tags$br(),
+      uiOutput('LDMButton'),
+      textOutput("sunting"),
+      width=5
+    ),
+    mainPanel(
+      tags$div(id = 'LDMPlaceholder'),
+      width=7)
+    ),
+    title="sunting LDM",
+    footer= tagList(
+      actionButton("saveLDMTable", "simpan tabel"),
+      actionButton("closeModalLDM", "tutup")
+    ),
+    size="l",
+    easyClose = FALSE
+    ))
+  })
+  
+  ### tutup modal dialog ###
+  observeEvent(input$closeModalLDM,{
+    removeModal()
+  })
+  
+  ### hapus file ###
+  observeEvent(input$deleteLDMTable, {
+    LDMTableTampil<-LDMTableTampil()
+    fileName<-LDMTableTampil$fileName
+    file.remove(paste0("LDMData/Prov/", fileName))   # ganti mas alfa
+    
+  })
+  ###### modal dialog######
+  
+  # hapus tampilan kolom jika memasukkan 
+  observeEvent(c(input$modalLDMbutton,input$tupla,input$sektor), {
+    LDMTableTampil<-LDMTableTampil()
+    selectedFile<-LDMTableTampil$selectedFile
+    fileName<-LDMTableTampil$fileName
+    
+    removeUI(selector='#LDMUIManual')
+    removeUI(selector='#LDMUINormal')
+    
+    if(is.null(LDMProp_new$tablo) & is.null(LDMProp_new$coba)){
+      LDMProp_new$tablo <- selectedFile
+    } else if(!is.null(LDMProp_new$tablo) & is.null(LDMProp_new$coba)){
+      LDMProp_new$tablo<- selectedFile
+    } else if (!is.null(LDMProp_new$coba)){
+      LDMProp_new$tablo<-LDMProp_new$coba
+    }
+    
+  })
+  
+  teksLDM<-reactiveValues(unedited=" ", edited="Total nilai kolom tutupan lahan tidak sama dengan 1")
+  
+  valLDM<- reactive({
+    table_show <- as.matrix(subset(LDMProp_new$tablo, rownames(LDMProp_new$tablo) %in% input$sektor, colnames(LDMProp_new$tablo) %in% input$tupla))
+    table_show
+  })
+  
+  output$editLDM <- renderRHandsontable({
+    rhandsontable(valLDM(), rowHeaderWidth = 160,) %>% hot_cols(format=3)
+  })
+  
+  output$LDMButton<-renderUI({
+    if (is.null(valLDM())){
+      return(NULL)
+    } else if (!is.null(valLDM)){
+      tagList(actionButton('LDMButtonEdit','simpan hasil sunting'),
+        tags$div(id='NormOrMan')
+      )
+    }
+  })
+  
+  #### masukkan nilai sel baru ke dalam kolom tupla 
+  LDM_fun<-eventReactive(input$LDMButtonEdit,{
+    tablo = LDMProp_new$tablo
+    LDM_sel<-as.data.frame(hot_to_r(input$editLDM))
+    LDM_sel<-as.numeric(LDM_sel[1,1])
+    # inputSektor<-as.character(input$sektor)
+    # inputTupla<-as.character(input$tupla)
+    inputSektor<-input$sektor
+    inputTupla<-input$tupla
+    tablo[inputSektor, inputTupla]<-LDM_sel
+    tablo<-as.data.frame(tablo)
+    totLDMProp<-as.data.frame(colSums(tablo))
+    totLDMProp_sel<-totLDMProp[inputTupla,]
+    LDM_list<-list(LDM_sel=LDM_sel,
+                   totLDMProp_sel=totLDMProp_sel,
+                   totLDMProp=totLDMProp,
+                   tablo = tablo,
+                   inputTupla=inputTupla
+    )
+    LDM_list
+  })
+  
+  observe({ 
+    tes <- LDM_fun()
+    inputTupla<-tes$inputTupla
+    
+    if(tes$totLDMProp_sel==1) {
+      insertUI(selector='#NormOrMan',
+               where= 'afterEnd',
+               ui= tags$div(id='pesanHitungLDMNo', "tidak ada perubahan")
+      )
+    } else {
+      removeUI('#pesanHitungLDMNo')
+      insertUI(selector='#NormOrMan',
+               where = 'afterEnd',
+               ui= tags$div(id='pesanHitungLDMYes',
+                    tagList(tags$br(),
+                            paste0("Jumlah total kolom ", inputTupla," tidak sama dengan 1"),
+                            tags$br(),
+                            tags$br(),
+                            radioButtons('LDMhit',
+                                         'Pilih perhitungan yang akan dilakukan',
+                                         choiceNames = c('normalisasi','hitung manual'),
+                                         choiceValues = c('normal','manual'),
+                                         selected = character(0))
+                    )
+                            
+               )
+      )
+    }
+  })
+
+  ### visualisasi kolom baru yang sudah diisi nilai sel yang diganti 
+  LDMPropKol_0 <- reactive({
+    tes<-LDM_fun()
+    inputTupla<-tes$inputTupla
+    tablo<-tes$tablo
+    # tablo<-LDMProp_new$tablo
+    LDMProp_kol<-as.matrix(tablo[,inputTupla])
+    kolsum<-as.matrix(colSums(LDMProp_kol))
+    LDMProp_kol<-rbind(LDMProp_kol,kolsum)
+    row.names(LDMProp_kol)<-c(row.names(tablo),"total")
+    colnames(LDMProp_kol)<-inputTupla
+    LDMProp_kol
+  })
+  
+  observeEvent(input$LDMButtonEdit, {
+    tabel$manualSave<-LDMPropKol_0()
+    removeUI(selector='#LDMUIManual')
+    removeUI(selector='#LDMUINormal')
+  })
+  
+  observeEvent(input$LDMhit, {
+    if(input$LDMhit=='normal'){
+      removeUI(selector='#LDMUIManual')
+      insertUI(selector='#LDMPlaceholder',
+               where='afterEnd',
+               ui= uiOutput('LDMUINormal')
+      )
+    }
+    else if (input$LDMhit=='manual'){
+      removeUI(selector='#LDMUINormal')
+      insertUI(selector='#LDMPlaceholder',
+               where='afterEnd',
+               ui= uiOutput('LDMUIManual')
+      )
+    }
+  })
+  
+  ##### untuk edit manual satu kolom tupla #####
+  output$LDMUIManual<- renderUI({
+    tagList(tags$b('Sunting secara manual'),
+            tags$br(),
+            tags$br(),
+            rHandsontableOutput('LDMKolManualTable'),
+            tags$br(),
+            actionButton('saveLDMPropManual', 'Simpan kolom'),
+            tags$br(),
+            tags$div(id='teksLDMManual')
+    )
+  })
+  
+  observeEvent(input$LDMKolManualTable$changes$changes,{
+    tes<-LDM_fun()
+    inputTupla<-tes$inputTupla
+    tablo<-tes$tablo
+    
+    LDMPropKol_1 <- as.data.frame(hot_to_r(input$LDMKolManualTable))
+    row.names(LDMPropKol_1)<-c(row.names(tablo),"total")
+    colnames(LDMPropKol_1)<-inputTupla
+    LDMPropKol_1[nrow(LDMPropKol_1),1]<- sum(LDMPropKol_1[1:nrow(LDMPropKol_1)-1,1])
+    tabel$manualSave<-LDMPropKol_1
+    
+    removeUI(selector='#teksManual')
+    
+  })
+  
+  output$LDMKolManualTable<-renderRHandsontable({
+    rhandsontable(tabel$manualSave,
+                  rowHeaderWidth = 220,
+                  height=420,
+                  fixedRowsBottom=1
+    )
+  })
+  
+  observeEvent(input$saveLDMPropManual,{
+    tes<-LDM_fun()
+    tablo = tes$tablo
+    inputTupla = tes$inputTupla
+    kolom<-as.data.frame(hot_to_r(input$LDMKolManualTable))
+    total = kolom[nrow(kolom),1]
+    
+    if(total != 1){
+      insertUI(selector='#teksLDMManual', 
+               where = 'afterEnd',
+               ui = tags$div (id ='teksManual', "Kolom tidak dapat disimpan. Nilai total tidak sama dengan 1."))
+    } else {
+      kolomMinSum <- kolom[1:nrow(kolom)-1,]
+      tablo[,inputTupla]<-kolomMinSum
+      LDMProp_new$coba<-tablo
+      insertUI(selector='#teksLDMManual',
+               where='afterEnd',
+               ui= tags$div (id='teksManual',"Kolom berhasil disimpan. Silakan melanjutkan penyuntingan kolom lain.")
+      )
+      removeUI(selector='#pesanHitungLDMNo')
+      removeUI(selector='#pesanHitungLDMYes')
+    }
+  })
+  
+  
+  
+  ##### untuk isi satu kolom dengan normalisasi #####
+  output$LDMUINormal<- renderUI({
+    tagList(tags$b ('Hasil perhitungan normalisasi'),
+            tags$br(),
+            tags$br(),
+            rHandsontableOutput('LDMKolNormalTable'),
+            tags$br(),
+            actionButton('saveLDMPropNormal', 'Simpan kolom'),
+            tags$br(),
+            tags$div(id='teksLDMNormal')
+    )
+  })
+  
+  normal_fun<-reactive({
+    LDMPropKol_0<-LDMPropKol_0()
+    before<-as.matrix(LDMPropKol_0[1:nrow(LDMPropKol_0)-1,])
+    sum<-matrix(data=LDMPropKol_0[nrow(LDMPropKol_0),], nrow=nrow(before), ncol=1)
+    normal<- before/sum
+    normal_sum<-sum(normal)
+    normal<-rbind(normal,normal_sum)
+    rownames(normal)<-rownames(LDMPropKol_0)
+    colnames(normal)<-colnames(LDMPropKol_0)
+    normal
+    
+  })
+  
+  output$LDMKolNormalTable<-renderRHandsontable({
+    rhandsontable(normal_fun(), 
+                  rowHeaderWidth = 220,
+                  height=420, 
+                  readOnly = TRUE, 
+                  fixedRowsBottom=1
+    )
+  })
+  
+  observeEvent(input$saveLDMPropNormal,{
+    tes<-LDM_fun()
+    tablo = tes$tablo
+    inputTupla = tes$inputTupla
+    kolom <- as.data.frame(hot_to_r(input$LDMKolNormalTable))
+    kolomMinSum <- kolom[1:nrow(kolom)-1,]
+    tablo[,inputTupla]<-kolomMinSum
+    LDMProp_new$coba<-tablo
+    insertUI(selector='#teksLDMNormal',
+             where='afterEnd',
+             ui= tags$div (id='teksNormal',"Kolom berhasil disimpan. Silakan melanjutkan penyuntingan kolom lain.")
+    )
+    removeUI(selector='#pesanHitungLDMNo')
+    removeUI(selector='#pesanHitungLDMYes')
+    
+  })
+  
+  
+  ##### simpan tabel LDM ke dalam folder ####
+  observeEvent(input$saveLDMTable,{
+    waktuLDM<-Sys.time()
+    simpanLDM<-gsub(" ","_",waktuLDM,fixed = TRUE)
+    simpanLDM<-gsub(":","-",simpanLDM,fixed = TRUE)
+    tanggalLDM<-Sys.Date()
+    namafileLDM<-paste0("username","_","Prov","_",simpanLDM) # ganti mas alfa
+    saveRDS(LDMProp_new$coba, file = paste0('LDMData/Prov/',namafileLDM)) #ganti mas alfa
+    ldmRV$LDMListFile<-list.files(paste0("LDMData/Prov")) #ganti mas alfa
+    ldmRV$LDMTotFile<-length(list.files("LDMData/Prov")) # ganti mas alfa
+    removeUI(selector='#pesanHitungLDMNo')
+    removeUI(selector='#pesanHitungLDMYes')
+    removeUI(selector='#LDMUIManual')
+    removeUI(selector='#LDMUINormal')
+  })
+  
+  ###### select tipe proyeksi BAU yang diinginkan 
+  observeEvent(input$selectProjType,{
+    if(input$selectProjType=="Proyeksi BAU berdasarkan pertumbuhan ekonomi"){
+      removeUI(selector='#projTypeLandUI')
+      insertUI(selector='#inputProjType',
+               where='afterEnd',
+               ui= uiOutput('projTypeEconomyUI'))
+    }
+    else {
+      removeUI(selector='#projTypeEconomyUI')
+      insertUI(selector='#inputProjType',
+               where = 'afterEnd',
+               ui=uiOutput('projTypeLandUI'))
+      
+    }
+  })
+  
+  output$projTypeEconomyUI<-renderUI(
+    tagList(menuSubItem("Input ", tabName = "pageFour"),
+            selectInput("typeIntervention", "Tipe Intervensi", choices = c("Tipe 1", "Tipe 2")),
+            selectInput("dateFrom", "Tahun awal:", choices = 1990:2100, selected=2015),
+            selectInput("dateTo", "Tahun akhir:", choices = 1990:2100, selected=2030),
+            # fileInput("populationTable", "Tabel Populasi per Tahun", buttonLabel="Browse...", placeholder="No file selected"),
+            # fileInput("emissionSectorRADTable", "Tabel Emisi Sumber Lain", buttonLabel="Browse...", placeholder="No file selected"),
+            actionButton("generateBAUTable", "Buat Tabel"),
+            menuSubItem("Hasil analisis", tabName = "pageFive"),
+            selectInput("bauResults",
+                      label="Pilih output yang ingin ditampilkan",
+                      choices=c("Proyeksi PDRB",
+                                "Proyeksi Upah per Kapita",
+                                "Proyeksi Upah Gaji",
+                                "Proyeksi Tenaga Kerja",
+                                "Proyeksi Konsumsi Energi",
+                                "Proyeksi Emisi Terkait Konsumsi Energi",
+                                "Proyeksi Buangan Limbah",
+                                "Proyeksi Emisi Terkait Buangan Limbah",
+                                "Proyeksi Total Emisi",
+                                "Proyeksi Intensitas Emisi", 
+                                "Proyeksi Tutupan Lahan",
+                                "Proyeksi Emisi Terkait Tutupan Lahan"
+                                ))
+    )
+  )
+  
+  output$projTypeLandUI<-renderUI(
+    tagList(menuSubItem("Input sektor lahan", tabName = "pageNine"),
+            menuSubItem("Hasil analisis sektor lahan", tabName = "pageTen"),
+            selectInput("lahanResults",
+                        label="pilih output sektor lahan yang ingin ditampilkan",
+                        choices=c("Proyeksi Output",
+                                  "Proyeksi PDRB",
+                                  "Proyeksi Income",
+                                  "Proyeksi Profit",
+                                  "Proyeksi Pajak",
+                                  "Proyeksi Impor",
+                                  "Proyeksi Ekspor",
+                                  "Proyeksi Belanja Pemerintah",
+                                  "Proyeksi Belanja Rumah Tangga",
+                                  "Proyeksi Tenaga Kerja",
+                                  "Proyeksi Neraca Perdagangan"
+                                  )
+            )
+    )
+  )
+  ### end LAHAN ####
+  
+  
+  observeEvent(input$buttonBAU, {
     if(debugMode){
       sec <- blackBoxInputs()
       otherEm <- sec$otherEm
@@ -995,11 +1598,23 @@ server <- function(input, output, session) {
     ef_waste <- sec$ef_waste
     bau_scenario <- allDataProv$bau_scenario
     
+    LU_tahun<-sec$LU_tahun
+    GDPAll<-sec$GDPAll
+    tahun<-sec$tahun
+    
+    ###### gunakan LDMProp yang ditentukan di menu sebelumnya #####
+    if (input$LDMPropUse=="LDM historis"){
+      LDMProp=sec$LDMProp_his
+    } else {
+      LDMProp = readRDS(paste0("LDMData/Prov/",input$LDMPropUse))  #ganti mas alfa
+    }
+    
+    
     import_row <- 1
     income_row <- 2
     profit_row <- 3
     
-    gdpRate <- as.numeric(input$gdpRate)
+    gdpRate <- as.numeric(input$gdpRate)/100
     startT <- as.numeric(input$dateFrom)
     endT <- as.numeric(input$dateTo)
     
@@ -1070,10 +1685,10 @@ server <- function(input, output, session) {
     findem_proportion <- findem/findem_rowsum
     findem_proportion[is.na(findem_proportion)] <- 0
     
-    coef_grise <- (100+gdpRate)/100
+    coef_grise <- (1+gdpRate)
     bau_scenario$Lapangan_usaha <- NULL
     bau_scenario_matrix <- as.matrix(bau_scenario)
-    bau_scenario_matrix <- (100+bau_scenario_matrix)/100
+    bau_scenario_matrix <- (1+bau_scenario_matrix)
     
     stepN <- endT-startT
     for(s in 1:stepN){
@@ -1099,11 +1714,11 @@ server <- function(input, output, session) {
         eval(parse(text= paste0("impactEnergy$y", startT, " <- satelliteImpact('energy', tbl_sat = energy, tbl_output_matrix = as.matrix(tOutputSeries), emission_lookup = ef_energy)")))
         eval(parse(text= paste0("impactWaste$y", startT, " <- satelliteImpact('waste', tbl_sat = waste, tbl_output_matrix = as.matrix(tOutputSeries), emission_lookup = ef_waste)")))
       }
-      if(input$typeIntervention=='Tipe 1'){
-        projFinDem <- coef_grise * findem_series[, s]
-      } else {
-        projFinDem <- bau_scenario_matrix[, s] * findem_series[, s]
-      }
+      # if(input$typeIntervention=='Tipe 1'){
+      #   projFinDem <- coef_grise * findem_series[, s]
+      # } else {
+      projFinDem <- bau_scenario_matrix[, s] * findem_series[, s]
+      # }
       findem_series <- cbind(findem_series, projFinDem)
       projOutput <- leontief %*% projFinDem
       tOutputSeries <- cbind(tOutputSeries, projOutput)
@@ -1124,6 +1739,8 @@ server <- function(input, output, session) {
     }
     colnames(findem_series) <- as.character(tStamps)
     colnames(tOutputSeries) <- as.character(tStamps)
+    
+    saveRDS(tOutputSeries, "user/tOutputSeries_2")  #delete after use
     
     finalDemandSeriesTable <- cbind(sector, findem_series)
     colnames(finalDemandSeriesTable) <- c("Sector", as.character(tStamps)) 
@@ -1251,32 +1868,360 @@ server <- function(input, output, session) {
     totalEmissionOutput$TotalEmission <- rowSums(totalEmissionOutput[, 2:ncol(totalEmissionOutput)])
     totalEmissionOutput$CummulativeEmission <- cumsum(totalEmissionOutput$TotalEmission)
     
+    # 10. Land
+    tOutputSeries_lahan<-tOutputSeries
+    for (i in 2:ncol(tOutputSeries_lahan)){
+      tOutputSeries_lahan[9:nrow(tOutputSeries_lahan),i]<- tOutputSeries[9:nrow(tOutputSeries_lahan),1]  #delta pdrb hanya pada land-based sector. Masih perlu diubah lagi code nya supaya sesuai kategori.
+    }
+    deltaOutputSeries<-tOutputSeries_lahan
+    for (i in 1:ncol(tOutputSeries_lahan)){
+      deltaOutputSeries[,i]<-tOutputSeries_lahan[,i]-tOutputSeries[,1]
+    }
+    # untuk hitung landTable, LPC, LRC dari data LDM baru yang editable
+    LU_tahun<-as.data.frame(LU_tahun)
+    LU_tahun<-as.matrix(LU_tahun)
+    LU_tahun_0<-as.matrix(LU_tahun[,1])   #Land cover di tahun tabel I-O historis 
+    LDMProp<-as.matrix(LDMProp)
+    GDPAll<-as.data.frame(GDPAll)
+    diagLU<-as.matrix(diag(LU_tahun[,1]))
+    landTable_0<-LDMProp%*%diagLU
+    landReq_0<-as.matrix(rowSums(landTable_0))
+    
+    LPC_0<-GDPAll[,4]/landReq_0
+    LPC_0[is.infinite(LPC_0)]<-0
+    LRC_0<-1/LPC_0
+    LRC_0[is.infinite(LRC_0)]<-0
+    landTable_0<-cbind(sector, kategori, landTable_0, landReq_0, LPC_0, LRC_0)
+    colnames(landTable_0)<-c("Sektor", "Kategori", colnames(LDMProp),"Total Kebutuhan Lahan", "LPC", "LRC")
+  
+    #rumus: land cover = LDMProp_transpose x LRC x output 
+    
+    LDMProp_t<- t(LDMProp)
+    diagLRC<-as.matrix(diag(landTable_0$LRC))
+    L_R<- LDMProp_t %*% diagLRC
+    
+    tot_LU_tahun_0<-colSums(LU_tahun_0)
+
+    #generate delta LandCover dari skenario output
+    deltaLandCover<-matrix(ncol=ncol(deltaOutputSeries), nrow=nrow(L_R))
+    for (i in 1:ncol(tOutputSeries)){
+      deltaLandCover[,i] <- L_R %*% deltaOutputSeries[,i]
+    }
+    
+    #generate total land cover tahun berikutnya
+    landCover_t1<-matrix(ncol = ncol(deltaLandCover), nrow=nrow(deltaLandCover))
+    for (i in 1:ncol(deltaLandCover)){
+      landCover_t1[,i]<-LU_tahun_0 + deltaLandCover[,i]
+    }
+    rownames(landCover_t1)<-colnames(LDMProp)
+    landCover_t1_years<-as.data.frame(as.character(startT:endT))
+    
+    recordActivities("Simulasi skenario BAU", "Berhasil", paste0(Sys.time()))
     notif_id <<- showNotification("Simulasi skenario bisnis seperti biasa telah berhasil", duration = 4, closeButton = TRUE, type = "warning")
     
-    list_bau <- list(population = population,
-                     otherEm = otherEm,
-                     GDP_table = GDPOutput,
-                     income_percapita_table = incomePerCapitaOutput,
-                     income_table = incomeOutput,
-                     labour_table = labourOutput,
-                     energy_consumption_table = energyConsOutput,
-                     energy_emission_table = energyEmissionOutput,
-                     waste_disposal_table = wasteDispOutput,
-                     waste_emission_table = wasteEmissionOutput,
-                     total_emission_table = totalEmissionOutput,
-                     impactLabour = impactLabour,
-                     impactEnergy = impactEnergy,
-                     impactWaste = impactWaste,
-                     GDPSeries = GDPseries,
-                     tOutputSeries = tOutputSeries,
-                     FDSeries = finalDemandSeriesTable,
-                     IDSeries = intDemandSeries,
-                     AVSeries = addValueSeries,
-                     GDP_rate = gdpRate,
-                     dateTo = endT,
-                     dateFrom = startT
-                    ) 
-    list_bau
+    bauResults$population = population
+    bauResults$otherEm = otherEm
+    bauResults$GDP_table = GDPOutput
+    bauResults$income_percapita_table = incomePerCapitaOutput
+    bauResults$income_table = incomeOutput
+    bauResults$labour_table = labourOutput
+    bauResults$energy_consumption_table = energyConsOutput
+    bauResults$energy_emission_table = energyEmissionOutput
+    bauResults$waste_disposal_table = wasteDispOutput
+    bauResults$waste_emission_table = wasteEmissionOutput
+    bauResults$total_emission_table = totalEmissionOutput
+    bauResults$impactLabour = impactLabour
+    bauResults$impactEnergy = impactEnergy
+    bauResults$impactWaste = impactWaste
+    bauResults$GDPSeries = GDPseries
+    bauResults$tOutputSeries = tOutputSeries
+    bauResults$FDSeries = finalDemandSeriesTable
+    bauResults$IDSeries = intDemandSeries
+    bauResults$AVSeries = addValueSeries
+    bauResults$GDP_rate = gdpRate
+    bauResults$dateTo = endT
+    bauResults$dateFrom = startT
+    bauResults$landCover_t1=landCover_t1
+    bauResults$landCover_t1_years=landCover_t1_years
+    
+    updateTabItems(session, "tabs", selected = "pageFive")
+  })
+  
+  #### input BAU sektor lahan, edit tabel land cover ====
+  landCoverTable_0 <- reactive({
+    sec <- blackBoxInputs()
+    LU_tahun<-sec$LU_tahun
+    tahun<-sec$tahun
+    colnames(LU_tahun)<-tahun
+    sum<-colSums(LU_tahun)
+    as.data.frame(rbind(LU_tahun, sum), row.names=c(colnames(allDataProv$LDMProp_his), "total luas"))
+  })
+
+    landCoverTable_fun <- reactive ({
+      if(is.null(input$inputBAULahanLandCover)){return(landCoverTable_0())}
+      else if (!identical(landCoverTable_0(), input$inputBAULahanLandCover)){
+        landCoverTable_1 <- as.data.frame(hot_to_r(input$inputBAULahanLandCover))
+        landCoverTable_1[nrow(landCoverTable_1),]<-colSums(landCoverTable_1[1:nrow(landCoverTable_1)-1,])
+        landCoverTable_1
+      }
+    })
+
+
+    output$inputBAULahanLandCover <- renderRHandsontable({
+      rhandsontable(landCoverTable_fun(),
+                    # fixedColumnsLeft=1,
+                    fixedRowsBottom=1,
+                    height=640,
+                    rowHeaderWidth = 180
+      # )%>% hot_col("sektor", readOnly = TRUE,colWidths=180, worldWrap=TRUE)
+      )
+    })
+
+    observeEvent(input$saveInputBAULahanLandCover,{
+      tabLandCover<-hot_to_r(input$inputBAULahanLandCover)
+      tabLandCoverMinSum<-tabLandCover[1:nrow(allDataProv$LU_tahun),1:ncol(allDataProv$LU_tahun)]
+      editable$BAULahan_landCover<-tabLandCoverMinSum
+      notif_id <<- showNotification("Tabel berhasil disimpan", duration = 4, closeButton = TRUE, type = "warning")
+    })
+
+  #### all inputs BAU sektor lahan====
+  allInputsBAULahan <- eventReactive(input$buttonBAULahan, {
+    if(debugMode){
+      sec <- blackBoxInputs()
+    } else {
+      sec <- allInputs()
+    }
+    
+    GDPAll<-sec$GDPAll
+    # landTable_t0<-sec$landTable_t0
+    landReq<-sec$landReq
+    analysisResult <- sec$result
+    multiplierLabour<-analysisResult$multiplierLabour
+    sector <- sec$sector
+    kategori<-sec$kategori
+    indem <- sec$indem
+    findem <- sec$findem
+    addval <- sec$addval
+    findemcom <- sec$findemcom
+    addvalcom <- sec$addvalcom
+    labour <- sec$labour
+    energy <- sec$energy
+    ef_energy <- sec$ef_energy
+    waste <-sec$waste
+    ef_waste <- sec$ef_waste
+    bau_scenario <- allDataProv$bau_scenario
+    tahun<-sec$tahun
+    GDPAll<-sec$GDPAll
+    # LDMProp<-allDataProv$LDMProp
+    labour_coef<-analysisResult$labour_coef
+    leontief<-sec$leontief
+    
+    ##### Gunakan input LDM yang sudah diedit 
+    if (input$LDMPropUse=="LDM historis"){
+      LDMProp=sec$LDMProp_his
+    } else {
+      LDMProp = readRDS(paste0("LDMData/Prov/",input$LDMPropUse))   # ganti mas alfa
+    }
+    
+    
+    ##### Gunakan input Land cover yang sudah diedit
+    if(is.null(editable$BAULahan_landCover)){
+      LU_tahun <- sec$LU_tahun
+    }
+    else {
+      LU_tahun<-editable$BAULahan_landCover
+    }
+    
+    ### Sektor Lahan: hitung LDM dalam satuan luas, LPC, LRC
+    
+    LU_tahun<-as.data.frame(LU_tahun)
+    LU_tahun<-as.matrix(LU_tahun)
+    LDMdimcol<-ncol(LDMProp)
+    LDMdimrow<-nrow(LDMProp)
+    LDMProp<-as.matrix(LDMProp)
+    GDPAll<-as.data.frame(GDPAll)
+    #proporis findem/output
+    propFindemOutput<- as.matrix(rowSums(findem)/GDPAll[,4])
+    
+    diagLU <- list()
+    landTable<-list()
+    landReq<-matrix(nrow=nrow(LDMProp),ncol=ncol(LU_tahun))
+  
+    for (i in 1:ncol(LU_tahun)){
+      diagLU[[i]]<-as.matrix(diag(LU_tahun[,i]))
+      landTable[[i]]<-LDMProp%*%diagLU[[i]]
+      landReq[,i]<-as.matrix(rowSums(landTable[[i]]))
+    }
+    
+    LPC<-GDPAll[,4]/landReq[,1]
+    LPC[is.infinite(LPC)]<-0
+    LRC<-1/LPC
+    LRC[is.infinite(LRC)]<-0
+    landTable_t0<-cbind(sector,kategori, landTable[[1]],landReq[,1], LPC, LRC)
+    colnames(landTable_t0)<-c("Sektor", "Kategori",colnames(LDMProp),"Total Kebutuhan Lahan", "LPC", "LRC")
+    
+    
+    #### proyeksi output sektor lahan
+    
+    #generate tabel findem sektor u/ tiap tahun
+    findemLahan_tahun<-matrix(nrow=nrow(landReq), ncol=ncol(landReq))
+    for(x in 1:ncol(landReq)){
+      findemLahan_tahun[,x]<-landReq[,x]*landTable_t0[,"LPC"]*propFindemOutput
+    }
+    
+    findemLahan_tahun[is.na(findemLahan_tahun)]<-0
+  
+    # generate tabel output sektor u/ tiap tahun
+    outputlahan_tahun<-matrix(nrow=nrow(findemLahan_tahun), ncol=ncol(findemLahan_tahun))
+    for(x in 1:ncol(findemLahan_tahun)){
+      outputlahan_tahun[,x]<-leontief %*% findemLahan_tahun[,x]
+    }
+    
+    # generate tabel BAU output sektor lahan untuk ditampilkan di shiny
+    colnames(outputlahan_tahun)<-tahun
+    outputlahan<-data.frame(sector.id=1:nrow(outputlahan_tahun),sector=sector[,1], outputlahan_tahun)
+    
+    outputlahan_result<-data.frame(year=0, id.sector=0, sector="", Output=0)
+    for (x in 3:ncol(outputlahan)){
+      newtable<- outputlahan[,c(1,2,x)]
+      names(newtable) <- c("id.sector", "sector", "Output")
+      yearcol<-(str_extract_all(colnames(outputlahan), '[0-9]+'))
+      newtable$year<-yearcol[x]
+      newtable<-newtable[,colnames(outputlahan_result)]
+      outputlahan_result<-data.frame(rbind(newtable, outputlahan_result))
+    }
+    
+    outputlahan_table <- outputlahan_result[outputlahan_result$year != 0, ] # remove initial values
+
+    ##### proyeksi lain2
+    landProp<-as.data.frame(cbind(
+      GDPAll$GDP/GDPAll$OUTPUT,
+      t(addval[2,]/GDPAll$OUTPUT),
+      t(addval[3,]/GDPAll$OUTPUT),
+      t(addval[5,]/GDPAll$OUTPUT),
+      t(addval[1,]/GDPAll$OUTPUT),
+      findem[,5]/GDPAll$OUTPUT,
+      findem[,2]/GDPAll$OUTPUT,
+      findem[,1]/GDPAll$OUTPUT,
+      labour_coef
+    ))
+    
+    landProp[is.na(landProp)]<-0
+    colnames(landProp)<-c("PDRB",
+                          "income",
+                          "profit",
+                          "pajak",
+                          "impor",
+                          "ekspor", 
+                          "belanja_pemerintah", 
+                          "belanja_RT",
+                          "labour"
+    )
+    landProp_name<-colnames(landProp)
+    
+    # generate tabel proyeksi BAU tiap indikator per tahun & sektor (landProp * outputlahan_tahun)
+    for(b in 1:ncol(landProp)){
+      eval(parse(text=(paste0("tabel_",b, "<- matrix(nrow=nrow(outputlahan_tahun), ncol=ncol(outputlahan_tahun))"))))
+      eval(parse(text=(paste0("BAULahan_",b,"<- matrix(nrow=ncol(outputlahan_tahun), ncol=2)"))))
+      for (c in 1:ncol(outputlahan_tahun)){
+        #tabel indikator ekonomi per tahun & sektor
+        eval(parse(text=paste0("tabel_",b,"[,c]<-landProp[,",b,"]*outputlahan_tahun[,c]")))
+        eval(parse(text = paste0("tabel_",b,"[is.na(tabel_",b,")]<-0")))
+        #tabel total indikator tiap tahun
+        eval(parse(text= paste0("BAULahan_",b,"<-cbind(tahun,as.data.frame(colSums(tabel_",b,")))")))
+        #tabel untuk ditampilkan di shiny
+      }
+      eval(parse(text=(paste0("colnames(BAULahan_",b,")=c('year',landProp_name[",b,"])"))))
+      eval(parse(text=(paste0("colnames(tabel_",b,")<-tahun"))))
+      eval(parse(text=(paste0("lahan_",b,"<-data.frame(sector.id=1:nrow(tabel_",b,"),sector=sector[,1], tabel_",b,")"))))
+      eval(parse(text=(paste0('lahanResult_',b,'<-data.frame(year=0, id.sector=0, sector="",indikator=0)'))))
+      eval(parse(text=(paste0("newtable_",b,"<-data.frame(id.sector=0,sector='', indikator=0, year=0)"))))
+      
+    }
+    
+    tabel_list <- list (tabel_1,
+                        tabel_2,
+                        tabel_3, 
+                        tabel_4,
+                        tabel_5,
+                        tabel_6,
+                        tabel_7,
+                        tabel_8,
+                        tabel_9
+    )
+    lahan_list <- list( lahan_1, 
+                        lahan_2, 
+                        lahan_3, 
+                        lahan_4, 
+                        lahan_5, 
+                        lahan_6, 
+                        lahan_7, 
+                        lahan_8,
+                        lahan_9
+    )
+    newtable_list<-list(newtable_1, 
+                        newtable_2, 
+                        newtable_3, 
+                        newtable_4, 
+                        newtable_5, 
+                        newtable_6, 
+                        newtable_7, 
+                        newtable_8,
+                        newtable_9
+    )    
+    lahanResult_list<-list(lahanResult_1,
+                           lahanResult_2,
+                           lahanResult_3,
+                           lahanResult_4,
+                           lahanResult_5,
+                           lahanResult_6,
+                           lahanResult_7,
+                           lahanResult_8,
+                           lahanResult_9
+    )
+    
+    for (i in 1:length(tabel_list)){
+      for(x in 3:ncol(lahan_list[[i]])){
+        newtable_list[[i]]<- lahan_list[[i]][,c(1,2,x)]
+        names(newtable_list[[i]]) <- c("id.sector", "sector", "indikator")
+        yearcol<-(str_extract_all(colnames(outputlahan), '[0-9]+'))
+        newtable_list[[i]]$year<-as.double(yearcol[x])
+        newtable_list[[i]]<-newtable_list[[i]][,colnames(lahanResult_list[[i]])]
+        lahanResult_list[[i]]<-data.frame(rbind(newtable_list[[i]], lahanResult_list[[i]]))
+      }
+      eval(parse(text=(paste0("lahanResult_",i,"<-matrix(unlist(lahanResult_list[[",i,"]]), byrow=TRUE)"))))
+      eval(parse(text=(paste0("lahanResult_list[[",i,"]]<-as.matrix(lahanResult_list[[",i,"]], header=TRUE)"))))
+      eval(parse(text=(paste0("lahanResult_",i,"<-matrix(unlist(lahanResult_list[[",i,"]]),ncol=4)"))))
+      eval(parse(text=(paste0('colnames(lahanResult_',i,')<-c("year", "id.sector", "sector",landProp_name[',i,'])'))))
+    }
+    
+    BAULahan_0<-as.data.frame(cbind(tahun,colSums(outputlahan_tahun)))
+    colnames(BAULahan_0)<-c("year","output")
+    
+    listBAU_lahan<-list(BAULahan_0=BAULahan_0,
+                        BAULahan_1=BAULahan_1,
+                        BAULahan_2=BAULahan_2,
+                        BAULahan_3=BAULahan_3,
+                        BAULahan_4=BAULahan_4,
+                        BAULahan_5=BAULahan_5,
+                        BAULahan_6=BAULahan_6,
+                        BAULahan_7=BAULahan_7,
+                        BAULahan_8=BAULahan_8,
+                        BAULahan_9=BAULahan_9,
+                        lahanResult_0=outputlahan_result,
+                        lahanResult_1=lahanResult_1,
+                        lahanResult_2=lahanResult_2,
+                        lahanResult_3=lahanResult_3,
+                        lahanResult_4=lahanResult_4,
+                        lahanResult_5=lahanResult_5,
+                        lahanResult_6=lahanResult_6,
+                        lahanResult_7=lahanResult_7,
+                        lahanResult_8=lahanResult_8,
+                        lahanResult_9=lahanResult_9,
+                        tahun=tahun, 
+                        landTable_t0=landTable_t0
+    )
+    listBAU_lahan
   })
   
   output$yearSelection <- renderUI({
@@ -1284,16 +2229,17 @@ server <- function(input, output, session) {
   })
   
   output$plotlyResultsBAU <- renderPlotly({
-    results <- allInputsBAU()
-    GDP_table <- results$GDP_table
-    income_percapita_table <- results$income_percapita_table  
-    income_table <- results$income_table
-    labour_table <- results$labour_table
-    energy_consumption_table <- results$energy_consumption_table 
-    energy_emission_table <- results$energy_emission_table 
-    waste_disposal_table <- results$waste_disposal_table  
-    waste_emission_table <- results$waste_emission_table 
-    total_emission_table <- results$total_emission_table
+    GDP_table <- bauResults$GDP_table
+    income_percapita_table <- bauResults$income_percapita_table  
+    income_table <- bauResults$income_table
+    labour_table <- bauResults$labour_table
+    energy_consumption_table <- bauResults$energy_consumption_table 
+    energy_emission_table <- bauResults$energy_emission_table 
+    waste_disposal_table <- bauResults$waste_disposal_table  
+    waste_emission_table <- bauResults$waste_emission_table 
+    total_emission_table <- bauResults$total_emission_table
+    landCover_t1 <- bauResults$landCover_t1
+    landCover_t1_years <- bauResults$landCover_t1_years
     
     if(input$bauResults == "Proyeksi PDRB"){
       removeUI(selector = '#baupdrb')
@@ -1400,21 +2346,26 @@ server <- function(input, output, session) {
       GDP_all$intensitas <-  GDP_all$emisi / GDP_all$PDRB 
       gplot13<-ggplot(data=GDP_all[GDP_all$year > input$dateFrom,], aes(x=year, y=intensitas, group=1)) + geom_line() + geom_point()
       ggplotly(gplot13)
+    } else if(input$bauResults=="Proyeksi Tutupan Lahan"){
+      removeUI(selector='#baupdrb')
+      landCoverData<-cbind(landCover_t1_years,colSums(landCover_t1))
+      colnames(landCoverData)<-c("year", "Tutupan_Lahan")
+      landCover_plot<-ggplot(data=landCoverData, aes(x=year, y=Tutupan_Lahan, group=1)) + geom_line() + geom_point()
+      ggplotly(landCover_plot)
     }
     
   })
   
   output$tableResultsBAU <- renderDataTable({
-    results <- allInputsBAU()
-    GDP_table <- results$GDP_table
-    income_percapita_table <- results$income_percapita_table  
-    income_table <- results$income_table
-    labour_table <- results$labour_table
-    energy_consumption_table <- results$energy_consumption_table 
-    energy_emission_table <- results$energy_emission_table 
-    waste_disposal_table <- results$waste_disposal_table  
-    waste_emission_table <- results$waste_emission_table 
-    total_emission_table <- results$total_emission_table
+    GDP_table <- bauResults$GDP_table
+    income_percapita_table <- bauResults$income_percapita_table  
+    income_table <- bauResults$income_table
+    labour_table <- bauResults$labour_table
+    energy_consumption_table <- bauResults$energy_consumption_table 
+    energy_emission_table <- bauResults$energy_emission_table 
+    waste_disposal_table <- bauResults$waste_disposal_table  
+    waste_emission_table <- bauResults$waste_emission_table 
+    total_emission_table <- bauResults$total_emission_table
     
     if(input$bauResults == "Proyeksi PDRB"){
       tables <- GDP_table[GDP_table$year==input$selectedYear,]
@@ -1443,6 +2394,8 @@ server <- function(input, output, session) {
       return(NULL)
     } else if(input$bauResults == "Proyeksi Intensitas Emisi"){
       return(NULL)
+    } else if (input$bauResults=='Proyeksi Tutupan Lahan'){
+      return(NULL)
     }
     datatable(tables, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
       formatRound(columns=c(3:length(tables)),2)
@@ -1452,16 +2405,15 @@ server <- function(input, output, session) {
     filename = input$bauResults,
     contentType = "text/csv",
     content = function(file) {
-      results <- allInputsBAU()
-      GDP_table <- results$GDP_table
-      income_percapita_table <- results$income_percapita_table  
-      income_table <- results$income_table
-      labour_table <- results$labour_table
-      energy_consumption_table <- results$energy_consumption_table 
-      energy_emission_table <- results$energy_emission_table 
-      waste_disposal_table <- results$waste_disposal_table  
-      waste_emission_table <- results$waste_emission_table 
-      total_emission_table <- results$total_emission_table
+      GDP_table <- bauResults$GDP_table
+      income_percapita_table <- bauResults$income_percapita_table  
+      income_table <- bauResults$income_table
+      labour_table <- bauResults$labour_table
+      energy_consumption_table <- bauResults$energy_consumption_table 
+      energy_emission_table <- bauResults$energy_emission_table 
+      waste_disposal_table <- bauResults$waste_disposal_table  
+      waste_emission_table <- bauResults$waste_emission_table 
+      total_emission_table <- bauResults$total_emission_table
       
       if(input$bauResults == "Proyeksi PDRB"){
         tables <- GDP_table[GDP_table$year==input$selectedYear,]
@@ -1480,6 +2432,191 @@ server <- function(input, output, session) {
       } else if(input$bauResults == "Proyeksi Emisi Terkait Buangan Limbah"){
         tables <- waste_emission_table[waste_emission_table$year==input$selectedYear,]
       } else if(input$bauResults == "Proyeksi Total Emisi"){
+        return(NULL)
+      }
+      write.table(tables, file, quote=FALSE, row.names=FALSE, sep=",")
+    }
+  )  
+  
+  #### tampilkan result BAU sektor lahan====
+  output$yearSelection2 <- renderUI({
+    sec<-blackBoxInputs()
+    tahun<-sec$tahun
+    selectInput("selectedYear2", "Tahun", "Pilih tahun", choices=c(tahun))
+  }) 
+  
+  output$plotlyResultsBAU_lahan <- renderPlotly({
+    results2 <- allInputsBAULahan()
+    OutputLahan_plot<-results2$BAULahan_0
+    PDRBLahan_plot <-results2$BAULahan_1
+    incomeLahan_plot<-results2$BAULahan_2
+    profitLahan_plot<-results2$BAULahan_3
+    pajakLahan_plot<-results2$BAULahan_4
+    imporLahan_plot<-as.data.frame(results2$BAULahan_5)
+    eksporLahan_plot<-as.data.frame(results2$BAULahan_6)
+    belpemLahan_plot<-results2$BAULahan_7
+    belrtLahan_plot<-results2$BAULahan_8
+    labourLahan_plot<-results2$BAULahan_9
+    tahun<-as.data.frame(results2$tahun)
+    ekspor_impor<-as.vector(eksporLahan_plot$ekspor) - as.vector(imporLahan_plot$impor)
+    neracaLahan_plot <-as.data.frame(cbind(tahun,ekspor_impor))
+    colnames(neracaLahan_plot)<-c("year", "ekspor_impor")
+    
+    if(input$lahanResults=="Proyeksi Output"){
+      removeUI(selector = '#baupdrb')
+      OutputLahan_gplot<-ggplot(data=OutputLahan_plot, aes(x=year, y=output, group=1)) + geom_line() + geom_point()
+      ggplotly(OutputLahan_gplot)
+    } 
+    else if(input$lahanResults=="Proyeksi PDRB"){
+      removeUI(selector = '#baupdrb')
+      PDRBLahan_gplot<-ggplot(data=PDRBLahan_plot, aes(x=year, y=PDRB, group=1)) + geom_line() + geom_point()
+      ggplotly(PDRBLahan_gplot)
+    } 
+    else if (input$lahanResults=="Proyeksi Income"){
+      removeUI(selector = '#baupdrb')
+      incomeLahan_gplot<-ggplot(data=incomeLahan_plot, aes(x=year, y=income, group=1)) + geom_line() + geom_point()
+      ggplotly(incomeLahan_gplot)
+    }
+    else if (input$lahanResults=="Proyeksi Profit"){
+      removeUI(selector = '#baupdrb')
+      profitLahan_gplot<-ggplot(data=profitLahan_plot, aes(x=year, y=profit, group=1)) + geom_line() + geom_point()
+      ggplotly(profitLahan_gplot)
+    }
+    else if (input$lahanResults=="Proyeksi Pajak"){
+      removeUI(selector = '#baupdrb')
+      pajakLahan_gplot<-ggplot(data=pajakLahan_plot, aes(x=year, y=pajak, group=1)) + geom_line() + geom_point()
+      ggplotly(pajakLahan_gplot)
+    }
+    else if (input$lahanResults=="Proyeksi Impor"){
+      removeUI(selector = '#baupdrb')
+      imporLahan_gplot<-ggplot(data=imporLahan_plot, aes(x=year, y=impor, group=1)) + geom_line() + geom_point()
+      ggplotly(imporLahan_gplot)
+    }
+    else if (input$lahanResults=="Proyeksi Ekspor"){
+      removeUI(selector = '#baupdrb')
+      eksporLahan_gplot<-ggplot(data=eksporLahan_plot, aes(x=year, y=ekspor, group=1)) + geom_line() + geom_point()
+      ggplotly(eksporLahan_gplot)
+    }
+    else if (input$lahanResults=="Proyeksi Belanja Pemerintah"){
+      removeUI(selector = '#baupdrb')
+      belpemLahan_gplot<-ggplot(data=belpemLahan_plot, aes(x=year, y=belanja_pemerintah, group=1)) + geom_line() + geom_point()
+      ggplotly(belpemLahan_gplot)
+    }
+    else if (input$lahanResults=="Proyeksi Belanja Rumah Tangga"){
+      removeUI(selector = '#baupdrb')
+      belrtLahan_gplot<-ggplot(data=belrtLahan_plot, aes(x=year, y=belanja_RT, group=1)) + geom_line() + geom_point()
+      ggplotly(belrtLahan_gplot)
+    }
+    else if (input$lahanResults=="Proyeksi Tenaga Kerja"){
+      removeUI(selector = '#baupdrb')
+      labourLahan_gplot<-ggplot(data=labourLahan_plot, aes(x=year, y=labour, group=1)) + geom_line() + geom_point()
+      ggplotly(labourLahan_gplot)
+    }
+    else if (input$lahanResults=="Proyeksi Neraca Perdagangan"){
+      removeUI(selector = '#baupdrb')
+      neracaLahan_gplot<-ggplot(data=neracaLahan_plot, aes(x=year, y=ekspor_impor, group=1)) + geom_line() + geom_point()
+      ggplotly(neracaLahan_gplot)
+    }
+  })
+  output$tableResultsBAU_lahan <- renderDataTable({
+    results2 <- allInputsBAULahan()
+    OutputLahan_table<-as.data.frame(results2$lahanResult_0)
+    PDRBLahan_table <-as.data.frame(results2$lahanResult_1)
+    incomeLahan_table<-as.data.frame(results2$lahanResult_2)
+    profitLahan_table<-as.data.frame(results2$lahanResult_3)
+    pajakLahan_table<-as.data.frame(results2$lahanResult_4)
+    imporLahan_table<-as.data.frame(results2$lahanResult_5)
+    eksporLahan_table<-as.data.frame(results2$lahanResult_6)
+    belpemLahan_table<-as.data.frame(results2$lahanResult_7)
+    belrtLahan_table<-as.data.frame(results2$lahanResult_8)
+    labour_table<-as.data.frame(results2$lahanResult_9)
+    
+    if(input$lahanResults== "Proyeksi Output"){
+      tables <- OutputLahan_table[OutputLahan_table$year==input$selectedYear2,]
+      tables
+    }
+    else if(input$lahanResults == "Proyeksi PDRB"){
+      tables <- PDRBLahan_table[PDRBLahan_table$year==input$selectedYear2,]
+      tables
+    } 
+    else if(input$lahanResults == "Proyeksi Income"){
+      tables <- incomeLahan_table[incomeLahan_table$year==input$selectedYear2,]
+      tables} 
+    else if(input$lahanResults == "Proyeksi Profit"){
+      tables <- profitLahan_table[profitLahan_table$year==input$selectedYear2,]
+      tables
+    } 
+    else if(input$lahanResults == "Proyeksi Pajak"){
+      tables <- pajakLahan_table[pajakLahan_table$year==input$selectedYear2,]
+      tables} 
+    else if(input$lahanResults == "Proyeksi Impor"){
+      tables <- imporLahan_table[imporLahan_table$year==input$selectedYear2,]
+      tables} 
+    else if(input$lahanResults == "Proyeksi Ekspor"){
+      tables <- eksporLahan_table[eksporLahan_table$year==input$selectedYear2,]
+      tables} 
+    else if(input$lahanResults == "Proyeksi Belanja Pemerintah"){
+      tables <- belpemLahan_table[belpemLahan_table$year==input$selectedYear2,]
+      tables
+    } 
+    else if(input$lahanResults == "Proyeksi Belanja Rumah Tangga"){
+      tables <- belrtLahan_table[belrtLahan_table$year==input$selectedYear2,]
+      tables
+    } 
+    else if(input$lahanResults == "Proyeksi Tenaga Kerja"){
+      tables <- labour_table[labour_table$year==input$selectedYear2,]
+      tables
+    }
+  })
+  
+  ## download table BAU sektor lahan
+  output$downloadTableBAU_lahan <- downloadHandler(
+    filename = input$lahanResults,
+    contentType = "text/csv",
+    content = function(file) {
+      results2 <- allInputsBAULahan()
+      OutputLahan_table<-as.data.frame(results2lahanResult_0)
+      PDRBLahan_table <-as.data.frame(results2$lahanResult_1)
+      incomeLahan_table<-as.data.frame(results2$lahanResult_2)
+      profitLahan_table<-as.data.frame(results2$lahanResult_3)
+      pajakLahan_table<-as.data.frame(results2$lahanResult_4)
+      imporLahan_table<-as.data.frame(results2$lahanResult_5)
+      eksporLahan_table<-as.data.frame(results2$lahanResult_6)
+      belpemLahan_table<-as.data.frame(results2$lahanResult_7)
+      belrtLahan_table<-as.data.frame(results2$lahanResult_8)
+      labour_table<-as.data.frame(results2$lahanResult_9)
+      
+      if(input$lahanResults== "Proyeksi Output"){
+        tables <- OutputLahan_table[OutputLahan_table$year==input$selectedYear2,]
+      }
+      else if(input$lahanResults == "Proyeksi PDRB"){
+        tables <- PDRBLahan_table[PDRBLahan_table$year==input$selectedYear2,]
+      } 
+      else if(input$lahanResults == "Proyeksi Income"){
+        tables <- incomeLahan_table[incomeLahan_table$year==input$selectedYear2,]
+      }
+      else if(input$lahanResults == "Proyeksi Profit"){
+        tables <- profitLahan_table[profitLahan_table$year==input$selectedYear2,]
+      }
+      else if(input$lahanResults == "Proyeksi Pajak"){
+        tables <- pajakLahan_table[pajakLahan_table$year==input$selectedYear2,]
+      }
+      else if(input$lahanResults == "Proyeksi Impor"){
+        tables <- imporLahan_table[imporLahan_table$year==input$selectedYear2,]
+      }
+      else if(input$lahanResults == "Proyeksi Ekspor"){
+        tables <- eksporLahan_table[eksporLahan_table$year==input$selectedYear2,]
+      }
+      else if(input$lahanResults == "Proyeksi Belanja Pemerintah"){
+        tables <- belpemLahan_table[belpemLahan_table$year==input$selectedYear2,]
+      }
+      else if(input$lahanResults == "Proyeksi Belanja Rumah Tangga"){
+        tables <- belrtLahan_table[belrtLahan_table$year==input$selectedYear2,]
+      } 
+      else if(input$lahanResults == "Proyeksi Tenaga Kerja"){
+        tables <- labour_table[labour_table$year==input$selectedYear2,]
+      }
+      else if(input$lahanResults == "Proyeksi Neraca Perdagangan"){
         return(NULL)
       }
       write.table(tables, file, quote=FALSE, row.names=FALSE, sep=",")
@@ -1556,10 +2693,9 @@ server <- function(input, output, session) {
     #   renderDataTable({ table })
     # }
 
-    resultOfBAU <- allInputsBAU()
-    finalDemandSeriesTable <- resultOfBAU$FDSeries
-    # energy_consumption_table <- resultOfBAU$energy_consumption_table
-    # waste_disposal_table <- resultOfBAU$waste_disposal_table
+    finalDemandSeriesTable <- bauResults$FDSeries
+    # energy_consumption_table <- bauResults$energy_consumption_table
+    # waste_disposal_table <- bauResults$waste_disposal_table
 
     output = tagList()
 
@@ -1624,7 +2760,7 @@ server <- function(input, output, session) {
   })  
   
   ###*intervention input####
-  allInputsInter <- eventReactive(input$buttonInter, {
+  observeEvent(input$buttonInter, {
     if(debugMode){
       sec <- blackBoxInputs()
     } else {
@@ -1661,7 +2797,6 @@ server <- function(input, output, session) {
     I_A <- I-A
     leontief <- solve(I_A)
     
-    bauResults <- allInputsBAU()
     population <- bauResults$population
     otherEm <- bauResults$otherEm
     intDemandSeries <- bauResults$IDSeries
@@ -1731,10 +2866,10 @@ server <- function(input, output, session) {
     }
     
     coef_primary_input <- addval_matrix %*% tinput_invers
-    coef_grise <- (100+input$gdpRate)/100
+    coef_grise <- 1+input$gdpRate
     bau_scenario$Lapangan_usaha <- NULL
     bau_scenario_matrix <- as.matrix(bau_scenario)
-    bau_scenario_matrix <- (100+bau_scenario_matrix)/100
+    bau_scenario_matrix <- 1+bau_scenario_matrix
     
     stepN <- endT - startT
     stepInv <- yearIntervention - startT
@@ -1758,12 +2893,11 @@ server <- function(input, output, session) {
       if(startT+tu == yearIntervention){
         mProjFinDem <- mfinalDemandSeriesTable[, mProjT]
       } else {
-        if(input$typeIntervention=='Tipe 1'){
-          mProjFinDem <- mfinalDemandSeriesTable[, mProjT] * coef_grise
-        } else {
-          mProjFinDem <- bau_scenario_matrix[, mProjT] * mfinalDemandSeriesTable[, mProjT]
-        }
-        
+        # if(input$typeIntervention=='Tipe 1'){
+          # mProjFinDem <- mfinalDemandSeriesTable[, mProjT] * coef_grise
+        # } else {
+        mProjFinDem <- bau_scenario_matrix[, mProjT] * mfinalDemandSeriesTable[, mProjT]
+        # }
       }
       mProjOutput <- leontief %*% as.numeric(as.character(mProjFinDem))
       mtOutputseries <- cbind(mtOutputseries, mProjOutput)
@@ -1904,34 +3038,33 @@ server <- function(input, output, session) {
     mTotalEmissionOutput$TotalEmission <- rowSums(mTotalEmissionOutput[, 2:ncol(mTotalEmissionOutput)])
     mTotalEmissionOutput$CummulativeEmission <- cumsum(mTotalEmissionOutput$TotalEmission)
     
+    recordActivities(paste0("Simulasi skenario aksi PRK tahun ", yearIntervention), "Berhasil", paste0(Sys.time()))
     notif_id <<- showNotification("Simulasi skenario intervensi aksi telah berhasil", duration = 4, closeButton = TRUE, type = "warning")
     
-    list_intervensi <- list(GDP_table = mGDPOutput,
-                            mGDPseries = mGDPseries,  
-                            income_percapita_table = mIncomePerCapitaOutput,
-                            income_table = mIncomeOutput,
-                            labour_table = mLabourOutput,
-                            energy_consumption_table = mEnergyConsOutput,
-                            energy_emission_table = mEnergyEmissionOutput,
-                            waste_consumption_table = mWasteDispOutput,
-                            waste_emission_table = mWasteEmissionOutput,
-                            total_emission_table = mTotalEmissionOutput
-                        ) 
+    interventionResults$GDP_table = mGDPOutput
+    interventionResults$mGDPseries = mGDPseries
+    interventionResults$income_percapita_table = mIncomePerCapitaOutput
+    interventionResults$income_table = mIncomeOutput
+    interventionResults$labour_table = mLabourOutput
+    interventionResults$energy_consumption_table = mEnergyConsOutput
+    interventionResults$energy_emission_table = mEnergyEmissionOutput
+    interventionResults$waste_consumption_table = mWasteDispOutput
+    interventionResults$waste_emission_table = mWasteEmissionOutput
+    interventionResults$total_emission_table = mTotalEmissionOutput
     
-    list_intervensi
+    updateTabItems(session, "tabs", selected = "pageEight")
   })
     
   output$plotlyResultsInter <- renderPlotly({
-    results <- allInputsInter()
-    GDP_table <- results$GDP_table
-    income_percapita_table <- results$income_percapita_table  
-    income_table <- results$income_table
-    labour_table <- results$labour_table
-    energy_consumption_table <- results$energy_consumption_table 
-    energy_emission_table <- results$energy_emission_table 
-    waste_consumption_table <- results$waste_consumption_table  
-    waste_emission_table <- results$waste_emission_table 
-    total_emission_table <- results$total_emission_table
+    GDP_table <- interventionResults$GDP_table
+    income_percapita_table <- interventionResults$income_percapita_table  
+    income_table <- interventionResults$income_table
+    labour_table <- interventionResults$labour_table
+    energy_consumption_table <- interventionResults$energy_consumption_table 
+    energy_emission_table <- interventionResults$energy_emission_table 
+    waste_consumption_table <- interventionResults$waste_consumption_table  
+    waste_emission_table <- interventionResults$waste_emission_table 
+    total_emission_table <- interventionResults$total_emission_table
     
     if(input$interResults == "Proyeksi PDRB"){
       graph <- GDP_table[GDP_table$year==input$selectedYearInter,]
@@ -1986,16 +3119,15 @@ server <- function(input, output, session) {
   })
   
   output$tableResultsInter <- renderDataTable({
-    results <- allInputsInter()
-    GDP_table <- results$GDP_table
-    income_percapita_table <- results$income_percapita_table  
-    income_table <- results$income_table
-    labour_table <- results$labour_table
-    energy_consumption_table <- results$energy_consumption_table 
-    energy_emission_table <- results$energy_emission_table 
-    waste_consumption_table <- results$waste_consumption_table  
-    waste_emission_table <- results$waste_emission_table 
-    total_emission_table <- results$total_emission_table
+    GDP_table <- interventionResults$GDP_table
+    income_percapita_table <- interventionResults$income_percapita_table  
+    income_table <- interventionResults$income_table
+    labour_table <- interventionResults$labour_table
+    energy_consumption_table <- interventionResults$energy_consumption_table 
+    energy_emission_table <- interventionResults$energy_emission_table 
+    waste_consumption_table <- interventionResults$waste_consumption_table  
+    waste_emission_table <- interventionResults$waste_emission_table 
+    total_emission_table <- interventionResults$total_emission_table
     
     if(input$interResults == "Proyeksi PDRB"){
       tables <- GDP_table[GDP_table$year==input$selectedYearInter,]
@@ -2031,16 +3163,15 @@ server <- function(input, output, session) {
     filename = input$interResults,
     contentType = "text/csv",
     content = function(file) {
-      results <- allInputsInter()
-      GDP_table <- results$GDP_table
-      income_percapita_table <- results$income_percapita_table  
-      income_table <- results$income_table
-      labour_table <- results$labour_table
-      energy_consumption_table <- results$energy_consumption_table 
-      energy_emission_table <- results$energy_emission_table 
-      waste_consumption_table <- results$waste_consumption_table  
-      waste_emission_table <- results$waste_emission_table 
-      total_emission_table <- results$total_emission_table
+      GDP_table <- interventionResults$GDP_table
+      income_percapita_table <- interventionResults$income_percapita_table  
+      income_table <- interventionResults$income_table
+      labour_table <- interventionResults$labour_table
+      energy_consumption_table <- interventionResults$energy_consumption_table 
+      energy_emission_table <- interventionResults$energy_emission_table 
+      waste_consumption_table <- interventionResults$waste_consumption_table  
+      waste_emission_table <- interventionResults$waste_emission_table 
+      total_emission_table <- interventionResults$total_emission_table
       
       if(input$interResults == "Proyeksi PDRB"){
         tables <- GDP_table[GDP_table$year==input$selectedYear,]
@@ -2068,11 +3199,8 @@ server <- function(input, output, session) {
   # output$tableIOInter <- renderTable({ }, striped = TRUE, bordered = TRUE, hover = TRUE, spacing = 'xs')  
   
   output$percentOfEmRed <- renderValueBox({
-    resBAU <- allInputsBAU()
-    resInv <- allInputsInter()
-    
-    emissionBAU <- resBAU$total_emission_table
-    emissionInv <- resInv$total_emission_table
+    emissionBAU <- bauResults$total_emission_table
+    emissionInv <- interventionResults$total_emission_table
     
     yearIntervention <- input$yearInter
     
@@ -2087,11 +3215,8 @@ server <- function(input, output, session) {
   })
   
   output$percentOfGDPGrowth <- renderValueBox({
-    resBAU <- allInputsBAU()
-    resInv <- allInputsInter()
-    
-    GDPseriesBAU <- resBAU$GDPSeries
-    GDPseriesInv <- resInv$GDP_table
+    GDPseriesBAU <- bauResults$GDPSeries
+    GDPseriesInv <- interventionResults$GDP_table
     
     yearIntervention <- input$yearInter
     
@@ -2109,11 +3234,8 @@ server <- function(input, output, session) {
   })
   
   output$curveEmRed <- renderPlotly({
-    resBAU <- allInputsBAU()
-    resInv <- allInputsInter()
-    
-    emissionBAU <- resBAU$total_emission_table
-    emissionInv <- resInv$total_emission_table
+    emissionBAU <- bauResults$total_emission_table
+    emissionInv <- interventionResults$total_emission_table
     
     cumSumBAU <- subset(emissionBAU, select=c(Year, CummulativeEmission))
     cumSumInv <- subset(emissionInv, select=c(Year, CummulativeEmission))
@@ -2128,16 +3250,13 @@ server <- function(input, output, session) {
             geom_point(aes(color=Scenario))+
             labs(x = "Tahun", y = "Emisi")+
             ggtitle("Grafik Proyeksi Emisi")
-    final_results$plot23<-gplot23
+    finalResults$plot23<-gplot23
     ggplotly(gplot23)
   })
   
   output$curveGDPGrowth <- renderPlotly({
-    resBAU <- allInputsBAU()
-    resInv <- allInputsInter()
-    
-    gdpBAU <- resBAU$GDP_table
-    gdpInv <- resInv$GDP_table
+    gdpBAU <- bauResults$GDP_table
+    gdpInv <- interventionResults$GDP_table
     
     totalGDPBAUPerYear <- aggregate(gdpBAU$GDP, by=list(Year=gdpBAU$year), FUN=sum)
     totalGDPInvPerYear <- aggregate(gdpInv$GDP, by=list(Year=gdpInv$year), FUN=sum)
@@ -2158,16 +3277,13 @@ server <- function(input, output, session) {
             geom_point(aes(color=Scenario))+
             labs(x = "Tahun", y = "PDRB")+
             ggtitle("Grafik Proyeksi PDRB")
-    final_results$plot24<-gplot24
+    finalResults$plot24<-gplot24
     ggplotly(gplot24)
   })
   
   output$curveIntensityEmission <- renderPlotly({
-    resBAU <- allInputsBAU()
-    resInv <- allInputsInter()
-
-    emissionBAU <- resBAU$total_emission_table
-    emissionInv <- resInv$total_emission_table
+    emissionBAU <- bauResults$total_emission_table
+    emissionInv <- interventionResults$total_emission_table
 
     cumSumBAU <- subset(emissionBAU, select=c(Year, CummulativeEmission))
     cumSumInv <- subset(emissionInv, select=c(Year, CummulativeEmission))
@@ -2176,10 +3292,9 @@ server <- function(input, output, session) {
     cumSumInv$Scenario<-input$scenarioName
 
     tblCumSumScenario <- rbind(cumSumBAU, cumSumInv)
-
-
-    gdpBAU <- resBAU$GDP_table
-    gdpInv <- resInv$GDP_table
+    
+    gdpBAU <- bauResults$GDP_table
+    gdpInv <- interventionResults$GDP_table
 
     totalGDPBAUPerYear <- aggregate(gdpBAU$GDP, by=list(Year=gdpBAU$year), FUN=sum)
     totalGDPInvPerYear <- aggregate(gdpInv$GDP, by=list(Year=gdpInv$year), FUN=sum)
@@ -2195,14 +3310,14 @@ server <- function(input, output, session) {
     
     tblIntensity <- rbind(intensityBAU[intensityBAU$Year > input$dateFrom,], intensityInv[intensityInv$Year > input$dateFrom,])
 
-    final_results$tabel1<-tblIntensity
+    finalResults$tabel1<-tblIntensity
     
     gplot25<-ggplot(tblIntensity, aes(x=Year, y=intensitas, group=Scenario)) +
             geom_line(aes(color=Scenario))+
             geom_point(aes(color=Scenario))+
             labs(x = "Tahun", y = "Intensitas Emisi")+
             ggtitle("Grafik Proyeksi Intensitas Emisi")
-    final_results$plot25<-gplot25
+    finalResults$plot25<-gplot25
     ggplotly(gplot25)
   })
   
@@ -2216,16 +3331,16 @@ server <- function(input, output, session) {
       addNewLine(rtffile)
       addNewLine(rtffile)
       addParagraph(rtffile, "\\b\\fs20 Gambar 1. Grafik Emisi Nilai Proyeksi Emisi Kumulatif\\b0\\fs20.")
-      addPlot(rtffile, plot.fun = print, width = 5, height = 3, res = 300, final_results$plot23)
+      addPlot(rtffile, plot.fun = print, width = 5, height = 3, res = 300, finalResults$plot23)
       addNewLine(rtffile)
       addParagraph(rtffile, "\\b\\fs20 Gambar 2. Grafik Emisi Proyeksi Nilai PDRB \\b0\\fs20.")
-      addPlot(rtffile, plot.fun = print, width = 5, height = 3, res = 300, final_results$plot24)
+      addPlot(rtffile, plot.fun = print, width = 5, height = 3, res = 300, finalResults$plot24)
       addNewLine(rtffile)
       addParagraph(rtffile, "\\b\\fs20 Gambar 3. Grafik Proyeksi Intensitas Emisi\\b0\\fs20.")
-      addPlot(rtffile, plot.fun = print, width = 5, height = 3, res = 300, final_results$plot25)
+      addPlot(rtffile, plot.fun = print, width = 5, height = 3, res = 300, finalResults$plot25)
       addNewLine(rtffile)
       addNewLine(rtffile)
-      addTable(rtffile, final_results$tabel1, font.size = 8)
+      addTable(rtffile, finalResults$tabel1, font.size = 8)
       addParagraph(rtffile, "\\b\\fs20 Table 1. Tabel PDRB\\b0\\fs20.")
       addNewLine(rtffile)
       addNewLine(rtffile)
@@ -2235,6 +3350,10 @@ server <- function(input, output, session) {
     }
   )
   
+  output$tableUserLog <- renderDataTable({
+    userActivities$listOfActs
+  })
+  
   steps <- reactive(data.frame(
     element = c(
       "tabs",
@@ -2242,7 +3361,6 @@ server <- function(input, output, session) {
       "#pengaturan",
       ".sidebar-menu",
       "#historis > li > a[data-value=pageOne]",
-      "#popDensTable",
       "#yearIO",
       ".nav-tabs-custom",
       "#historis > li > a[data-value=pageTwo]",
@@ -2285,7 +3403,6 @@ server <- function(input, output, session) {
       "Pilih nama provinsi, kemudian isi kolom nama pengguna, nama lengkap pengguna, dan password.<br/><br/><strong>Petunjuk:</strong> Silahkan klik tombol <strong>Masuk</strong>.",
       "<strong>Petunjuk:</strong> Silahkan klik menu <strong>Historis</strong>.",
       "<strong>Petunjuk:</strong> Silahkan klik sub-menu <strong>Input</strong>.",
-      "<strong>Petunjuk:</strong> Isi jumlah penduduk pada provinsi yang akan dijalankan.",
       "Tahun produksi dari Tabel Input-Output provinsi yang dipilih.",
       "Tabel IO provinsi adalah tabel transaksi barang dan jasa yang terjadi di provinsi tersebut pada satu titik waktu dari tahun tabel tersebut diproduksi. Tabel IO yang digunakan adalah <strong>Tabel Transaksi Domestik Atas Dasar Harga Produsen</strong> dengan satuan moneter <strong>Miliar Rupiah</strong>.
           <br/><br/>Matriks satelit tenaga kerja menunjukkan jumlah tenaga kerja untuk setiap sektor ekonomi.

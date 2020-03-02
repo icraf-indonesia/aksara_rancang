@@ -1,10 +1,11 @@
-prov = "Aceh"
+prov = "JaBar"
 io_folder <- paste0("raw/", prov, "/")
 data_folder <- paste0("data/", prov, "/")
 
 unit = "Million IDR"
 area_name = prov
 I_O_period = 2015
+currentPopulation = 46030000
 
 inSector <- paste0(io_folder, "/01_sektor.csv")
 inIntermediateDemand <- paste0(io_folder, "/02_input_antara.csv")
@@ -20,6 +21,7 @@ inEmissionFactorWasteTable<- paste0(io_folder, "/11_faktor_emisi_limbah.csv")
 inPopTable <- paste0(io_folder, "/12_population.csv")
 inEmOtherTable <- paste0(io_folder, "/13_emission_from_other.csv")
 inLandTable <- paste0(io_folder, "/14_satelit_lahan.csv")
+inEmissionFactorLandTable <- paste0(io_folder, "/15_faktor_emisi_lahan.csv")
 # inLandDemandTable <- paste0(io_folder, "/14_land_demand.csv")
 # inLandDistTable <- paste0(io_folder, "/15_land_dist_matrix_prop.csv")
 
@@ -37,6 +39,7 @@ addvalcom <- read.table(inAddedValueComp, header=FALSE, sep=",")
 population <- read.table(inPopTable, header=TRUE, sep=",")
 otherEm <- read.table(inEmOtherTable, header=TRUE, sep=",")
 landtable <- read.table(inLandTable, header=TRUE, sep=",")
+ef_land <- read.table(inEmissionFactorLandTable, header=TRUE, sep=",")
 # landDemand_prop <- read.table(inLandDistTable, header=TRUE, sep=",")
 
 
@@ -323,6 +326,7 @@ saveRDS(addvalcom , "addvalcom")
 saveRDS(landtable , "landtable")
 saveRDS(population, "population")
 saveRDS(otherEm , "otherEm")
+saveRDS(ef_land , "ef_land")
 # saveRDS(landDemand , "landDemand")
 # saveRDS(landDemand_prop, "landDemand_prop")
 saveRDS(I_A, "I_A")
@@ -333,7 +337,7 @@ saveRDS(multiplier, "multiplierAll")
 saveRDS(I_O_period, "periodIO")
 saveRDS(rtffile, "rtffile")
 
-setwd("d:/PPRK/pprk_apps/")
+setwd("d:/PPRK/aksara_rancang/")
 # 
 # save(sector , file="sector")
 # save(indem , file="indem")
