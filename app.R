@@ -207,6 +207,7 @@ server <- function(input, output, session) {
     otherEm <- allDataProv$otherEm
     LU_tahun <- allDataProv$LU_tahun
     LDMProp_his <- allDataProv$LDMProp_his
+    row.names(LDMProp_his)<-sector[,1]
     LDMProp <- allDataProv$LDMProp
     # landDemand <- allDataProv$landDemand
     # landDemand_prop <- allDataProv$landDemand_prop
@@ -1141,7 +1142,7 @@ server <- function(input, output, session) {
   }, escape = FALSE)
   
   ### pilh nama file dan file yang akan ditampilkan###
-  LDMTableTampil<-eventReactive(input$select_button,{
+  LDMTableTampil <- eventReactive(input$select_button,{
     sec<-blackBoxInputs()
     LDMProp_his<-sec$LDMProp_his
     selectedRow <- as.numeric(strsplit(input$select_button,"_")[[1]][2])
@@ -1152,12 +1153,10 @@ server <- function(input, output, session) {
       list<-list(fileName=fileName,
                  selectedFile=selectedFile)
       print("kondisi1")
-    }
-    else if(selectedRow != 1){
-      fileName<- LDMListTableReact()[selectedRow,1]
+    } else if(selectedRow != 1){
+      fileName<-LDMListTableReact()[selectedRow,1]
       selectedFile<-readRDS(paste0("LDMData/Prov/",fileName))   # ganti mas alfa
-      list<-list(fileName=fileName, 
-                 selectedFile=selectedFile)
+      list<-list(fileName=fileName, selectedFile=selectedFile)
       print("kondisi2")
     }
     list
@@ -1195,16 +1194,13 @@ server <- function(input, output, session) {
   observeEvent(input$modalLDMbutton,{
     sec<-blackBoxInputs()
     LDMProp_his<-sec$LDMProp_his
-    sector<-sec$sector
+    sector<-sec$sector[,1]
     colnamesLDM<-colnames(LDMProp_his)
     showModal(modalDialog(sidebarLayout(sidebarPanel(
       fluidRow(
-        selectInput("tupla",
-                    label="jenis tutupan lahan",
-                    choices=colnamesLDM),
-        selectInput("sektor",
-                    label="sektor",
-                    choices=sector)),
+        selectInput("tupla", label="jenis tutupan lahan", choices=colnamesLDM),
+        selectInput("sektor", label="sektor", choices=sector)
+      ),
       rHandsontableOutput('editLDM'),
       tags$br(),
       uiOutput('LDMButton'),
@@ -1240,7 +1236,7 @@ server <- function(input, output, session) {
   ###### modal dialog######
   
   # hapus tampilan kolom jika memasukkan 
-  observeEvent(c(input$modalLDMbutton,input$tupla,input$sektor), {
+  observeEvent(c(input$modalLDMbutton, input$tupla, input$sektor), {
     LDMTableTampil<-LDMTableTampil()
     selectedFile<-LDMTableTampil$selectedFile
     fileName<-LDMTableTampil$fileName
