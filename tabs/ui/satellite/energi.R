@@ -40,7 +40,7 @@ partido_geral <- tabPanel(title = "Energi & Transportasi",
                           ##-- Visualizar ----
                           column(width = 2, style = "padding-top: 57px;",
                                  actionBttn(inputId = "eleicoes_gerar_visualizacoes_br",
-                                            label = "Select",
+                                            label = "Jalankan",
                                             style = "fill",
                                             color = "success",
                                             icon = icon("check"), size = "sm")

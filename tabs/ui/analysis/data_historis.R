@@ -2,18 +2,16 @@ eleicoes_brasil <- tabPanel(title = "Data Historis",
                             value = "brasil",
                             # br(), hr(),
                             ##-- Botões ----
-                            column(width = 10,
-                                   ##-- + Ano ----
-                                   column(width = 2,
-                                          pickerInput(inputId = "eleicoes_ano_br", 
-                                                      label = "Provinsi", 
-                                                      choices = c("Aceh", "Bali", "Bangka Belitung", "Banten", "Bengkulu", "Daerah Istimewa Yogyakarta", "DKI Jakarta", "Gorontalo", "Jambi", "Jawa Barat", "Jawa Tengah",
-                                                                  "Jawa Timur", "Kalimantan Barat","Kalimantan Selatan", "Kalimantah Tengah", "Kalimantan Timur", "Kalimantan Utara", "Kepulauan Riau", "Lampung", "Maluku", 
-                                                                  "Maluku Utara", "Nusa Tenggara Barat", "Nusa Tenggara Timur", "Papua", "Papua Barat", "Riau", "Sulawesi Barat", "Sulawesi Selatan", "Sulawesi Tengah", 
-                                                                  "Sulawesi Tenggara", "Sulawesi Utara", "Sumatera Barat", "Sumatera Selatan", "Sumatera Utara"), 
-                                                      selected = "Jawa Barat", 
-                                                      options = NULL)
-                                   ),
+                            column(width = 2,
+                                   pickerInput(inputId = "eleicoes_ano_br", 
+                                               label = "Provinsi", 
+                                               choices = c("Aceh", "Bali", "Bangka Belitung", "Banten", "Bengkulu", "Daerah Istimewa Yogyakarta", "DKI Jakarta", "Gorontalo", "Jambi", "Jawa Barat", "Jawa Tengah",
+                                                           "Jawa Timur", "Kalimantan Barat","Kalimantan Selatan", "Kalimantah Tengah", "Kalimantan Timur", "Kalimantan Utara", "Kepulauan Riau", "Lampung", "Maluku", 
+                                                           "Maluku Utara", "Nusa Tenggara Barat", "Nusa Tenggara Timur", "Papua", "Papua Barat", "Riau", "Sulawesi Barat", "Sulawesi Selatan", "Sulawesi Tengah", 
+                                                           "Sulawesi Tenggara", "Sulawesi Utara", "Sumatera Barat", "Sumatera Selatan", "Sumatera Utara"), 
+                                               selected = "Jawa Barat", 
+                                               options = NULL)
+                            ),
                                    # ##-- + Cargo ----
                                    # column(width = 2,
                                    #        pickerInput(inputId = "eleicoes_cargo_br", 
@@ -40,11 +38,10 @@ eleicoes_brasil <- tabPanel(title = "Data Historis",
                                    #                    options = list(`live-search` = TRUE,
                                    #                                   `none-selected-text` = "None selected"))
                                    # )
-                            ), 
                             ##-- Visualizar ----
                             column(width = 2, style = "padding-top: 57px;",
                                    actionBttn(inputId = "eleicoes_gerar_visualizacoes_br", 
-                                              label = "Select", 
+                                              label = "Jalankan", 
                                               style = "fill", 
                                               color = "success", 
                                               icon = icon("check"), size = "sm") 
