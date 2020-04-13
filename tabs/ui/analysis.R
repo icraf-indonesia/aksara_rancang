@@ -1,7 +1,7 @@
-tab_files <- list.files(path = "tabs/ui/eleicoes", full.names = T)
+tab_files <- list.files(path = "tabs/ui/analysis", full.names = T)
 suppressMessages(lapply(tab_files, source))
 
-eleicoes <- tabPanel(title = "Elections", 
+eleicoes <- tabPanel(title = "Analisis Deskriptif", 
                      value = "eleicoes",
                      hr(),
                      tabsetPanel(

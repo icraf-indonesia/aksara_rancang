@@ -29,38 +29,38 @@ observeEvent(input$perfil_candidato_ano,{
   }
   
 }, priority = 1)
-##-- ++ Atualizações dos turnos ----
-observeEvent(c(input$perfil_candidato_ano, 
-               input$perfil_candidato_cargo),{
-                 ano <- isolate(input$perfil_candidato_ano)
-                 cargo <- isolate(input$perfil_candidato_cargo)
-                 
-                 if(!is.null(cargo)){
-                   chaves_sub <- chaves %>%
-                     filter(ANO_ELEICAO == ano & CODIGO_CARGO == cargo)
-                   
-                   turnos <- unique(chaves_sub$NUM_TURNO)
-                   turno_default <- input$eleicoes_turno_br
-                   
-                   if(!(turno_default %in% paste0(turnos, "º round")) | length(turnos) == 0){
-                     turno_default <- "1º round"
-                   }
-                   
-                   if(length(turnos) == 0){
-                     turnos <- ""
-                   } else{
-                     turnos <- paste0(turnos, "º round")
-                   }
-                   
-                   ##-- Atualizando os partidos ----
-                   updatePickerInput(sessio = session,
-                                     inputId = "perfil_candidato_turno", 
-                                     label = "Round", 
-                                     choices = turnos, 
-                                     selected = turno_default)
-                 }
-                 
-               }, priority = 2)
+# ##-- ++ Atualizações dos turnos ----
+# observeEvent(c(input$perfil_candidato_ano, 
+#                input$perfil_candidato_cargo),{
+#                  ano <- isolate(input$perfil_candidato_ano)
+#                  cargo <- isolate(input$perfil_candidato_cargo)
+#                  
+#                  if(!is.null(cargo)){
+#                    chaves_sub <- chaves %>%
+#                      filter(ANO_ELEICAO == ano & CODIGO_CARGO == cargo)
+#                    
+#                    turnos <- unique(chaves_sub$NUM_TURNO)
+#                    turno_default <- input$eleicoes_turno_br
+#                    
+#                    if(!(turno_default %in% paste0(turnos, "º round")) | length(turnos) == 0){
+#                      turno_default <- "1º round"
+#                    }
+#                    
+#                    if(length(turnos) == 0){
+#                      turnos <- ""
+#                    } else{
+#                      turnos <- paste0(turnos, "º round")
+#                    }
+#                    
+#                    ##-- Atualizando os partidos ----
+#                    updatePickerInput(sessio = session,
+#                                      inputId = "perfil_candidato_turno", 
+#                                      label = "Round", 
+#                                      choices = turnos, 
+#                                      selected = turno_default)
+#                  }
+#                  
+#                }, priority = 2)
 ##-- ++ Atualizações dos partidos ----
 observeEvent(c(input$perfil_candidato_ano, 
                input$perfil_candidato_cargo, 
@@ -207,20 +207,20 @@ dados_eleicao <- eventReactive(input$perfil_candidato_gerar_visualizacoes,{
     showModal(modalDialog(sidebarLayout(sidebarPanel(
       fluidRow(
         textInput("intervensiDef",
-                  label="nama skenario"
+                  label="Nama Skenario"
         ),
         selectInput("tahunAwal",
-                    label="tahun awal",
-                    choices=c(2016:2030)),
+                    label="Tahun Awal",
+                    choices=c(2010:2030)),
         selectInput("tahunAkhir",
-                    label="tahun akhir",
-                    choices=c(2016:2030)),
+                    label="Tahun Akhir",
+                    choices=c(2010:2030)),
         textAreaInput("deskripsi",
                       label = "Deskripsi Skenario",
                       width = "330px")
       ),
       tags$br(),
-      actionButton("defHit","tampilkan"),
+      actionButton("defHit","Tampilkan"),
       width=5
     ),
     mainPanel(
@@ -229,8 +229,8 @@ dados_eleicao <- eventReactive(input$perfil_candidato_gerar_visualizacoes,{
     )),
     title="Deskripsi Skenario",
     footer= tagList(
-      actionButton("closeModalDef", "simpan skenario"),
-      actionButton("cancelModalDef", "batal")
+      actionButton("closeModalDef", "Simpan"),
+      actionButton("cancelModalDef", "Batal")
     ),
     size="l",
     easyClose = FALSE
@@ -412,4 +412,26 @@ output$perfil_candidato <- renderUI({
                  info_gerais$DESC_SIT_TOT_TURNO))
   )
   
+  # ListButton_fun <- function(FUN, len, id, ...) {
+  #   inputs <- character(len)
+  #   for (i in seq_len(len)) {
+  #     inputs[i] <- as.character(FUN(paste0(id,i), ...))
+  #   }
+  #   inputs
+  # }
+  # 
+  # dados_eleicao2 <- eventReactive(input$perfil_candidato_gerar_visualizacoes2,{
+  #     data.frame(Nama_File = "file_uji_JaBar_2020-04-13_14-49-00",
+  #                Sunting = ListButton_fun(actionButton, length(Nama_File),
+  #                                         'button_',
+  #                                         label = "Edit Konstruksi Ekonomi dan Satelit Akun"
+  #                                         ,
+  #                                         onclick = sprintf('Shiny.onInputChange("%s",this.id)', "select_button")
+  #                ),
+  #                Jalankan = ListButton_fun(actionButton, length(Nama_File),
+  #                                          'tombol_',
+  #                                          label = "Tampilkan Plot",
+  #                                          onclick = sprintf('Shiny.onInputChange("%s",this.id)', "run_button")))
+  # })
+
 })
