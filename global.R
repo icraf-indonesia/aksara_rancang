@@ -22,6 +22,8 @@ library(DT)
 library(mapview)
 # devtools::install_github("lgsilvaesilva/mapsBR")
 library(mapsBR)
+library(shinyLP)
+# library(sodium)
 
 ##-- Chamando as funções criadas ----
 source("functions/utils.R")
