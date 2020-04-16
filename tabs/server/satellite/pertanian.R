@@ -1,3 +1,8 @@
+output$testEditTablePertanian <- renderRHandsontable({
+  testEditTablePertanian <- read_excel("data/test.xlsx")
+  rhandsontable(testEditTablePertanian)
+})
+
 # ##-- + Atualizações dos filtros ----
 # ##-- ++ Atualizações dos cargos ----
 # observeEvent(input$partido_ano,{

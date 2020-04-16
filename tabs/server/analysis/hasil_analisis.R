@@ -1,3 +1,13 @@
+output$testTable <- renderDataTable({
+  test <- read_excel("data/test.xlsx")
+  test
+})
+
+plotTest<- plot_ly(economics, x = ~pop) 
+
+output$plotTest <- renderPlotly({
+  plotTest
+})
 # ##-- Atualizações dos filtros ----
 # ##-- + Atualizações dos cargos ----
 # observeEvent(input$eleicoes_ano_uf,{

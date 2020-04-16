@@ -1,3 +1,8 @@
+output$testEditTableLahan <- renderRHandsontable({
+  testEditTableLahan <- read_excel("data/test.xlsx")
+  rhandsontable(testEditTableLahan)
+})
+
 # ##-- + Atualizações dos filtros ----
 # ##-- ++ Atualizações dos cargos ----
 # observeEvent(input$partido_ano,{

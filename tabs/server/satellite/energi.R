@@ -1,3 +1,12 @@
+output$testEditTable <- renderRHandsontable({
+  testEditTable <- read_excel("data/test.xlsx")
+  rhandsontable(testEditTable)
+})
+
+output$testTable <- renderDataTable({
+  testTable <- read_excel("data/test.xlsx")
+  testTable
+})
 # ##-- ++ Atualizações dos cargos ----
 # observeEvent(input$partido_geral_ano,{
 #   ano <- isolate(input$partido_geral_ano)

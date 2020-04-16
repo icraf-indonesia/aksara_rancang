@@ -1,3 +1,8 @@
+output$testEditTableLimbah <- renderRHandsontable({
+  testEditTableLimbah <- read_excel("data/test.xlsx")
+  rhandsontable(testEditTableLimbah)
+})
+
 # ##-- + Atualizações dos filtros ----
 # ##-- ++ Atualizações dos cargos ----
 # observeEvent(input$partido_ano,{

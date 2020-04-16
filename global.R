@@ -23,6 +23,8 @@ library(mapview)
 # devtools::install_github("lgsilvaesilva/mapsBR")
 library(mapsBR)
 library(shinyLP)
+library(readxl)
+library(rhandsontable)
 # library(sodium)
 
 ##-- Chamando as funções criadas ----
