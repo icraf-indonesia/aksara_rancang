@@ -1,5 +1,5 @@
-perfil_eleitorado <- tabPanel(title = "Skenario BAU", 
-                              value = "candidatos_perfil_eleitorado",
+bauScenario <- tabPanel(title = "Skenario BAU", 
+                              value = "bauScenario",
                               # br(), hr(),
                               tabBox(id="tabPanelBAU", width = 12, 
                                      tabPanel("Proyeksi", id="tab1",

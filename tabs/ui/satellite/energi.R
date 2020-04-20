@@ -1,5 +1,5 @@
-partido_geral <- tabPanel(title = "Energi & Transportasi", 
-                          value = "partidos_geral",
+energy <- tabPanel(title = "Energi & Transportasi", 
+                          value = "energy",
                           column(width = 12,
                                  br(),
                                  wellPanel(
@@ -8,14 +8,14 @@ partido_geral <- tabPanel(title = "Energi & Transportasi",
                           ),
                           ##-- Outputs ----
                           column(width = 12,
-                                 withSpinner(rHandsontableOutput("testEditTable"), type = 6),
+                                 withSpinner(rHandsontableOutput("SatelitEnergi"), type = 6),
                                  style = "padding-bottom: 10px;"
                           ),
                           # column(width = 12,
-                          #        withSpinner(dataTableOutput("testEditTable"), type = 6),
+                          #        withSpinner(dataTableOutput("SatelitEnergi"), type = 6),
                           #        style = "padding-bottom: 10px;"
-                          # )
-                          actionBttn(inputId = "eleicoes_gerar_visualizacoes_br",
+                          # ),
+                          actionBttn(inputId = "saveBttn",
                                      label = "Simpan",
                                      style = "fill",
                                      color = "success",

@@ -24,13 +24,12 @@ shinyUI(
                selected = "home",
                theme = "styles.css", 
                fluid = T,
-               ##-- Abas ----
                home,
-               eleicoes,
-               partido,
-               candidato,
-               tradeoff,
-               sobre
+               tabAnalysis,
+               tabSatellite,
+               tabScenario,
+               tabTradeoff,
+               tabHelp
     ),
     ##-- Footer ----
     div(class = "footer",

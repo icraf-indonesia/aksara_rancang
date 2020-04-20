@@ -1,5 +1,5 @@
-partido_geral2 <- tabPanel(title = "Pertanian", 
-                          value = "partidos_geral2",
+agriculture <- tabPanel(title = "Pertanian", 
+                          value = "agriculture",
                           column(width = 12,
                                  br(),
                                  wellPanel(
@@ -8,14 +8,14 @@ partido_geral2 <- tabPanel(title = "Pertanian",
                           ),
                           ##-- Outputs ----
                           column(width = 12,
-                                 withSpinner(rHandsontableOutput("testEditTablePertanian"), type = 6),
+                                 withSpinner(rHandsontableOutput("SatelitPertanian"), type = 6),
                                  style = "padding-bottom: 10px;"
                           ),
                           # column(width = 12,
                           #        withSpinner(dataTableOutput("testEditTable"), type = 6),
                           #        style = "padding-bottom: 10px;"
                           # )
-                          actionBttn(inputId = "eleicoes_gerar_visualizacoes_br",
+                          actionBttn(inputId = "saveBttn",
                                      label = "Simpan",
                                      style = "fill",
                                      color = "success",

@@ -1,307 +1,179 @@
-output$testEditTablePertanian <- renderRHandsontable({
+###*allInput####
+allInputs <- eventReactive(input$button, {
+  inSector <- input$sector
+  if(is.null(inSector))
+    return(NULL)
+  
+  inIntermediateDemand <- input$intermediateDemand
+  if(is.null(inIntermediateDemand))
+    return(NULL)
+  
+  inFinalDemand <- input$finalDemand
+  if(is.null(inFinalDemand))
+    return(NULL)
+  
+  inAddedValue <- input$addedValue
+  if(is.null(inAddedValue))
+    return(NULL)    
+  
+  inLabour <- input$labour
+  if(is.null(inLabour))
+    return(NULL)
+  
+  inEnergy <- input$energyTable
+  if(is.null(inEnergy))
+    return(NULL) 
+  
+  inWaste <- input$wasteTable
+  if(is.null(inWaste))
+    return(NULL)
+  
+  inEmissionFactorEnergiTable <- input$emissionFactorEnergiTable
+  if(is.null(inEmissionFactorEnergiTable))
+    return(NULL)
+  
+  inEmissionFactorLandWasteTable <- input$emissionFactorLandWasteTable
+  if(is.null(inEmissionFactorLandWasteTable))
+    return(NULL)
+  
+  inFinalDemandComp <- input$finalDemandComponent
+  if(is.null(inFinalDemandComp))
+    return(NULL) 
+  
+  inAddedValueComp <- input$addedValueComponent
+  if(is.null(inAddedValueComp))
+    return(NULL)  
+  
+  sector <- read.table(inSector$datapath, header=FALSE, sep=",")
+  indem <- read.table(inIntermediateDemand$datapath, header=FALSE, sep=",")
+  findem <- read.table(inFinalDemand$datapath, header=FALSE, sep=",")
+  addval <- read.table(inAddedValue$datapath, header=FALSE, sep=",")
+  labour <- read.table(inLabour$datapath, header=TRUE, sep=",")
+  energy <- read.table(inEnergy$datapath, header=TRUE, sep=",")
+  waste <- read.table(inWaste$datapath, header=TRUE, sep=",")
+  ef_energy <- read.table(inEmissionFactorEnergiTable$datapath, header=TRUE, sep=",")
+  ef_waste <- read.table(inEmissionFactorLandWasteTable$datapath, header=TRUE, sep=",")
+  findemcom <- read.table(inFinalDemandComp$datapath, header=FALSE, sep=",")
+  addvalcom <- read.table(inAddedValueComp$datapath, header=FALSE, sep=",")
+  
+  # Row explicit definition
+  incomeRow <- 2
+  
+  indem_matrix <- as.matrix(indem)
+  addval_matrix <- as.matrix(addval)
+  num_addval <- nrow(addval_matrix)
+  dimensi <- ncol(indem_matrix)
+  
+  indem_colsum <- colSums(indem_matrix)
+  addval_colsum <- colSums(addval_matrix)
+  fin_con <- 1/(indem_colsum+addval_colsum)
+  fin_con[is.infinite(fin_con)] <- 0
+  tinput_invers <- diag(fin_con)
+  A <- indem_matrix %*% tinput_invers
+  I <- as.matrix(diag(dimensi))
+  I_A <- I-A
+  leontief <- solve(I_A)
+  
+  # Backward Linkage
+  DBL <- colSums(leontief)
+  DBL <- DBL/(mean(DBL))
+  # Forward Linkage
+  DFL <- rowSums(leontief)
+  DFL <- DFL/(mean(DFL))
+  # GDP
+  GDP <- colSums(addval_matrix[2:num_addval,])
+  # Multiplier Output
+  multiplierOutput <- colSums(leontief)
+  # Multiplier Income
+  income_coef <- tinput_invers %*% as.matrix(addval_matrix[incomeRow,])
+  income_matrix <- diag(as.vector(income_coef), ncol = dimensi, nrow = dimensi)
+  InvIncome_matrix <- diag(as.vector(1/income_coef), ncol = dimensi, nrow = dimensi)
+  multiplierIncome <- income_matrix %*% leontief %*% InvIncome_matrix
+  multiplierIncome <- as.matrix(colSums(multiplierIncome), dimensi, 1)
+  multiplierIncome[is.na(multiplierIncome)] <- 0
+  # Labour
+  labour_coef <- tinput_invers %*% as.matrix(labour[,3])
+  labour_matrix <- diag(as.vector(labour_coef), ncol = dimensi, nrow = dimensi)
+  InvLabour_matrix <- diag(as.vector(1/labour_coef), ncol = dimensi, nrow = dimensi)
+  multiplierLabour <- labour_matrix %*% leontief %*% InvLabour_matrix
+  multiplierLabour <- as.matrix(colSums(multiplierLabour), dimensi, 1)
+  multiplierLabour[is.na(multiplierLabour)] <- 0
+  # Multiplier Energy Used
+  energy_coef <- tinput_invers %*% as.matrix(energy[,3])
+  energy_matrix <- diag(as.vector(energy_coef), ncol = dimensi, nrow = dimensi)
+  InvEnergy_matrix <- diag(as.vector(1/energy_coef), ncol = dimensi, nrow = dimensi)
+  multiplierEnergy <- energy_matrix %*% leontief %*% InvEnergy_matrix
+  multiplierEnergy <- as.matrix(colSums(multiplierEnergy), dimensi, 1)
+  multiplierEnergy[is.na(multiplierEnergy)] <- 0
+  # Multiplier Waste Product
+  waste_coef <- tinput_invers %*% as.matrix(waste[,3])
+  waste_matrix <- diag(as.vector(energy_coef), ncol = dimensi, nrow = dimensi)
+  InvWaste_matrix <- diag(as.vector(1/waste_coef), ncol = dimensi, nrow = dimensi)
+  multiplierWaste <- waste_matrix %*% leontief %*% InvWaste_matrix
+  multiplierWaste <- as.matrix(colSums(multiplierWaste), dimensi, 1)
+  multiplierWaste[is.na(multiplierWaste)] <- 0
+  # Ratio Wages / Business Surplus
+  ratio_ws <- t(as.matrix(addval[2,] / addval[3,]))
+  ratio_ws[is.na(ratio_ws)] <- 0
+  ratio_ws[ratio_ws == Inf] <- 0
+  colnames(ratio_ws) <- "ratio_ws"
+  # Koefisien Intensitas Energi
+  # total sectoral energy cons / sectoral GDP
+  coef_energy <- as.matrix(energy[,3]) / sum(addval_matrix[2:num_addval,])
+  # Koefisien Produk Limbah
+  coef_waste <- as.matrix(waste[,3]) / sum(addval_matrix[2:num_addval,])
+  # Emission from energy
+  f_energy_diag <- diag(ef_energy[,2], ncol = nrow(ef_energy), nrow = nrow(ef_energy))
+  em_energy <- as.matrix(energy[,4:ncol(energy)]) %*% f_energy_diag # need to count ncol
+  em_energy_total <- rowSums(em_energy)
+  # Emission from waste
+  f_waste_diag <- diag(ef_waste[,2], ncol = nrow(ef_waste), nrow = nrow(ef_waste))
+  em_waste <- as.matrix(waste[,4:ncol(waste)]) %*% f_waste_diag # need to count ncol
+  em_waste_total <- rowSums(em_waste)
+  # Wages
+  wages <- as.matrix(t(addval[2,]))
+  colnames(wages) <- "wages"
+  
+  # Income per capita
+  income_per_capita <- sum(as.matrix(addval_matrix[incomeRow,])) / input$popDensTable
+  
+  result <- cbind(sector,
+                  DBL,
+                  DFL, 
+                  GDP, 
+                  multiplierOutput, 
+                  multiplierIncome,
+                  multiplierLabour,
+                  multiplierEnergy,
+                  multiplierWaste,
+                  wages,
+                  ratio_ws, 
+                  coef_energy,
+                  coef_waste,
+                  em_energy_total,
+                  em_waste_total
+  )
+  colnames(result)[1] <- "Sektor"
+  
+  list_table <- list(result=result, 
+                     sector=sector, 
+                     indem=indem, 
+                     findem=findem, 
+                     addval=addval, 
+                     labour=labour, 
+                     energy=energy, 
+                     findemcom=findemcom, 
+                     addvalcom=addvalcom,
+                     waste=waste,
+                     ef_waste=ef_waste,
+                     ef_energy=ef_energy,
+                     income_per_capita=income_per_capita
+  ) 
+  list_table
+})
+
+###* Satellite Account : Agriculture ####
+output$SatelitPertanian <- renderRHandsontable({
   testEditTablePertanian <- read_excel("data/test.xlsx")
   rhandsontable(testEditTablePertanian)
 })
-
-# ##-- + Atualizações dos filtros ----
-# ##-- ++ Atualizações dos cargos ----
-# observeEvent(input$partido_ano,{
-#   ano <- isolate(input$partido_ano)
-#   
-#   if(!is.null(ano)){
-#     chaves_sub <- chaves %>%
-#       filter(ANO_ELEICAO == ano) %>%
-#       distinct(CODIGO_CARGO, DESCRICAO_CARGO_EN)
-#     
-#     ##-- Setando o cargo default
-#     cargos <- unique(chaves_sub$CODIGO_CARGO)
-#     ##-- Arrumar aqui
-#     cargos <- cargos[!(cargos %in% c("GOVERNOR", "PRESIDENT", "MAYOR"))]
-#     cargo_default <- input$eleicoes_cargo_uf
-#     
-#     if(!(cargo_default %in% cargos)){
-#       cargo_default <- cargos[1]
-#     }
-#     
-#     cargos_list <- setNames(as.list(chaves_sub$CODIGO_CARGO), chaves_sub$DESCRICAO_CARGO_EN)
-#     
-#     ##-- Atualizando os cargos ----
-#     updatePickerInput(session = session,
-#                       inputId = "partido_cargo",
-#                       label = "Position", 
-#                       choices = cargos_list, 
-#                       selected = cargo_default)
-#   }
-#   
-# }, priority = 1)
-# 
-# ##-- ++ Atualizações dos partidos donuts ----
-# observeEvent(c(input$partido_ano,
-#                input$partido_cargo),{
-#                  
-#                  ano <- isolate(input$partido_ano)
-#                  cargo <- isolate(input$partido_cargo)
-#                  
-#                  if(!is.null(cargo)){
-#                    chaves_sub <- chaves %>%
-#                      filter(ANO_ELEICAO == ano & CODIGO_CARGO == cargo)
-#                    
-#                    ##-- Setando o cargo default
-#                    partidos <- levels(factor(x = c("All parties", sort(unique(chaves_sub$SIGLA_PARTIDO))),
-#                                              levels = c("All parties", sort(unique(chaves_sub$SIGLA_PARTIDO)))))
-#                    partido_default <- input$partido_partido_donuts
-#                    
-#                    if(!(partido_default %in% partidos)){
-#                      partido_default <- "All parties"
-#                    }
-#                    
-#                    ##-- Atualizando os partidos ----
-#                    updatePickerInput(session = session,
-#                                      inputId = "partido_partido_donuts",
-#                                      label = "Party",
-#                                      choices = partidos,
-#                                      selected = partido_default)
-#                  }
-#                  
-#                }, priority = 3)
-# 
-# ##-- + Dados necessários para o donnut ----
-# donut <- reactive({
-#   
-#   ano <- input$partido_ano
-#   cargo <- input$partido_cargo
-#   
-#   dados_cand_part <- dados_gerais %>%
-#     filter(CODIGO_CARGO == cargo & ANO_ELEICAO == ano)
-#   
-#   return(dados_cand_part)
-#   
-# })
-# ##-- + Gráficos ----
-# donuts_tabelas <- eventReactive(c(input$partido_partido_donuts, input$partidos_gerar_visualizacoes), {
-#   
-#   dados_cand_part <- donut()
-#   
-#   ##-- Donnuts ----
-#   partido_sel <- isolate(input$partido_partido_donuts)
-#   
-#   ##-- Donnut sexo ----
-#   
-#   sex_cand_par <- dados_cand_part %>%
-#     select(DESCRICAO_SEXO, SIGLA_PARTIDO, DESC_SIT_TOT_TURNO, CPF_CANDIDATO) %>%
-#     distinct()
-#   
-#   if(partido_sel == "All parties"){
-#     sex_cand_par <- sex_cand_par  %>%
-#       group_by(DESCRICAO_SEXO) %>%
-#       summarise(n_partido = n_distinct(CPF_CANDIDATO),
-#                 n_eleito_partido = sum(DESC_SIT_TOT_TURNO %in% c('ELEITO', 'ELEITO POR QP', 'ELEITO POR MÉDIA'))) %>%
-#       arrange(desc(n_partido)) %>%
-#       mutate(percn = n_partido/sum(n_partido),
-#              percn_acum = cumsum(percn),
-#              percn_label = paste0(100*round(percn, digits = 3), " %"),
-#              percel = n_eleito_partido/sum(n_eleito_partido),
-#              percel_acum = cumsum(percel),
-#              percel_label = paste0(100*round(percel, digits = 3), " %")) %>%
-#       as.data.frame() 
-#   } else{
-#     sex_cand_par <- sex_cand_par %>%
-#       group_by(DESCRICAO_SEXO, SIGLA_PARTIDO) %>%
-#       summarise(n_partido = n_distinct(CPF_CANDIDATO),
-#                 n_eleito_partido = sum(DESC_SIT_TOT_TURNO %in% c('ELEITO', 'ELEITO POR QP', 'ELEITO POR MÉDIA'))) %>%
-#       ungroup() %>%
-#       arrange(desc(n_partido)) %>%
-#       filter(SIGLA_PARTIDO == partido_sel) %>%
-#       mutate(percn = n_partido/sum(n_partido),
-#              percn_acum = cumsum(percn),
-#              percn_label = paste0(100*round(percn, digits = 3), " %"),
-#              percel = n_eleito_partido/sum(n_eleito_partido),
-#              percel_acum = cumsum(percel),
-#              percel_label = paste0(100*round(percel, digits = 3), " %")) %>%
-#       as.data.frame() 
-#   }
-#   
-#   tooltip_sexo <- paste0("<b>", sex_cand_par$DESCRICAO_SEXO, "</b><br>",
-#                          "Nº Candidates: ", sex_cand_par$n_partido, "<br>",
-#                          "Nº Elected candidates:", sex_cand_par$n_eleito_partido, "<br>",
-#                          "% Candidates: ", sex_cand_par$percn_label, "<br>")
-#   
-#   cores <- tableau_color_pal(palette = "Tableau 10")(n_distinct(sex_cand_par$DESCRICAO_SEXO))
-#   
-#   donut_sexo <- plot_ly(data = sex_cand_par, 
-#           labels = ~DESCRICAO_SEXO, 
-#           values = ~n_partido,
-#           hovertext = tooltip_sexo, 
-#           marker = list(colors = cores, line = list(color = '#FFFFFF', width = 2)), 
-#           hoverinfo = "text") %>%
-#     add_pie(hole = 0.6) %>%
-#     layout(showlegend = T,
-#            xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-#            yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))  
-#   
-#   ##-- Donnut raça ----
-# 
-#   raca_cand_par <- dados_cand_part %>%
-#     select(DESCRICAO_COR_RACA, SIGLA_PARTIDO, DESC_SIT_TOT_TURNO, CPF_CANDIDATO) %>%
-#     distinct()
-#   
-#   if(partido_sel == "All parties"){
-#     raca_cand_par <- raca_cand_par  %>%
-#       group_by(DESCRICAO_COR_RACA) %>%
-#       summarise(n_partido = n_distinct(CPF_CANDIDATO),
-#                 n_eleito_partido = sum(DESC_SIT_TOT_TURNO %in% c('ELEITO', 'ELEITO POR QP', 'ELEITO POR MÉDIA'))) %>%
-#       arrange(desc(n_partido)) %>%
-#       mutate(percn = n_partido/sum(n_partido),
-#              percn_acum = cumsum(percn),
-#              percn_label = paste0(100*round(percn, digits = 3), " %"),
-#              percel = n_eleito_partido/sum(n_eleito_partido),
-#              percel_acum = cumsum(percel),
-#              percel_label = paste0(100*round(percel, digits = 3), " %")) %>%
-#       as.data.frame() 
-#   } else{
-#     raca_cand_par <- raca_cand_par %>%
-#       group_by(DESCRICAO_COR_RACA, SIGLA_PARTIDO) %>%
-#       summarise(n_partido = n_distinct(CPF_CANDIDATO),
-#                 n_eleito_partido = sum(DESC_SIT_TOT_TURNO %in% c('ELEITO', 'ELEITO POR QP', 'ELEITO POR MÉDIA'))) %>%
-#       ungroup() %>%
-#       arrange(desc(n_partido)) %>%
-#       filter(SIGLA_PARTIDO == partido_sel) %>%
-#       mutate(percn = n_partido/sum(n_partido),
-#              percn_acum = cumsum(percn),
-#              percn_label = paste0(100*round(percn, digits = 3), " %"),
-#              percel = n_eleito_partido/sum(n_eleito_partido),
-#              percel_acum = cumsum(percel),
-#              percel_label = paste0(100*round(percel, digits = 3), " %")) %>%
-#       as.data.frame() 
-#   }
-#   
-#   tooltip_raca <- paste0("<b>", raca_cand_par$DESCRICAO_COR_RACA, "</b><br>",
-#                          "Nº Candidates: ", raca_cand_par$n_partido, "<br>",
-#                          "Nº Elected candidates:", raca_cand_par$n_eleito_partido, "<br>",
-#                          "% Candidates: ", raca_cand_par$percn_label, "<br>")
-#   
-#   cores <- tableau_color_pal(palette = "Tableau 10")(n_distinct(raca_cand_par$DESCRICAO_COR_RACA))
-#   
-#   donut_raca <- plot_ly(data = raca_cand_par,
-#                         labels = ~DESCRICAO_COR_RACA,
-#                         values = ~n_partido,
-#                         hovertext = tooltip_raca,
-#                         marker = list(colors = cores, line = list(color = '#FFFFFF', width = 2)),
-#                         hoverinfo = "text") %>%
-#     add_pie(hole = 0.6) %>%
-#     layout(showlegend = T,
-#            xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-#            yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
-#   
-#   ##-- Tabela escolaridade ----
-#   
-#   inst_cand_par <- dados_cand_part %>%
-#     select(DESCRICAO_GRAU_INSTRUCAO, SIGLA_PARTIDO, DESC_SIT_TOT_TURNO, CPF_CANDIDATO) %>%
-#     distinct()
-#   
-#   if(partido_sel == "All parties"){
-#     inst_cand_par <- inst_cand_par  %>%
-#       group_by(DESCRICAO_GRAU_INSTRUCAO) %>%
-#       summarise(n_partido = n_distinct(CPF_CANDIDATO),
-#                 n_eleito_partido = sum(DESC_SIT_TOT_TURNO %in% c('ELEITO', 'ELEITO POR QP', 'ELEITO POR MÉDIA'))) %>%
-#       arrange(desc(n_partido)) %>%
-#       mutate(percn = n_partido/sum(n_partido),
-#              percn_acum = cumsum(percn),
-#              percn_label = paste0(100*round(percn, digits = 3), " %"),
-#              percel = n_eleito_partido/sum(n_eleito_partido),
-#              percel_acum = cumsum(percel),
-#              percel_label = paste0(100*round(percel, digits = 3), " %")) %>%
-#       ungroup() %>%
-#       mutate(percn_pad = scale(percn)) %>%
-#       as.data.frame() 
-#   } else{
-#     inst_cand_par <- inst_cand_par %>%
-#       group_by(DESCRICAO_GRAU_INSTRUCAO, SIGLA_PARTIDO) %>%
-#       summarise(n_partido = n_distinct(CPF_CANDIDATO),
-#                 n_eleito_partido = sum(DESC_SIT_TOT_TURNO %in% c('ELEITO', 'ELEITO POR QP', 'ELEITO POR MÉDIA'))) %>%
-#       ungroup() %>%
-#       arrange(desc(n_partido)) %>%
-#       filter(SIGLA_PARTIDO == partido_sel) %>%
-#       mutate(percn = n_partido/sum(n_partido),
-#              percn_acum = cumsum(percn),
-#              percn_label = paste0(100*round(percn, digits = 3), " %"),
-#              percel = n_eleito_partido/sum(n_eleito_partido),
-#              percel_acum = cumsum(percel),
-#              percel_label = paste0(100*round(percel, digits = 3), " %")) %>%
-#       mutate(percn_pad = scale(percn)) %>%
-#       as.data.frame() 
-#   }
-#   
-#   if(partido_sel != "All parties"){
-#     inst_cand_par_tab <- inst_cand_par %>%
-#       select(SIGLA_PARTIDO, DESCRICAO_GRAU_INSTRUCAO, n_partido, percn_label, n_eleito_partido)
-#     
-#     colunas <- c("Party", "Scholarity", "Nº Cand", "Prop. Cand", "Nº Elected")
-#     
-#   } else{
-#     inst_cand_par_tab <- inst_cand_par %>%
-#       select(DESCRICAO_GRAU_INSTRUCAO, n_partido, percn_label, n_eleito_partido)
-#     
-#     colunas<- c("Scholarity", "Nº Cand", "Prop. Cand", "Nº Elected")
-#   }
-#   
-#   
-#   tabela_escol <- datatable(inst_cand_par_tab, 
-#             colnames = colunas,
-#             options = list(pageLength = 7,
-#                            autoWidth = TRUE,
-#                            initComplete = JS(
-#                              "function(settings, json) {",
-#                              "$(this.api().table().header()).css({'background-color': '#4d4d4d', 'color': '#ffffff'});",
-#                              "}")
-#             ))  
-#   ##-- Retornando os resultados ----
-#   return(list(donut_sexo = donut_sexo, donut_raca = donut_raca, 
-#               tabela_escol = tabela_escol))
-# })
-# ##-- ++ Candidatos por partido e UF ----
-# output$mapa_cand <- renderLeaflet({
-# 
-#     base <- base_ncand()
-#   ##-- Mapa dos candidatos ----
-#   pal <- colorBin("YlOrRd", domain = base$n, bins = 10)
-#   
-#   pop_up_text <- sprintf("<strong>%s - %s</strong><br>
-#                          <br>Year: %s <br>
-#                          <br>Position: %s <br>
-#                          <br>Total candidates: %s <br>
-#                          <br>Party candidates: %s <br>
-#                          <br>Nº elected: %s",
-#                          base$SIGLA_PARTIDO,
-#                          base$COD, 
-#                          base$ANO_ELEICAO,
-#                          base$DESCRICAO_CARGO,
-#                          base$cand_state,
-#                          base$n_partido,
-#                          base$n_eleito_partido)
-#   
-#   leaflet(base) %>%
-#     addProviderTiles(providers$CartoDB.Positron)%>%
-#     addPolygons(color = "#444444", 
-#                 weight = 0.5,
-#                 popup = pop_up_text,
-#                 smoothFactor = 0.5,
-#                 opacity = 1.0,
-#                 fillOpacity = 0.5,
-#                 fillColor = ~colorNumeric("YlOrRd", prop_cand)(prop_cand),
-#                 highlightOptions = highlightOptions(color = "white", 
-#                                                     weight = 2,
-#                                                     bringToFront = TRUE))   
-# })
-# ##-- ++ Donnut por sexo ----
-# output$donut_sexo <- renderPlotly({
-#   donuts_tabelas()$donut_sexo
-# })
-# ##-- ++ Donnut por raça ----
-# output$donut_raca <- renderPlotly({
-#   donuts_tabelas()$donut_raca
-# })
-# ##-- ++ Tabela de escolaridade ----
-# output$tabela <- renderDataTable({
-#   donuts_tabelas()$tabela_escol
-# })

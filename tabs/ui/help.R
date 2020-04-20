@@ -1,6 +1,6 @@
-sobre <- tabPanel(title = "Bantuan", 
-                  value = "sobre", 
-                  br(), hr(),
+tabHelp <- tabPanel(title = "Bantuan", 
+                  value = "tabHelp", 
+                  br(), hr()
                   
                   # includeHTML(rmarkdown::render('descricoes/augusto.Rmd')), br(),
                   # 

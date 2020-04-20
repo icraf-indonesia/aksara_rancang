@@ -1,5 +1,5 @@
-perfil <- tabPanel(title = "Skenario Intervensi", 
-                   value = "candidatos_perfil",
+intScenario <- tabPanel(title = "Skenario Intervensi", 
+                   value = "intScenario",
                    tabBox(id="tabPanelIntervensi", width = 12, 
                           tabPanel("Sektor Energi & Transportasi", id="energi_transport_int",
                                    div(style="overflow-x: scroll; padding-top: 20px;", dataTableOutput('tabelEnergiFinal')),

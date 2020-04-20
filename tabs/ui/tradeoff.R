@@ -1,4 +1,4 @@
-tradeoff <- tabPanel(title = "Analisis Trade-off", 
-                  value = "tradeoff", 
+tabTradeoff <- tabPanel(title = "Analisis Trade-off", 
+                  value = "tabTradeoff", 
                   br(), hr(),
 )

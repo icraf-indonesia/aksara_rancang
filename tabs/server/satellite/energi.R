@@ -1,218 +1,185 @@
-output$testEditTable <- renderRHandsontable({
-  testEditTable <- read_excel("data/test.xlsx")
-  rhandsontable(testEditTable)
+###* allInput ####
+allInputs <- eventReactive(input$button, {
+  inSector <- input$sector
+  if(is.null(inSector))
+    return(NULL)
+  
+  inIntermediateDemand <- input$intermediateDemand
+  if(is.null(inIntermediateDemand))
+    return(NULL)
+  
+  inFinalDemand <- input$finalDemand
+  if(is.null(inFinalDemand))
+    return(NULL)
+  
+  inAddedValue <- input$addedValue
+  if(is.null(inAddedValue))
+    return(NULL)    
+  
+  inLabour <- input$labour
+  if(is.null(inLabour))
+    return(NULL)
+  
+  inEnergy <- input$energyTable
+  if(is.null(inEnergy))
+    return(NULL) 
+  
+  inWaste <- input$wasteTable
+  if(is.null(inWaste))
+    return(NULL)
+  
+  inEmissionFactorEnergiTable <- input$emissionFactorEnergiTable
+  if(is.null(inEmissionFactorEnergiTable))
+    return(NULL)
+  
+  inEmissionFactorLandWasteTable <- input$emissionFactorLandWasteTable
+  if(is.null(inEmissionFactorLandWasteTable))
+    return(NULL)
+  
+  inFinalDemandComp <- input$finalDemandComponent
+  if(is.null(inFinalDemandComp))
+    return(NULL) 
+  
+  inAddedValueComp <- input$addedValueComponent
+  if(is.null(inAddedValueComp))
+    return(NULL)  
+  
+  sector <- read.table(inSector$datapath, header=FALSE, sep=",")
+  indem <- read.table(inIntermediateDemand$datapath, header=FALSE, sep=",")
+  findem <- read.table(inFinalDemand$datapath, header=FALSE, sep=",")
+  addval <- read.table(inAddedValue$datapath, header=FALSE, sep=",")
+  labour <- read.table(inLabour$datapath, header=TRUE, sep=",")
+  energy <- read.table(inEnergy$datapath, header=TRUE, sep=",")
+  waste <- read.table(inWaste$datapath, header=TRUE, sep=",")
+  ef_energy <- read.table(inEmissionFactorEnergiTable$datapath, header=TRUE, sep=",")
+  ef_waste <- read.table(inEmissionFactorLandWasteTable$datapath, header=TRUE, sep=",")
+  findemcom <- read.table(inFinalDemandComp$datapath, header=FALSE, sep=",")
+  addvalcom <- read.table(inAddedValueComp$datapath, header=FALSE, sep=",")
+  
+  # Row explicit definition
+  incomeRow <- 2
+  
+  indem_matrix <- as.matrix(indem)
+  addval_matrix <- as.matrix(addval)
+  num_addval <- nrow(addval_matrix)
+  dimensi <- ncol(indem_matrix)
+  
+  indem_colsum <- colSums(indem_matrix)
+  addval_colsum <- colSums(addval_matrix)
+  fin_con <- 1/(indem_colsum+addval_colsum)
+  fin_con[is.infinite(fin_con)] <- 0
+  tinput_invers <- diag(fin_con)
+  A <- indem_matrix %*% tinput_invers
+  I <- as.matrix(diag(dimensi))
+  I_A <- I-A
+  leontief <- solve(I_A)
+  
+  # Backward Linkage
+  DBL <- colSums(leontief)
+  DBL <- DBL/(mean(DBL))
+  # Forward Linkage
+  DFL <- rowSums(leontief)
+  DFL <- DFL/(mean(DFL))
+  # GDP
+  GDP <- colSums(addval_matrix[2:num_addval,])
+  # Multiplier Output
+  multiplierOutput <- colSums(leontief)
+  # Multiplier Income
+  income_coef <- tinput_invers %*% as.matrix(addval_matrix[incomeRow,])
+  income_matrix <- diag(as.vector(income_coef), ncol = dimensi, nrow = dimensi)
+  InvIncome_matrix <- diag(as.vector(1/income_coef), ncol = dimensi, nrow = dimensi)
+  multiplierIncome <- income_matrix %*% leontief %*% InvIncome_matrix
+  multiplierIncome <- as.matrix(colSums(multiplierIncome), dimensi, 1)
+  multiplierIncome[is.na(multiplierIncome)] <- 0
+  # Labour
+  labour_coef <- tinput_invers %*% as.matrix(labour[,3])
+  labour_matrix <- diag(as.vector(labour_coef), ncol = dimensi, nrow = dimensi)
+  InvLabour_matrix <- diag(as.vector(1/labour_coef), ncol = dimensi, nrow = dimensi)
+  multiplierLabour <- labour_matrix %*% leontief %*% InvLabour_matrix
+  multiplierLabour <- as.matrix(colSums(multiplierLabour), dimensi, 1)
+  multiplierLabour[is.na(multiplierLabour)] <- 0
+  # Multiplier Energy Used
+  energy_coef <- tinput_invers %*% as.matrix(energy[,3])
+  energy_matrix <- diag(as.vector(energy_coef), ncol = dimensi, nrow = dimensi)
+  InvEnergy_matrix <- diag(as.vector(1/energy_coef), ncol = dimensi, nrow = dimensi)
+  multiplierEnergy <- energy_matrix %*% leontief %*% InvEnergy_matrix
+  multiplierEnergy <- as.matrix(colSums(multiplierEnergy), dimensi, 1)
+  multiplierEnergy[is.na(multiplierEnergy)] <- 0
+  # Multiplier Waste Product
+  waste_coef <- tinput_invers %*% as.matrix(waste[,3])
+  waste_matrix <- diag(as.vector(energy_coef), ncol = dimensi, nrow = dimensi)
+  InvWaste_matrix <- diag(as.vector(1/waste_coef), ncol = dimensi, nrow = dimensi)
+  multiplierWaste <- waste_matrix %*% leontief %*% InvWaste_matrix
+  multiplierWaste <- as.matrix(colSums(multiplierWaste), dimensi, 1)
+  multiplierWaste[is.na(multiplierWaste)] <- 0
+  # Ratio Wages / Business Surplus
+  ratio_ws <- t(as.matrix(addval[2,] / addval[3,]))
+  ratio_ws[is.na(ratio_ws)] <- 0
+  ratio_ws[ratio_ws == Inf] <- 0
+  colnames(ratio_ws) <- "ratio_ws"
+  # Koefisien Intensitas Energi
+  # total sectoral energy cons / sectoral GDP
+  coef_energy <- as.matrix(energy[,3]) / sum(addval_matrix[2:num_addval,])
+  # Koefisien Produk Limbah
+  coef_waste <- as.matrix(waste[,3]) / sum(addval_matrix[2:num_addval,])
+  # Emission from energy
+  f_energy_diag <- diag(ef_energy[,2], ncol = nrow(ef_energy), nrow = nrow(ef_energy))
+  em_energy <- as.matrix(energy[,4:ncol(energy)]) %*% f_energy_diag # need to count ncol
+  em_energy_total <- rowSums(em_energy)
+  # Emission from waste
+  f_waste_diag <- diag(ef_waste[,2], ncol = nrow(ef_waste), nrow = nrow(ef_waste))
+  em_waste <- as.matrix(waste[,4:ncol(waste)]) %*% f_waste_diag # need to count ncol
+  em_waste_total <- rowSums(em_waste)
+  # Wages
+  wages <- as.matrix(t(addval[2,]))
+  colnames(wages) <- "wages"
+  
+  # Income per capita
+  income_per_capita <- sum(as.matrix(addval_matrix[incomeRow,])) / input$popDensTable
+  
+  result <- cbind(sector,
+                  DBL,
+                  DFL, 
+                  GDP, 
+                  multiplierOutput, 
+                  multiplierIncome,
+                  multiplierLabour,
+                  multiplierEnergy,
+                  multiplierWaste,
+                  wages,
+                  ratio_ws, 
+                  coef_energy,
+                  coef_waste,
+                  em_energy_total,
+                  em_waste_total
+  )
+  colnames(result)[1] <- "Sektor"
+  
+  list_table <- list(result=result, 
+                     sector=sector, 
+                     indem=indem, 
+                     findem=findem, 
+                     addval=addval, 
+                     labour=labour, 
+                     energy=energy, 
+                     findemcom=findemcom, 
+                     addvalcom=addvalcom,
+                     waste=waste,
+                     ef_waste=ef_waste,
+                     ef_energy=ef_energy,
+                     income_per_capita=income_per_capita
+  ) 
+  list_table
 })
 
-output$testTable <- renderDataTable({
-  testTable <- read_excel("data/test.xlsx")
-  testTable
+###* Satellite Account : Energy ####
+output$SatelitEnergi <- renderRHandsontable({ 
+  if(debugMode){
+    sec <- blackBoxInputs()
+  } else {
+    sec <- allInputs()
+  }
+  energy <- sec$energy
+  energy$ID <- NULL
+  rhandsontable(energy)
 })
-# ##-- ++ Atualizações dos cargos ----
-# observeEvent(input$partido_geral_ano,{
-#   ano <- isolate(input$partido_geral_ano)
-#   
-#   if(!is.null(ano)){
-#     chaves_sub <- chaves %>%
-#       filter(ANO_ELEICAO == ano & DESCRICAO_CARGO_EN != "PRESIDENT") %>%
-#       distinct(CODIGO_CARGO, DESCRICAO_CARGO_EN)
-#     
-#     ##-- Setando o cargo default
-#     cargos <- unique(chaves_sub$CODIGO_CARGO)
-#     cargo_default <- input$perfil_candidato_cargo
-#     
-#     if(!(cargo_default %in% cargos)){
-#       cargo_default <- cargos[1]
-#     }
-#     
-#     cargos_list <- setNames(as.list(chaves_sub$CODIGO_CARGO), chaves_sub$DESCRICAO_CARGO_EN)
-#     
-#     ##-- Atualizando os cargos ----
-#     updatePickerInput(session = session,
-#                       inputId = "partido_geral_cargo",
-#                       label = "Position", 
-#                       choices = cargos_list, 
-#                       selected = cargo_default)
-#     
-#   }
-#   
-# }, priority = 1)
-# ##-- + Base prefeitos por partido ----
-# mapa_pref_partido <- eventReactive(input$partidos_gerar_visualizacoes1, {
-#   
-#   ano <- isolate(input$partido_geral_ano)
-#   cargo <- isolate(input$partido_geral_cargo)
-#   
-#   shape <- subset(regMun, !is.na(NOME))
-#   
-#   eleitos_map <- dados_gerais %>% filter(CODIGO_CARGO == cargo & ANO_ELEICAO == ano) %>% 
-#     filter(DESC_SIT_TOT_TURNO == 'ELEITO' & ANO_ELEICAO == ano) %>%
-#     select(SIGLA_PARTIDO, COD_MUN_IBGE, NOME_MUNICIPIO, ANO_ELEICAO, DESCRICAO_ELEICAO) %>%
-#     mutate(ANO_ELEICAO = as.numeric(ANO_ELEICAO)) %>% 
-#     group_by(COD_MUN_IBGE) %>%
-#     mutate(ordem = order(COD_MUN_IBGE)) %>%
-#     filter(ordem == 1)
-#   
-#   names(eleitos_map)[2] <- "COD"
-#   
-#   teste <- eleitos_map %>%
-#     group_by(SIGLA_PARTIDO) %>%
-#     summarise(n = n()) %>%
-#     arrange(desc(n))%>%
-#     mutate(perc = n/ sum(n),
-#            perca = cumsum(perc),
-#            partidos = ifelse(perca <= 0.9, SIGLA_PARTIDO, 'Others'))
-#   
-#   eleitos_map2 <- merge(eleitos_map, teste , by = "SIGLA_PARTIDO", all.x = T)
-#   eleitos_map2 <- merge(shape, eleitos_map2, by = "COD", all.x = T)
-#   
-#   eleitos_map2@data$partidos <- as.factor(eleitos_map2@data$partidos)
-#   
-#   if(cargo == 11){
-#     pop_up_text <- sprintf("<strong>%s - %s</strong><br>
-#                        <br>Year: %s <br>",
-#                            eleitos_map2$SIGLA_PARTIDO,eleitos_map2$NOME, 
-#                            eleitos_map2$ANO_ELEICAO)
-#     
-#     palleta <- tableau_color_pal(palette = 'Tableau 20')(length(levels(eleitos_map2@data$partidos)))
-#     cor_fator <- colorFactor(palleta,levels = levels(eleitos_map2@data$partidos))
-#     
-#     l_mun <- leaflet(eleitos_map2) %>%
-#       addProviderTiles(providers$CartoDB.Positron) %>%
-#       addPolygons(data = regUF, fillOpacity =  0, weight = 0.85, color = "#000000") %>%
-#       addPolygons(color = ~cor_fator(partidos), 
-#                   weight = 0.1,
-#                   popup = pop_up_text,
-#                   fillOpacity = 0.7,
-#                   highlightOptions = highlightOptions(color = "white", 
-#                                                       weight = 2,
-#                                                       bringToFront = TRUE)) %>%
-#       addLegend("bottomright", colors = palleta, labels = levels(eleitos_map2@data$partidos),
-#                 opacity = 1)
-#   }
-#   
-#   return(l_mun)
-#   
-# })
-# ##-- + Base dados coligações ----
-# base_coligacoes <- eventReactive(input$partidos_gerar_visualizacoes1, {
-#   
-#   ano <- isolate(input$partido_geral_ano)
-#   cargo <- isolate(input$partido_geral_cargo)
-#   
-#   pref <- dados_gerais %>% filter(CODIGO_CARGO == cargo & ANO_ELEICAO == ano & NUM_TURNO == 1)
-#   
-#   ano_fed <- c(1998, 2002, 2006, 2010, 2014)
-#   
-#   if(!(ano %in% ano_fed)){
-#     pref <- pref %>%
-#       group_by(SIGLA_PARTIDO, COMPOSICAO_COLIGACAO) %>%
-#       summarise(tot = n_distinct(COD_MUN_IBGE))
-#     
-#     pref$id <- 1:dim(pref)[1]
-#     
-#     coligacoes <- strsplit(pref$COMPOSICAO_COLIGACAO, split = " / ")
-#     coligacoes <- lapply(coligacoes, FUN =  stringr::str_replace_all, pattern = "/", replacement = "")
-#     coligacoes <- lapply(coligacoes, FUN =  stringr::str_trim, side = "both")
-#     
-#     names(coligacoes) <- pref$SIGLA_PARTIDO
-#     all_coligation <- lapply(seq_along(coligacoes), function(i) data.frame(SIGLA_PARTIDO = names(coligacoes)[[i]],
-#                                                                            PARTIDO_COLIGACAO = coligacoes[[i]], 
-#                                                                            N_MUN = pref$tot[i],
-#                                                                            stringsAsFactors = F))
-#     
-#     all_coligation <- rbindlist(all_coligation)
-#     names(all_coligation) <- c("SIGLA_PARTIDO", "PARTIDO_COLIGACAO", "NUMERO_MUNICIPIOS")
-#     all_coligation <- all_coligation[!all_coligation$SIGLA_PARTIDO == all_coligation$PARTIDO_COLIGACAO,]
-#     
-#     all_coligation <- all_coligation %>%
-#       group_by(SIGLA_PARTIDO, PARTIDO_COLIGACAO) %>%
-#       summarise(tot_coligacao = sum(NUMERO_MUNICIPIOS)) %>%
-#       arrange(desc(tot_coligacao))
-#     
-#     ordem <- all_coligation %>%
-#       group_by(SIGLA_PARTIDO) %>%
-#       summarise(n = sum(tot_coligacao)) %>%
-#       arrange(n)%>%
-#       .$SIGLA_PARTIDO
-#     
-#     all_coligation <- ungroup(all_coligation)
-#     
-#     all_coligation$SIGLA_PARTIDO <- factor(all_coligation$SIGLA_PARTIDO, levels = ordem) 
-#     
-#     all_coligation$PARTIDO_COLIGACAO <- factor(all_coligation$PARTIDO_COLIGACAO, levels = ordem) 
-#     
-#     all_coligation$tooltip <- sprintf("%s - %s
-#                                       Number of coalitions: %s <br>",
-#                                       all_coligation$SIGLA_PARTIDO,
-#                                       all_coligation$PARTIDO_COLIGACAO,
-#                                       all_coligation$tot_coligacao)
-#   } else {
-#     pref <- pref %>%
-#       group_by(SIGLA_PARTIDO, COMPOSICAO_COLIGACAO) %>%
-#       summarise(tot = n_distinct(UF))
-#     
-#     pref$id <- 1:dim(pref)[1]
-#     
-#     coligacoes <- strsplit(pref$COMPOSICAO_COLIGACAO, split = " / ")
-#     coligacoes <- lapply(coligacoes, FUN =  stringr::str_replace_all, pattern = "/", replacement = "")
-#     coligacoes <- lapply(coligacoes, FUN =  stringr::str_trim, side = "both")
-#     
-#     names(coligacoes) <- pref$SIGLA_PARTIDO
-#     all_coligation <- lapply(seq_along(coligacoes), function(i) data.frame(SIGLA_PARTIDO = names(coligacoes)[[i]],
-#                                                                            PARTIDO_COLIGACAO = coligacoes[[i]], 
-#                                                                            N_MUN = pref$tot[i],
-#                                                                            stringsAsFactors = F))
-#     
-#     all_coligation <- rbindlist(all_coligation)
-#     names(all_coligation) <- c("SIGLA_PARTIDO", "PARTIDO_COLIGACAO", "NUMERO_MUNICIPIOS")
-#     
-#     all_coligation <- all_coligation[!(all_coligation$SIGLA_PARTIDO == all_coligation$PARTIDO_COLIGACAO),]
-#     
-#     all_coligation <- all_coligation %>%
-#       group_by(SIGLA_PARTIDO, PARTIDO_COLIGACAO) %>%
-#       summarise(tot_coligacao = sum(NUMERO_MUNICIPIOS)) %>%
-#       arrange(desc(tot_coligacao))
-#     
-#     ordem <- all_coligation %>%
-#       group_by(SIGLA_PARTIDO) %>%
-#       summarise(n = sum(tot_coligacao)) %>%
-#       arrange(n)%>%
-#       .$SIGLA_PARTIDO
-#     all_coligation <- ungroup(all_coligation)
-#     
-#     all_coligation$SIGLA_PARTIDO <- factor(all_coligation$SIGLA_PARTIDO, levels = ordem) 
-#     
-#     all_coligation$PARTIDO_COLIGACAO <- factor(all_coligation$PARTIDO_COLIGACAO, levels = ordem) 
-#     
-#     
-#     all_coligation$tooltip <- sprintf("%s - %s
-#                                       Number of coalitions: %s <br>",
-#                                       all_coligation$SIGLA_PARTIDO,
-#                                       all_coligation$PARTIDO_COLIGACAO,
-#                                       all_coligation$tot_coligacao) 
-#   }
-#   
-#   return(all_coligation = all_coligation)
-# })
-# 
-# output$mapa_partidos_cid <- renderLeaflet({
-#   mapa_pref_partido()
-# })
-# 
-# output$heatmap_coligacoes <- renderPlotly({
-#   
-#   all_coligation <- base_coligacoes()
-#   
-#   palette <- brewer.pal(n = 9, name = 'YlOrRd')
-#   
-#   plot_ly(data = all_coligation,
-#           x = ~PARTIDO_COLIGACAO, 
-#           y = ~SIGLA_PARTIDO,
-#           z = ~tot_coligacao,
-#           type = "heatmap",
-#           colors = palette,
-#           hoverinfo = "text",
-#           text = ~tooltip,
-#           colorbar = list(title = "Nº coalitions")) %>%
-#     layout(xaxis = list(title = ""), yaxis = list(title = ""))
-# })

@@ -1,5 +1,5 @@
-partido_analise <- tabPanel(title = "Lahan", 
-                          value = "partido_analise",
+land <- tabPanel(title = "Lahan", 
+                          value = "land",
                           column(width = 12,
                                  br(),
                                  wellPanel(
@@ -8,14 +8,14 @@ partido_analise <- tabPanel(title = "Lahan",
                           ),
                           ##-- Outputs ----
                           column(width = 12,
-                                 withSpinner(rHandsontableOutput("testEditTableLahan"), type = 6),
+                                 withSpinner(rHandsontableOutput("SatelitLahan"), type = 6),
                                  style = "padding-bottom: 10px;"
                           ),
                           # column(width = 12,
                           #        withSpinner(dataTableOutput("testEditTable"), type = 6),
                           #        style = "padding-bottom: 10px;"
                           # )
-                          actionBttn(inputId = "eleicoes_gerar_visualizacoes_br",
+                          actionBttn(inputId = "saveBttn",
                                      label = "Simpan",
                                      style = "fill",
                                      color = "success",

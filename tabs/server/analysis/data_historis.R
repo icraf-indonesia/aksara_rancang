@@ -61,11 +61,23 @@ historicalResults <- reactiveValues()
 bauResults <- reactiveValues()
 interventionResults <- reactiveValues()
 
+userActivities <- reactiveValues(
+  latestAct= NULL, message=NULL, dateTime=NULL, listOfActs = data.frame(latestAct=NULL, message=NULL, dateTime=NULL)
+)
+
+recordActivities <- function(latestAct, message, dateTime){
+  userActivities$latestAct<-latestAct
+  userActivities$message<-message
+  userActivities$dateTime=dateTime
+  userActivities$listOfActs<-rbind(userActivities$listOfActs,data.frame(latestAct=NULL, message=NULL, dateTime=NULL))
+}
+
 observeEvent(input$inputLogin, {
   fullname <- input$fullname
   username <- input$username
   password <- input$password
   selectedProv <- input$categoryProvince
+  # print(selectedProv)
   
   # if(password %in% provList$Password){
   #   
@@ -141,6 +153,7 @@ observeEvent(input$inputLogin, {
   
   notif_id <<- showNotification("Anda berhasil masuk", duration = 4, closeButton = TRUE, type = "warning")
   updateTabItems(session, "tabs", selected = "pageOne")
+
 })
 
 blackBoxInputs <- function(){
@@ -175,8 +188,8 @@ blackBoxInputs <- function(){
   
   # Row explicit definition for Income (Wages & Salary)
   income_row <- 2
-  
   indem_matrix <- as.matrix(indem)
+  
   addval_matrix <- as.matrix(addval)
   num_addval <- nrow(addval_matrix)
   dimensi <- ncol(indem_matrix)
@@ -924,110 +937,75 @@ output$downloadReport <- downloadHandler(
   }
 )
 
-# output$tableIO <- renderDataTable({
-#   if(debugMode){
-#     sec <- blackBoxInputs()
-#   } else {
-#     sec <- allInputs()
-#   }
-#   sector <- sec$sector
-#   indem <- sec$indem
-#   findem <- sec$findem
-#   addval <- sec$addval
-#   findemcom <- sec$findemcom
-#   addvalcom <- sec$addvalcom
-#   
-#   io_table <- cbind(as.data.frame(sector[,1]), indem)
-#   colnames(io_table) <- c("Sektor", t(as.data.frame(sector[,1])))
-#   io_table$`Total Permintaan Antara` <- rowSums(indem)
-#   
-#   colnames(findem) <- c(t(findemcom))
-#   findem$`Total Permintaan Akhir` <- rowSums(findem)
-#   io_table <- cbind(io_table, findem)
-#   
-#   total_indem <- colSums(indem)
-#   out_indem <- sum(total_indem)
-#   total_findem <- colSums(findem)
-#   out_findem <- sum(total_findem)
-#   total_all_indem <- as.data.frame(cbind("JUMLAH INPUT ANTARA", t(total_indem), out_indem, t(total_findem)))
-#   
-#   colnames(total_all_indem) <- colnames(io_table)
-#   io_table<-rbind(io_table, total_all_indem)
-#   
-#   totalrow_addval <- rowSums(addval)
-#   totalcol_addval <- colSums(addval)
-#   total_addval <- sum(totalrow_addval)
-#   addval_table <- cbind(addvalcom, addval, totalrow_addval)
-#   total_addval_table <- as.data.frame(cbind("JUMLAH INPUT", t(totalcol_addval), total_addval))
-#   
-#   remaining_col <- ncol(io_table) - ncol(total_addval_table) 
-#   for(i in 1:remaining_col){
-#     eval(parse(text=(paste("addval_table$new_col",  i, "<- ''", sep=""))))
-#     eval(parse(text=(paste("total_addval_table$new_col",  i, "<- ''", sep=""))))
-#   }
-#   colnames(addval_table) <- colnames(io_table)
-#   colnames(total_addval_table) <- colnames(io_table)
-#   io_table <- rbind(io_table, addval_table, total_addval_table)
-#   io_table
-#   
-#   datatable(io_table, extensions = "FixedColumns", options=list(paging=FALSE, scrollX=TRUE, scrollY='70vh', fixedColumns=list(leftColumns=1)), rownames=FALSE) %>%
-#     formatStyle('Sektor',target = "row", backgroundColor = styleEqual(c("JUMLAH INPUT ANTARA"), c('orange'))) %>%
-#     formatStyle(columns = "Total Permintaan Antara", target = "cell", backgroundColor = "#F7080880") %>%
-#     formatRound(columns=c(1:length(io_table)),2)
-# })
-# 
-# output$SatelitTenagaKerja <- renderDataTable({
-#   if(debugMode){
-#     sec <- blackBoxInputs()
-#   } else {
-#     sec <- allInputs()
-#   }
-#   labour <- sec$labour
-# }, options=list(paging=FALSE, scrollY='70vh'))
-
-output$SatelitEnergi <- renderDataTable({
-  if(debugMode){
-    sec <- blackBoxInputs()
-  } else {
-    sec <- allInputs()
-  }
-  energy <- sec$energy
-}, extensions = "FixedColumns", options=list(paging = FALSE, scrollY='70vh', scrollX=TRUE, fixedColumns=list(leftColumns=3)))  
-
-output$SatelitLimbah <- renderDataTable({
-  if(debugMode){
-    sec <- blackBoxInputs()
-  } else {
-    sec <- allInputs()
-  }
-  waste <- sec$waste
-}, extensions = "FixedColumns", options=list(paging = FALSE, scrollY='70vh', scrollX=TRUE, fixedColumns=list(leftColumns=3)))
-
-output$SatelitLahan <- renderDataTable({
-  if(debugMode){
-    sec <- blackBoxInputs()
-  } else {
-    sec <- allInputs()
-  }
-  LDM <- sec$LDM
-}, extensions = "FixedColumns", options=list(paging = FALSE, scrollY='70vh', scrollX=TRUE, fixedColumns=list(leftColumns=3)))
-
-output$TutupanLahan <- renderDataTable({
-  if(debugMode){
-    sec <- blackBoxInputs()
-  } else {
-    sec <- allInputs()
-  }
-  landcover <- sec$landcover
-}, extensions = "FixedColumns", options=list(paging = FALSE, scrollY='70vh', scrollX=TRUE, fixedColumns=list(leftColumns=3)))
-
 output$tableIO <- renderDataTable({
+  if(debugMode){
+    sec <- blackBoxInputs()
+  } else {
+    sec <- allInputs()
+  }
+  sector <- sec$sector
+  indem <- sec$indem
+  findem <- sec$findem
+  addval <- sec$addval
+  findemcom <- sec$findemcom
+  addvalcom <- sec$addvalcom
 
-  test <- read_excel("data/test.xlsx")
-  test
+  io_table <- cbind(as.data.frame(sector[,1]), indem)
+  colnames(io_table) <- c("Sektor", t(as.data.frame(sector[,1])))
+  io_table$`Total Permintaan Antara` <- rowSums(indem)
+
+  colnames(findem) <- c(t(findemcom))
+  findem$`Total Permintaan Akhir` <- rowSums(findem)
+  io_table <- cbind(io_table, findem)
+
+  total_indem <- colSums(indem)
+  out_indem <- sum(total_indem)
+  total_findem <- colSums(findem)
+  out_findem <- sum(total_findem)
+  total_all_indem <- as.data.frame(cbind("JUMLAH INPUT ANTARA", t(total_indem), out_indem, t(total_findem)))
+
+  colnames(total_all_indem) <- colnames(io_table)
+  io_table<-rbind(io_table, total_all_indem)
+
+  totalrow_addval <- rowSums(addval)
+  totalcol_addval <- colSums(addval)
+  total_addval <- sum(totalrow_addval)
+  addval_table <- cbind(addvalcom, addval, totalrow_addval)
+  total_addval_table <- as.data.frame(cbind("JUMLAH INPUT", t(totalcol_addval), total_addval))
+
+  remaining_col <- ncol(io_table) - ncol(total_addval_table)
+  for(i in 1:remaining_col){
+    eval(parse(text=(paste("addval_table$new_col",  i, "<- ''", sep=""))))
+    eval(parse(text=(paste("total_addval_table$new_col",  i, "<- ''", sep=""))))
+  }
+  colnames(addval_table) <- colnames(io_table)
+  colnames(total_addval_table) <- colnames(io_table)
+  io_table <- rbind(io_table, addval_table, total_addval_table)
+  io_table
+  
+  datatable(io_table, extensions = "FixedColumns", options=list(paging=FALSE, scrollX=TRUE, scrollY='70vh', fixedColumns=list(leftColumns=1)), rownames=FALSE)
+  # datatable(io_table, extensions = "FixedColumns", options=list(paging=FALSE, scrollX=TRUE, scrollY='70vh', fixedColumns=list(leftColumns=1)), rownames=FALSE) %>%
+  #   formatStyle(columns = "Sektor" ,target = "row", backgroundColor = styleEqual(c("JUMLAH INPUT ANTARA"), c('orange'))) %>%
+  #   formatStyle(columns = "Total Permintaan Antara", target = "cell", backgroundColor = "#F7080880") %>%
+  #   formatRound(columns=c(1:length(io_table)),2)
 })
 
 output$SatelitTenagaKerja <- renderDataTable({
-  test <- read_excel("data/test.xlsx")
-  test
-})
+  if(debugMode){
+    sec <- blackBoxInputs()
+  } else {
+    sec <- allInputs()
+  }
+  labour <- sec$labour
+}, options=list(paging=FALSE, scrollY='70vh'))
+
+# output$tableIO <- renderDataTable({
+# 
+#   test <- read_excel("data/test.xlsx")
+#   test
+# })
+# 
+# output$SatelitTenagaKerja <- renderDataTable({
+#   test <- read_excel("data/test.xlsx")
+#   test
+# })
