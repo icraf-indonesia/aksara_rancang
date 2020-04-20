@@ -29,6 +29,7 @@ shinyUI(
                eleicoes,
                partido,
                candidato,
+               tradeoff,
                sobre
     ),
     ##-- Footer ----

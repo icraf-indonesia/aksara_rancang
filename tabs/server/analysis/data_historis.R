@@ -5,23 +5,23 @@ notif_id <- NULL
 provList <- readRDS("data/provList")
 # usersList <- load("usersList")
 
-LDMProp_new<-reactiveValues(
-  tablo = NULL,
-  coba= NULL
-)
+# LDMProp_new<-reactiveValues(
+#   tablo = NULL,
+#   coba= NULL
+# )
+# 
+# tabel<-reactiveValues(
+#   manualSave=NULL
+# )
 
-tabel<-reactiveValues(
-  manualSave=NULL
-)
+# ldmRV<-reactiveValues(
+#   LDMListFile = unique(list.files(paste0("LDMData/Prov/"))),   # ganti mas alfa
+#   LDMTotFile= unique(length(list.files("LDMData/Prov/")))   # ganti mas alfa
+# )
 
-ldmRV<-reactiveValues(
-  LDMListFile = unique(list.files(paste0("LDMData/Prov/"))),   # ganti mas alfa
-  LDMTotFile= unique(length(list.files("LDMData/Prov/")))   # ganti mas alfa
-)
-
-editable<-reactiveValues(
-  BAULahan_landCover=NULL
-)
+# editable<-reactiveValues(
+#   BAULahan_landCover=NULL
+# )
 
 allDataProv <- reactiveValues(
   username = NULL,
@@ -340,7 +340,6 @@ blackBoxInputs <- function(){
   return(list_table)
 }
 
-###*historical input####
 allInputs <- eventReactive(input$button, {
   inSector <- input$sector
   if(is.null(inSector))
@@ -526,199 +525,509 @@ output$sectorSelection <- renderUI({
   selectInput("selectedSector", "Sektor", "Pilih sektor", choices=as.character(analysisResult$Sektor))
 })
 
+output$plotlyResults <- renderPlotly({
+  if(debugMode){
+    sec <- blackBoxInputs()
+  } else {
+    sec <- allInputs()
+  }
+  analysisResult <- sec$result
+  income_per_capita <- sec$income_per_capita
+  graph <- data.frame(Sektor="", Analysis="")
+  landTable_his<-sec$landTable_his
+  
+  if(input$categorySector=="Ekonomi"){
+    if(input$pprkResults == "PDRB"){
+      graph <- subset(analysisResult, select = c(Sektor, GDP))
+      GDPvalues <- as.matrix(analysisResult$GDP)
+      GDPTotal <- colSums(GDPvalues)
+      GDPTotal <- round(GDPTotal,digits = 2)
+      #GDPTotalL <- formattable(GDPTotal, digits = 2, format = "f")
+      insertUI(
+        selector="#placeholder",
+        ui = tags$div(
+          valueBox(format(GDPTotal, nsmall = 2, big.mark = ".", decimal.mark = ","), "Juta Rupiah", icon = icon("credit-card"), width = 12),
+          id='pdrb'
+        )
+      )
+      removeUI(selector = '#capita')
+    } else if(input$pprkResults == "Backward Linkage"){
+      graph <- subset(analysisResult, select = c(Sektor, DBL))
+      removeUI(selector = '#pdrb')
+      removeUI(selector = '#capita')
+    } else if(input$pprkResults == "Forward Linkage"){
+      graph <- subset(analysisResult, select = c(Sektor, DFL))
+      removeUI(selector = '#pdrb')
+      removeUI(selector = '#capita')
+    } else if(input$pprkResults == "Angka Pengganda Output"){
+      graph <- subset(analysisResult, select = c(Sektor, multiplierOutput))
+      removeUI(selector = '#pdrb')
+      removeUI(selector = '#capita')
+    } else if(input$pprkResults == "Angka Pengganda Pendapatan Rumah Tangga"){
+      graph <- subset(analysisResult, select = c(Sektor, multiplierIncome))
+      removeUI(selector = '#pdrb')
+      removeUI(selector = '#capita')
+    } else if(input$pprkResults == "Angka Pengganda Tenaga Kerja"){
+      graph <- subset(analysisResult, select = c(Sektor, multiplierLabour))
+      removeUI(selector = '#pdrb')
+      removeUI(selector = '#capita') 
+    } else if(input$pprkResults == "Upah gaji"){
+      graph <- subset(analysisResult, select = c(Sektor, wages))
+      removeUI(selector = '#pdrb')
+      removeUI(selector = '#capita')
+    } else if(input$pprkResults == "Rasio Upah gaji per Surplus Usaha"){
+      graph <- subset(analysisResult, select = c(Sektor, ratio_ws))
+      removeUI(selector = '#pdrb')
+      removeUI(selector = '#capita')
+    } else if(input$pprkResults == "Pendapatan per kapita"){
+      removeUI(selector = '#pdrb')
+      insertUI(
+        selector="#placeholder",
+        ui = tags$div(
+          valueBox(format(income_per_capita, nsmall = 2, big.mark = ".", decimal.mark = ","), "Juta Rupiah/Jiwa", icon = icon("credit-card"), width = 8),
+          id='capita'
+        )
+      )
+    } 
+    
+    if(input$pprkResults == "Perbandingan Angka Pengganda"){
+      removeUI(selector = '#pdrb')
+      removeUI(selector = '#capita')
+      
+      multiplierTable <- subset(analysisResult, select = c(Sektor, multiplierIncome, multiplierOutput, multiplierLabour, multiplierEnergy, multiplierWaste))
+      tabel_radarchart <- multiplierTable[multiplierTable==input$selectedSector,]
+      
+      normalize<- function(x){
+        return((x-min(x))/(max(x)-min(x)))
+      }
+      
+      tabel_radarchart<-as.data.frame(tabel_radarchart[2:6])
+      tabel_radar<-normalize(tabel_radarchart)
+      nilai_temp<-t(tabel_radar)
+      plot_ly(
+        type='scatterpolar',
+        r = c(nilai_temp),
+        theta = c('multiplierIncome','multiplierOutput','multiplierLabour','multiplierEnergy','multiplierWaste'),
+        fill='toself'
+      ) %>%
+        layout(
+          polar=list(
+            radialaxis=list(
+              visible=T,
+              range=c(0,1)
+            )
+          ),
+          showlegend=F
+        )
+      # tabel_radar <- tabel_radarchart
+      # tabel_radar$Sektor <- NULL
+      # tabel_radarmax <- data.frame(multiplierIncome=max(multiplierTable$multiplierIncome), 
+      #                              multiplierOutput=max(multiplierTable$multiplierOutput), 
+      #                              multiplierLabour=max(multiplierTable$multiplierLabour), 
+      #                              multiplierEnergy=max(multiplierTable$multiplierEnergy),
+      #                              multiplierWaste=max(multiplierTable$multiplierWaste) 
+      #                              )
+      # tabel_radarmin <- data.frame(multiplierIncome=min(multiplierTable$multiplierIncome),  
+      #                              multiplierOutput=min(multiplierTable$multiplierOutput),  
+      #                              multiplierLabour=min(multiplierTable$multiplierLabour),  
+      #                              multiplierEnergy=min(multiplierTable$multiplierEnergy),
+      #                              multiplierWaste=min(multiplierTable$multiplierWaste) 
+      #                              )
+      # tabel_radar <- rbind(tabel_radarmax, tabel_radarmin, tabel_radar)
+      # radarchart(tabel_radar)
+      
+    } else {
+      colnames(graph) <- c("Sektor", "Analisis")
+      gplot<-ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) +
+        geom_bar(stat="identity", colour="black") + theme_void() +
+        coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+      ggplotly(gplot)
+      
+      # plot_ly(data=graph, x = ~Analisis, y = ~Sektor, type = 'bar', orientation = 'h') %>% layout(xaxis = list(title = ""), yaxis = list(title = "", showticklabels=F))
+      
+      # plot_ly(graph, x=~Analisis, y=~Sektor, fill=~Sektor) %>%
+      #   add_bars(orientation = 'h',name=~Sektor) %>%
+      #   layout(barmode = 'stack',
+      #          xaxis = list(title = "Nilai"),
+      #          yaxis = list(title ="Sektor"))
+    }
+  } else if(input$categorySector=="Energi"){
+    if(input$pprkEnergy == "Angka Pengganda Energi"){
+      graph <- subset(analysisResult, select = c(Sektor, multiplierEnergy))
+      removeUI(selector = '#pdrb')
+      removeUI(selector = '#capita')
+    } else if(input$pprkEnergy == "Koefisien Intensitas Energi"){
+      graph <- subset(analysisResult, select = c(Sektor, coef_energy))
+      removeUI(selector = '#pdrb')
+      removeUI(selector = '#capita')
+    } else if(input$pprkEnergy == "Emisi dari Penggunaan Energi"){
+      graph <- subset(analysisResult, select = c(Sektor, em_energy_total))
+      removeUI(selector = '#pdrb')
+      removeUI(selector = '#capita')
+    } 
+    
+    colnames(graph) <- c("Sektor", "Analisis")
+    gplot1<-ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) +
+      geom_bar(colour="black", stat="identity") + theme_void() +
+      coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+    ggplotly(gplot1)
+    # plot_ly(graph, x=~Nilai, y=~Sektor, fill=~Sektor) %>%
+    #   add_bars(orientation = 'h',name=~Sektor) %>%
+    #   layout(barmode = 'stack',
+    #          xaxis = list(title = "Nilai"),
+    #          yaxis = list(title ="Sektor"))
+  } else if(input$categorySector=="Lahan"){
+    removeUI(selector = '#pdrb')
+    removeUI(selector = '#capita')
+    if(input$pprkLand == "Koefisien Kebutuhan Lahan") {
+      graph <- subset(landTable_his, select=c(Sektor, Kategori, LRC))
+      colnames(graph) <- c("Sektor", "Kategori", "LRC")
+      gplot2<-ggplot(data=graph, aes(x=Sektor, y=LRC, fill=Kategori)) +
+        geom_bar(colour="black", stat="identity")+ coord_flip() + theme_void() +
+        guides(fill=FALSE) + xlab("Sectors") + ylab("Koefisien Kebutuhan Lahan")
+      ggplotly(gplot2)
+      # plot_ly(graph, x=~LRC, y=~Sektor, fill=~Kategori) %>%
+      #   add_bars(orientation = 'h',name=~Kategori) %>%
+      #   layout(barmode = 'stack',
+      #          xaxis = list(title = "Koefisien Kebutuhan Lahan"),
+      #          yaxis = list(title ="Sectors"))
+    } else if(input$pprkLand == "Koefisien Produktivitas Lahan") {
+      graph <- subset(landTable_his, select=c(Sektor, Kategori, LPC))
+      colnames(graph) <- c("Sektor", "Kategori", "LPC")
+      gplot2<-ggplot(data=graph, aes(x=Sektor, y=LPC, fill=Kategori)) +
+        geom_bar(colour="black", stat="identity")+ coord_flip() + theme_void() +
+        guides(fill=FALSE) + xlab("Sektor") + ylab("Koefisien Produktivitas Lahan")
+      ggplotly(gplot2)
+      # plot_ly(graph, x=~LPC, y=~Sektor, fill=~Kategori) %>%
+      #   add_bars(orientation = 'h',name=~Kategori) %>%
+      #   layout(barmode = 'stack',
+      #          xaxis = list(title = "Koefisien Produktivitas Lahan"),
+      #          yaxis = list(title ="Sektor"))
+    }
+  } else {
+    if(input$pprkWaste == "Angka Pengganda Buangan Limbah"){
+      graph <- subset(analysisResult, select = c(Sektor, multiplierWaste))
+      removeUI(selector = '#pdrb')
+      removeUI(selector = '#capita')
+    } else if(input$pprkWaste == "Koefisien Produk Limbah"){
+      graph <- subset(analysisResult, select = c(Sektor, coef_waste))
+      removeUI(selector = '#pdrb')
+      removeUI(selector = '#capita') 
+    } else if(input$pprkWaste == "Emisi dari Limbah"){
+      graph <- subset(analysisResult, select = c(Sektor, em_waste_total))
+      removeUI(selector = '#pdrb')
+      removeUI(selector = '#capita')
+    }
+    
+    colnames(graph) <- c("Sektor", "Analisis")
+    gplot3<-ggplot(data=graph, aes(x=Sektor, y=Analisis, fill=Sektor)) +
+      geom_bar(colour="black", stat="identity") + theme_void() +
+      coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
+    ggplotly(gplot3)
+    # plot_ly(graph, x=~Analisis, y=~Sektor, fill=~Sektor) %>%
+    #   add_bars(orientation = 'h',name=~Sektor) %>%
+    #   layout(barmode = 'stack',
+    #          xaxis = list(title = "Nilai"),
+    #          yaxis = list(title ="Sektor"))
+  }
+})
+
+output$tableDesc <- renderText({
+  if(input$categorySector=="Ekonomi"){
+    if(input$pprkResults == "PDRB"){
+      return(NULL)
+    } else if(input$pprkResults == "Backward Linkage"){
+      paste0("Direct Backward Linkage (DBL) menunjukkan tingkat keterkaitan kebelakang dari sebuah sektor ekonomi.
+               Nilai DBL yang tinggi dari sebuah sektor menunjukkan bahwa sektor tersebut banyak menggunakan output yang dihasilkan oleh sektor lain dalam menghasilkan outputnya sendiri")
+    } else if(input$pprkResults == "Forward Linkage"){
+      paste0("Direct Forward Linkage (DBL) menunjukkan tingkat keterkaitan kedepan dari sebuah sektor ekonomi.
+        Nilai DFL yang tinggi dari sebuah sektor menunjukkan bahwa output dari sektor tersebut banyak digunakan oleh sektor lain.")
+    } else if(input$pprkResults == "Angka Pengganda Output"){
+      paste0("Angka Pengganda Output menunjukkan dampak perubahan permintaan akhir sebuah sektor terhadap total output masing-masing sektor di sebuah daerah.
+        Angka Pengganda Output yang tinggi menunjukkan seberapa besarnya pengaruh sebuah sektor terhadap kondisi perekonomian daerah")
+    } else if(input$pprkResults == "Angka Pengganda Pendapatan Rumah Tangga"){
+      paste0("Angka Pengganda Pendapatan Rumah Tangga menunjukkan dampak perubahan permintaan akhir sebuah sektor terhadap total income yang dihasilkan masing-masing sektor di sebuah daerah.")
+    } else if(input$pprkResults == "Angka Pengganda Tenaga Kerja"){
+      paste0("Angka Pengganda Tenaga Kerja menunjukkan dampak perubahan permintaan akhir sebuah sektor ekonomi terhadap penyerapan tenaga kerja suatu provinsi.")
+    } else if(input$pprkResults == "Upah gaji"){
+      return(NULL)
+    } else if(input$pprkResults == "Rasio Upah gaji per Surplus Usaha"){
+      return(NULL)
+    } else if(input$pprkResults == "Pendapatan per kapita"){
+      return(NULL)
+    } else if(input$pprkResults == "Perbandingan Angka Pengganda"){
+      
+    }
+  } else if(input$categorySector=="Energi"){
+    
+  } else if(input$categorySector=="Lahan"){
+    
+  } else {
+    
+  }
+})
+
+output$tableResults <- renderDataTable({
+  if(debugMode){
+    sec <- blackBoxInputs()
+  } else {
+    sec <- allInputs()
+  }
+  analysisResult <- sec$result
+  landTable_his <- sec$landTable_his
+  
+  if(input$categorySector=="Ekonomi"){
+    if(input$pprkResults == "PDRB"){
+      tables <- subset(analysisResult, select = c(Sektor, GDP))
+      tables
+    } else if(input$pprkResults == "Backward Linkage"){
+      tables <- subset(analysisResult, select = c(Sektor, DBL))
+      tables
+    } else if(input$pprkResults == "Forward Linkage"){
+      tables <- subset(analysisResult, select = c(Sektor, DFL))
+      tables
+    } else if(input$pprkResults == "Angka Pengganda Output"){
+      tables <- subset(analysisResult, select = c(Sektor, multiplierOutput))
+      tables
+    } else if(input$pprkResults == "Angka Pengganda Pendapatan Rumah Tangga"){
+      tables <- subset(analysisResult, select = c(Sektor, multiplierIncome))
+      tables
+    } else if(input$pprkResults == "Angka Pengganda Tenaga Kerja"){
+      tables <- subset(analysisResult, select = c(Sektor, multiplierLabour))
+      tables
+    } else if(input$pprkResults == "Upah gaji"){
+      tables <- subset(analysisResult, select = c(Sektor, wages))
+      tables
+    } else if(input$pprkResults == "Rasio Upah gaji per Surplus Usaha"){
+      tables <- subset(analysisResult, select = c(Sektor, ratio_ws))
+      tables
+    } else if(input$pprkResults == "Pendapatan per kapita"){
+      return(NULL)
+    } else if(input$pprkResults == "Perbandingan Angka Pengganda"){
+      tables <- multiplierTable <- subset(analysisResult, select = c(Sektor, multiplierIncome, multiplierOutput, multiplierLabour, multiplierEnergy, multiplierWaste)) 
+      tables
+    }
+  } else if(input$categorySector=="Energi"){
+    if(input$pprkEnergy == "Angka Pengganda Energi"){
+      tables <- subset(analysisResult, select = c(Sektor, multiplierEnergy))
+      tables
+    } else if(input$pprkEnergy == "Koefisien Intensitas Energi"){
+      tables <- subset(analysisResult, select = c(Sektor, coef_energy))
+      tables
+    } else if(input$pprkEnergy == "Emisi dari Penggunaan Energi"){
+      tables <- subset(analysisResult, select = c(Sektor, em_energy_total))
+      tables
+    }
+  } else if (input$categorySector=="Lahan"){
+    if(input$pprkLand == "Matriks Distribusi Lahan"){
+      # removeUI(selector = '#plotlyResults') 
+      tables <- subset(landTable_his <- sec$landTable_his, select=-Kategori)
+      tables
+    } else if(input$pprkLand == "Koefisien Kebutuhan Lahan") {
+      tables <- subset(landTable_his <- sec$landTable_his, select=c(Sektor, LRC, Kategori))
+      tables
+    } else if(input$pprkLand == "Koefisien Produktivitas Lahan") {
+      tables <- subset(landTable_his <- sec$landTable_his, select=c(Sektor, LPC, Kategori))
+      tables
+    } else {
+      # removeUI(selector = '#plotlyResults')
+      tables <- landTable_his <- sec$landTable_his[,c("Sektor", colnames(landTable_his <- sec$landTable_his)[ncol(landTable_his <- sec$landTable_his)-2])]
+      tables
+    }
+  } else {
+    if(input$pprkWaste == "Angka Pengganda Buangan Limbah"){
+      tables <- subset(analysisResult, select = c(Sektor, multiplierWaste))
+      tables
+    }  else if(input$pprkWaste == "Koefisien Produk Limbah"){
+      tables <- subset(analysisResult, select = c(Sektor, coef_waste))
+      tables
+    }  else if(input$pprkWaste == "Emisi dari Limbah"){
+      tables <- subset(analysisResult, select = c(Sektor, em_waste_total))
+      tables
+    } 
+  }
+  datatable(tables, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, scrollY="70vh", fixedColumns=list(leftColumns=1)), rownames=FALSE, height=540) %>%
+    formatRound(columns=c(1:length(tables)),2) %>%
+    formatStyle(colnames(tables)[2], background = styleColorBar(tables[,2], 'lightblue'), backgroundSize = '98% 88%', backgroundRepeat = 'no-repeat', backgroundPosition = 'center')
+}) #extensions = "FixedColumns", options=list(pageLength=50,scrollX=TRUE, scrollY="600px", fixedColumns=list(leftColumns=1)), rownames=FALSE)
+
+output$downloadTable <- downloadHandler(
+  filename = input$pprkResults,
+  contentType = "text/csv",
+  content = function(file) {
+    if(debugMode){
+      sec <- blackBoxInputs()
+    } else {
+      sec <- allInputs()
+    }
+    analysisResult <- sec$result
+    landTable_his <- sec$landTable_his
+    
+    if(input$categorySector=="Ekonomi"){
+      if(input$pprkResults == "PDRB"){
+        tables <- subset(analysisResult, select = c(Sektor, GDP))
+      } else if(input$pprkResults == "Backward Linkage"){
+        tables <- subset(analysisResult, select = c(Sektor, DBL))
+      } else if(input$pprkResults == "Forward Linkage"){
+        tables <- subset(analysisResult, select = c(Sektor, DFL))
+      } else if(input$pprkResults == "Angka Pengganda Output"){
+        tables <- subset(analysisResult, select = c(Sektor, multiplierOutput))
+      } else if(input$pprkResults == "Angka Pengganda Pendapatan Rumah Tangga"){
+        tables <- subset(analysisResult, select = c(Sektor, multiplierIncome))
+      } else if(input$pprkResults == "Angka Pengganda Tenaga Kerja"){
+        tables <- subset(analysisResult, select = c(Sektor, multiplierLabour))
+      } else if(input$pprkResults == "Upah gaji"){
+        tables <- subset(analysisResult, select = c(Sektor, wages))
+      } else if(input$pprkResults == "Rasio Upah gaji per Surplus Usaha"){
+        tables <- subset(analysisResult, select = c(Sektor, ratio_ws))
+      } else if(input$pprkResults == "Pendapatan per kapita"){
+        tables <- data.frame(NODATA="")
+      } else if(input$pprkResults == "Perbandingan Angka Pengganda"){
+        tables <- data.frame(NODATA="")
+      }
+    } else if(input$categorySector=="Energi"){
+      if(input$pprkResults == "Angka Pengganda Energi"){
+        tables <- subset(analysisResult, select = c(Sektor, multiplierEnergy))
+      } else if(input$pprkResults == "Koefisien Intensitas Energi"){
+        tables <- subset(analysisResult, select = c(Sektor, coef_energy))
+      } else if(input$pprkResults == "Emisi dari Penggunaan Energi"){
+        tables <- subset(analysisResult, select = c(Sektor, em_energy_total))
+      } 
+    } else if (input$categorySector== "Lahan"){
+      if(input$pprkLand == "Matriks Distribusi Lahan"){
+        tables <- subset(landTable_his, select=-Kategori)
+      } else if(input$pprkLand == "Koefisien Kebutuhan Lahan") {
+        tables <- subset(landTable_his, select=c(Sektor, LRC, Kategori))
+      } else if(input$pprkLand == "Koefisien Produktivitas Lahan") {
+        tables <- subset(landTable_his, select=c(Sektor, LPC, Kategori))
+      } else {
+        # removeUI(selector = '#plotlyResults')
+        tables <- landTable_his[,c("Sektor", colnames(landTable_his)[ncol(landTable_his)-2])]
+      }
+    } else {
+      if(input$pprkResults == "Angka Pengganda Buangan Limbah"){
+        tables <- subset(analysisResult, select = c(Sektor, multiplierWaste))
+      } else if(input$pprkResults == "Koefisien Produk Limbah"){
+        tables <- subset(analysisResult, select = c(Sektor, coef_waste))
+      } else if(input$pprkResults == "Emisi dari Limbah"){
+        tables <- subset(analysisResult, select = c(Sektor, em_waste_total))
+      }
+    }
+    write.table(tables, file, quote=FALSE, row.names=FALSE, sep=",")
+  }
+)
+
+output$downloadReport <- downloadHandler(
+  filename = "report.doc",
+  content = function(file){
+    file.copy(paste0("data/", allDataProv$prov, "/", allDataProv$prov, "_analisa_deskriptif.doc"), file)
+  }
+)
+
+# output$tableIO <- renderDataTable({
+#   if(debugMode){
+#     sec <- blackBoxInputs()
+#   } else {
+#     sec <- allInputs()
+#   }
+#   sector <- sec$sector
+#   indem <- sec$indem
+#   findem <- sec$findem
+#   addval <- sec$addval
+#   findemcom <- sec$findemcom
+#   addvalcom <- sec$addvalcom
+#   
+#   io_table <- cbind(as.data.frame(sector[,1]), indem)
+#   colnames(io_table) <- c("Sektor", t(as.data.frame(sector[,1])))
+#   io_table$`Total Permintaan Antara` <- rowSums(indem)
+#   
+#   colnames(findem) <- c(t(findemcom))
+#   findem$`Total Permintaan Akhir` <- rowSums(findem)
+#   io_table <- cbind(io_table, findem)
+#   
+#   total_indem <- colSums(indem)
+#   out_indem <- sum(total_indem)
+#   total_findem <- colSums(findem)
+#   out_findem <- sum(total_findem)
+#   total_all_indem <- as.data.frame(cbind("JUMLAH INPUT ANTARA", t(total_indem), out_indem, t(total_findem)))
+#   
+#   colnames(total_all_indem) <- colnames(io_table)
+#   io_table<-rbind(io_table, total_all_indem)
+#   
+#   totalrow_addval <- rowSums(addval)
+#   totalcol_addval <- colSums(addval)
+#   total_addval <- sum(totalrow_addval)
+#   addval_table <- cbind(addvalcom, addval, totalrow_addval)
+#   total_addval_table <- as.data.frame(cbind("JUMLAH INPUT", t(totalcol_addval), total_addval))
+#   
+#   remaining_col <- ncol(io_table) - ncol(total_addval_table) 
+#   for(i in 1:remaining_col){
+#     eval(parse(text=(paste("addval_table$new_col",  i, "<- ''", sep=""))))
+#     eval(parse(text=(paste("total_addval_table$new_col",  i, "<- ''", sep=""))))
+#   }
+#   colnames(addval_table) <- colnames(io_table)
+#   colnames(total_addval_table) <- colnames(io_table)
+#   io_table <- rbind(io_table, addval_table, total_addval_table)
+#   io_table
+#   
+#   datatable(io_table, extensions = "FixedColumns", options=list(paging=FALSE, scrollX=TRUE, scrollY='70vh', fixedColumns=list(leftColumns=1)), rownames=FALSE) %>%
+#     formatStyle('Sektor',target = "row", backgroundColor = styleEqual(c("JUMLAH INPUT ANTARA"), c('orange'))) %>%
+#     formatStyle(columns = "Total Permintaan Antara", target = "cell", backgroundColor = "#F7080880") %>%
+#     formatRound(columns=c(1:length(io_table)),2)
+# })
+# 
+# output$SatelitTenagaKerja <- renderDataTable({
+#   if(debugMode){
+#     sec <- blackBoxInputs()
+#   } else {
+#     sec <- allInputs()
+#   }
+#   labour <- sec$labour
+# }, options=list(paging=FALSE, scrollY='70vh'))
+
+output$SatelitEnergi <- renderDataTable({
+  if(debugMode){
+    sec <- blackBoxInputs()
+  } else {
+    sec <- allInputs()
+  }
+  energy <- sec$energy
+}, extensions = "FixedColumns", options=list(paging = FALSE, scrollY='70vh', scrollX=TRUE, fixedColumns=list(leftColumns=3)))  
+
+output$SatelitLimbah <- renderDataTable({
+  if(debugMode){
+    sec <- blackBoxInputs()
+  } else {
+    sec <- allInputs()
+  }
+  waste <- sec$waste
+}, extensions = "FixedColumns", options=list(paging = FALSE, scrollY='70vh', scrollX=TRUE, fixedColumns=list(leftColumns=3)))
+
+output$SatelitLahan <- renderDataTable({
+  if(debugMode){
+    sec <- blackBoxInputs()
+  } else {
+    sec <- allInputs()
+  }
+  LDM <- sec$LDM
+}, extensions = "FixedColumns", options=list(paging = FALSE, scrollY='70vh', scrollX=TRUE, fixedColumns=list(leftColumns=3)))
+
+output$TutupanLahan <- renderDataTable({
+  if(debugMode){
+    sec <- blackBoxInputs()
+  } else {
+    sec <- allInputs()
+  }
+  landcover <- sec$landcover
+}, extensions = "FixedColumns", options=list(paging = FALSE, scrollY='70vh', scrollX=TRUE, fixedColumns=list(leftColumns=3)))
+
 output$tableIO <- renderDataTable({
 
   test <- read_excel("data/test.xlsx")
   test
-  # if(debugMode){
-  #   sec <- blackBoxInputs()
-  # } else {
-  #   sec <- allInputs()
-  # }
-  # sector <- sec$sector
-  # indem <- sec$indem
-  # findem <- sec$findem
-  # addval <- sec$addval
-  # findemcom <- sec$findemcom
-  # addvalcom <- sec$addvalcom
-  # 
-  # io_table <- cbind(as.data.frame(sector[,1]), indem)
-  # colnames(io_table) <- c("Sektor", t(as.data.frame(sector[,1])))
-  # io_table$`Total Permintaan Antara` <- rowSums(indem)
-  # 
-  # colnames(findem) <- c(t(findemcom))
-  # findem$`Total Permintaan Akhir` <- rowSums(findem)
-  # io_table <- cbind(io_table, findem)
-  # 
-  # total_indem <- colSums(indem)
-  # out_indem <- sum(total_indem)
-  # total_findem <- colSums(findem)
-  # out_findem <- sum(total_findem)
-  # total_all_indem <- as.data.frame(cbind("JUMLAH INPUT ANTARA", t(total_indem), out_indem, t(total_findem)))
-  # 
-  # colnames(total_all_indem) <- colnames(io_table)
-  # io_table<-rbind(io_table, total_all_indem)
-  # 
-  # totalrow_addval <- rowSums(addval)
-  # totalcol_addval <- colSums(addval)
-  # total_addval <- sum(totalrow_addval)
-  # addval_table <- cbind(addvalcom, addval, totalrow_addval)
-  # total_addval_table <- as.data.frame(cbind("JUMLAH INPUT", t(totalcol_addval), total_addval))
-  # 
-  # remaining_col <- ncol(io_table) - ncol(total_addval_table) 
-  # for(i in 1:remaining_col){
-  #   eval(parse(text=(paste("addval_table$new_col",  i, "<- ''", sep=""))))
-  #   eval(parse(text=(paste("total_addval_table$new_col",  i, "<- ''", sep=""))))
-  # }
-  # colnames(addval_table) <- colnames(io_table)
-  # colnames(total_addval_table) <- colnames(io_table)
-  # io_table <- rbind(io_table, addval_table, total_addval_table)
-  # io_table
-  # 
-  # datatable(io_table, extensions = "FixedColumns", options=list(paging=FALSE, scrollX=TRUE, scrollY='70vh', fixedColumns=list(leftColumns=1)), rownames=FALSE) %>%
-  #   formatStyle('Sektor',target = "row", backgroundColor = styleEqual(c("JUMLAH INPUT ANTARA"), c('orange'))) %>%
-  #   formatStyle(columns = "Total Permintaan Antara", target = "cell", backgroundColor = "#F7080880") %>%
-  #   formatRound(columns=c(1:length(io_table)),2)
 })
 
 output$SatelitTenagaKerja <- renderDataTable({
   test <- read_excel("data/test.xlsx")
   test
 })
-
-# ##-- Atualizações dos filtros ----
-# ##-- + Atualizações os anos ----
-# observeEvent(input$eleicoes_cargo_br,{
-#   cargo <- isolate(input$eleicoes_cargo_br)
-#   
-#   if(!is.null(cargo)){
-#     chaves_sub <- chaves %>%
-#       filter(CODIGO_CARGO == cargo) 
-#     
-#     ##-- Setando o cargo default
-#     anos <- sort(unique(chaves_sub$ANO_ELEICAO))
-#     ano_default <- input$eleicoes_ano_br
-#     
-#     if(!(ano_default %in% anos)){
-#       ano_default <- anos[1]
-#     }
-#     
-#     ##-- Atualizando os cargos ----
-#     updatePickerInput(session = session,
-#                       inputId = "eleicoes_ano_br",
-#                       label = "Year", 
-#                       choices = anos, 
-#                       selected = ano_default)
-#     
-#   }
-#   
-# }, priority = 1)
-# ##-- + Atualizações dos turnos ----
-# observeEvent(c(input$eleicoes_ano_br, 
-#                input$eleicoes_cargo_br),{
-#                  
-#                  ano <- isolate(input$eleicoes_ano_br)
-#                  cargo <- isolate(input$eleicoes_cargo_br)
-#                  
-#                  if(!is.null(cargo)){
-#                    chaves_sub <- chaves %>%
-#                      filter(ANO_ELEICAO == ano & CODIGO_CARGO == cargo)
-#                    
-#                    ##-- Setando o cargo default
-#                    turnos <- unique(chaves_sub$NUM_TURNO)
-#                    turno_default <- input$eleicoes_turno_br
-#                    
-#                    if(!(turno_default %in% paste0(turnos, "º round")) | length(turnos) == 0){
-#                      turno_default <- "1º round"
-#                    }
-#                    
-#                    if(length(turnos) == 0){
-#                      turnos <- ""
-#                    } else{
-#                      turnos <- paste0(turnos, "º round")
-#                    }
-#                    
-#                    ##-- Atualizando os turnos ----
-#                    updatePickerInput(sessio = session,
-#                                      inputId = "eleicoes_turno_br", 
-#                                      label = "Round", 
-#                                      choices = turnos, 
-#                                      selected = turno_default)
-#                  }
-#                  
-#                }, priority = 2)
-# ##-- + Atualizações dos estados ----
-# observeEvent(c(input$eleicoes_ano_br, 
-#                input$eleicoes_cargo_br, 
-#                input$eleicoes_turno_br),{
-#                  
-#                  ano <- isolate(input$eleicoes_ano_br)
-#                  cargo <- isolate(input$eleicoes_cargo_br)
-#                  turno <- isolate(input$eleicoes_turno_br)
-#                  turno <- ifelse(turno != "1º round", "2", "1")
-#                  
-#                  if(!is.null(turno)){
-#                    chaves_sub <- chaves %>%
-#                      filter(ANO_ELEICAO == ano & NUM_TURNO == turno)
-#                    ##-- Setando o estado default
-#                    estados <- levels(factor(x = sort(unique(chaves_sub$UF)),
-#                                              levels = sort(unique(chaves_sub$UF))))
-#                    estado_default <- input$eleicoes_estado_br
-#                    
-#                    if(!(estado_default %in% estados)){
-#                      estado_default <- "AC"
-#                    }
-#                    
-#                    ##-- Atualizando os partidos ----
-#                    updatePickerInput(session = session,
-#                                      inputId = "eleicoes_estado_br",
-#                                      label = "State", 
-#                                      choices = estados, 
-#                                      selected = estado_default)  
-#                  }
-#                  
-#                }, priority = 3)
-# ##-- Reactive para os dados ----
-# dados_eleicao_geral_br <- reactive({
-#   ##-- + Inputs ----
-#   ano <- input$eleicoes_ano_br
-#   cargo <- input$eleicoes_cargo_br
-#   turno <- input$eleicoes_turno_br
-#   turno <- ifelse(turno != "1º round", "2", "1")
-#   
-#   ##-- + Selecionando os dados ----
-#   dados <- dados_gerais %>% filter(ANO_ELEICAO == ano & CODIGO_CARGO == cargo & NUM_TURNO == turno)
-#   
-#   return(dados)
-# })
-# ##-- Reactive para gerar as visualizações ----
-# graficos_eleicao_geral_br <- eventReactive(input$eleicoes_gerar_visualizacoes_br, {
-#   dados <- dados_eleicao_geral_br()
-#   
-#   cod_uf <- input$eleicoes_estado_br
-#   if(cod_uf == "All states") cod_uf <- NULL
-#   
-#   graficos <- list()
-#   
-#   names(regUF)[c(1, 3)] <- c("UF", "REG")
-#   graficos[[1]] <- mapa_uf(data = dados, poly = regUF)
-#   graficos[[2]] <- mapa_mun(data = dados, poly = regMun, uf = cod_uf)
-#   graficos[[3]] <- bar_plot(data = dados, uf = cod_uf, value_var = "QTDE_VOTOS_TOT", group_var = "NOME_URNA_CANDIDATO")
-#   
-#   names(graficos) <- c("mapa_uf_br", "mapa_mun_br", "bar_plot_br")
-#   
-#   return(graficos)
-#   
-# })
-# ##-- Mapa dos candidatos à presidência por estados ----
-# output$mapa_uf_geral_br <- renderLeaflet({
-#   graficos_eleicao_geral_br()$mapa_uf_br
-# })
-# ##-- Mapa dos candidatos municipais ----
-# output$mapa_mun_geral_br <- renderLeaflet({
-#   graficos_eleicao_geral_br()$mapa_mun_br
-# })
-# ##-- Gráfico de barras com o percentual de votos por candidato ----
-# output$barras_geral_br <- renderPlotly({
-#   graficos_eleicao_geral_br()$bar_plot_br
-# })
