@@ -1,5 +1,5 @@
-eleicoes_uf <- tabPanel(title = "Hasil Analasis", 
-                        value = "uf",
+hasil_analisis <- tabPanel(title = "Hasil Analasis", 
+                        value = "hasil_analisis",
                         # br(), hr(),
                         column(width = 12,
                                column(width = 2,

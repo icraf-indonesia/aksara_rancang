@@ -1,5 +1,5 @@
-eleicoes_brasil <- tabPanel(title = "Data Historis", 
-                            value = "brasil",
+data_historis <- tabPanel(title = "Data Historis", 
+                            value = "data_historis",
                             # br(), hr(),
                             column(width = 2,
                                    pickerInput(inputId = "categoryProvince", 

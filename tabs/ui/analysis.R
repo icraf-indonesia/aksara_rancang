@@ -5,7 +5,7 @@ tabAnalysis <- tabPanel(title = "Analisis Deskriptif",
                      value = "tabAnalysis",
                      hr(),
                      tabsetPanel(
-                       eleicoes_brasil,
-                       eleicoes_uf
+                       data_historis,
+                       hasil_analisis
                      )
 )
