@@ -6,6 +6,7 @@ tabAnalysis <- tabPanel(title = "Analisis Deskriptif",
                      hr(),
                      tabsetPanel(
                        data_historis,
+                       data_historis_debug,
                        hasil_analisis
                      )
 )

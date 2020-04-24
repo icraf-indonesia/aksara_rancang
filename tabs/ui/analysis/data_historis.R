@@ -32,6 +32,5 @@ data_historis <- tabPanel(title = "Data Historis",
                                                     tabPanel("Tabel Tenaga Kerja", id="boxLabour", 
                                                              div(style="overflow-x: scroll; padding-top: 20px;", dataTableOutput('SatelitTenagaKerja'))
                                                     ))
-                            )
-                                             
-)
+                                             )
+                          )
