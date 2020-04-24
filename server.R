@@ -1,4 +1,4 @@
-shinyServer(function(input, output, session){
+shinyServer(function(input, output, session, data, type){
   ##-- HOME ----
   source("tabs/server/home.R", local = TRUE)
   ##-- ANALYSIS ----

@@ -21,7 +21,7 @@ library(highcharter)
 library(DT)
 library(mapview)
 # devtools::install_github("lgsilvaesilva/mapsBR")
-library(mapsBR)
+#library(mapsBR)
 library(shinyLP)
 library(readxl)
 library(rhandsontable)
@@ -39,6 +39,22 @@ library(gridExtra)
 #library(ggradar)
 # library(RColorBrewer)
 
+
+
+# ##-- Chamando os shapes do mapsBR ----
+# data("regMun")
+# data("regUF")
+
+
+# source skenario aksi ----------------------------------------
+source("_DB/debug_TIN.R")
+source("_DB/global.R")
+source("_DB/module.R")
+# end source skenario aksi ------------------------------------
+
+
+
+
 ##-- Chamando as funções criadas ----
 source("functions/utils.R")
 source("functions/plot_functions.R")
@@ -49,7 +65,3 @@ tab_files <- list.files(path = "tabs", full.names = T, recursive = T)
 tab_files <- tab_files[-grep(x = tab_files, pattern = "server")]
 
 suppressMessages(lapply(tab_files, source))
-
-# ##-- Chamando os shapes do mapsBR ----
-# data("regMun")
-# data("regUF")
