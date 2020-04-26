@@ -102,7 +102,7 @@ buttonModule <- function(input, output, session, data, type) {
   
   listValDef <- reactive({
     newTableDef <- as.data.frame(hot_to_r(input$editDefine))
-
+    
     namaSken <- as.character(newTableDef[1,]) #2
     tahunAwal <- as.numeric(trimws(newTableDef[2,])) #3
     tahunAkhir <- as.numeric(trimws(newTableDef[3,])) #4
@@ -119,7 +119,7 @@ buttonModule <- function(input, output, session, data, type) {
                        emissionFactor=emissionFactor,
                        inputLRCRate=inputLRCRate,
                        inputPercentageDiagTPM=inputPercentageDiagTPM)
-
+    
     combineDef
   })
   
@@ -138,7 +138,7 @@ buttonModule <- function(input, output, session, data, type) {
   observeEvent(input$cancelModalDef,{
     removeModal()
   })
-
+  
   
   ListButton_fun <- function(FUN, len, id, ...) {
     inputs <- character(len)
@@ -153,10 +153,10 @@ buttonModule <- function(input, output, session, data, type) {
                             pattern = paste0("^", username))
     dirFile <- paste0(data$alamatFile, "/",nameFiles)
     funcFile <- function(x){
-        a <- readRDS(x)
-        b <- c(x,a)
-        b}
-      
+      a <- readRDS(x)
+      b <- c(x,a)
+      b}
+    
     r <- lapply(dirFile, funcFile)
     r
   })
@@ -205,9 +205,9 @@ buttonModule <- function(input, output, session, data, type) {
       )
     }
     
-      
+    
   })
-
+  
   ###tampilkan tabel list ###
   output$ListTable <- renderDataTable({
     ListTableReact()
@@ -264,7 +264,7 @@ buttonModule <- function(input, output, session, data, type) {
                     selectInput(ns("banyakTupla"),
                                 label="banyaknya perubahan tutupan lahan",
                                 choices=c(1:10))
-                    ),
+                  ),
                   tags$br(),
                   actionButton(ns("satLandHit"),"tampilkan tabel"),
                   width=5
@@ -409,18 +409,18 @@ buttonModule <- function(input, output, session, data, type) {
   finalDemand <- reactiveValues(
     table1 = NULL
   )
-
+  
   
   valFD<- eventReactive(c(input$showYearEco),{
     selectedRow <- as.numeric(strsplit(input$select_button,"_")[[1]][2])
     fileName<- as.character(ListTableReact()[selectedRow,5]) #nama file
     dataDefine <-  readRDS(fileName)
     
-      if (is.null(dataDefine$fdSelisih)) {
-        finalDemand$table1 = fdZero
-      }else{
-        finalDemand$table1 =  dataDefine$fdSelisih
-      }
+    if (is.null(dataDefine$fdSelisih)) {
+      finalDemand$table1 = fdZero
+    }else{
+      finalDemand$table1 =  dataDefine$fdSelisih
+    }
     finalDemand$table1 <- filter(finalDemand$table1, finalDemand$table1$Sektor %in% c(input$sektorEcon))
     finalDemand$table1 <- finalDemand$table1[,c("Sektor",paste0("y",input$pilihtahunFD))]
     finalDemand$table1
@@ -453,16 +453,16 @@ buttonModule <- function(input, output, session, data, type) {
       fdSelisih[c(indexSektor), c(inputTahun)] <- finalDemand$table1[,-1]
     }
     
-      dataDefine$fdSelisih <- fdSelisih
-      saveRDS(dataDefine, file = fileName)
-
-      insertUI(selector='#objDownloadFD',
-               where='afterEnd',
-               ui= uiOutput(ns('downButtonFD')))
-      
-
+    dataDefine$fdSelisih <- fdSelisih
+    saveRDS(dataDefine, file = fileName)
+    
+    insertUI(selector='#objDownloadFD',
+             where='afterEnd',
+             ui= uiOutput(ns('downButtonFD')))
+    
+    
   })
-
+  
   output$downButtonFD<- renderUI({
     tagList(tags$br(),
             renderText("tabel diatas sudah tersimpan"),
@@ -470,8 +470,8 @@ buttonModule <- function(input, output, session, data, type) {
             actionButton(ns('downloadFD'),'download tabel')
     )
   })
-
-
+  
+  
   observeEvent(input$downloadFD,{
     selectedRow <- as.numeric(strsplit(input$select_button,"_")[[1]][2])
     fileName<- as.character(ListTableReact()[selectedRow,5]) #nama file
@@ -566,9 +566,9 @@ buttonModule <- function(input, output, session, data, type) {
     ) %>% 
       hot_table(contextMenu = TRUE) %>% 
       hot_context_menu(customOpts = list(
-                         search = list(name = "Search",
-                                       callback = htmlwidgets::JS(
-                                         "function (key, options) {
+        search = list(name = "Search",
+                      callback = htmlwidgets::JS(
+                        "function (key, options) {
                          var srch = prompt('Search criteria');
                          this.search.query(srch);
                          this.render();
@@ -596,27 +596,27 @@ buttonModule <- function(input, output, session, data, type) {
     satSelisih[is.na(satSelisih)] <- 0
     
     if (nlevels(satSelisih[,1])==length(colnames(LDMProp_his)[landCover_his!=0]) & nlevels(satSelisih[,2])==length(colnames(LDMProp_his)[landCover_his!=0]) ) {
-        selectedRow <- as.numeric(strsplit(input$select_button,"_")[[1]][2])
-        fileName<- as.character(ListTableReact()[selectedRow,5]) #nama file
-
-        dataDefine <-  readRDS(fileName)
-        dataDefine[5] <- list(dataDefine$fdSelisih)
-        dataDefine$satSelisih <- satSelisih
-
-        saveRDS(dataDefine, file = fileName)
-        
-        insertUI(selector='#teksLandSatSave',
-                 where = 'afterEnd',
-                 ui = tags$div(id="textTampil","tabel di atas sudah tersimpan"))
-    }else{
+      selectedRow <- as.numeric(strsplit(input$select_button,"_")[[1]][2])
+      fileName<- as.character(ListTableReact()[selectedRow,5]) #nama file
+      
+      dataDefine <-  readRDS(fileName)
+      dataDefine[5] <- list(dataDefine$fdSelisih)
+      dataDefine$satSelisih <- satSelisih
+      
+      saveRDS(dataDefine, file = fileName)
+      
+      insertUI(selector='#teksLandSatSave',
+               where = 'afterEnd',
+               ui = tags$div(id="textTampil","tabel di atas sudah tersimpan"))
+    }else {
       
       insertUI(selector='#teksLandSatSave',
                where = 'afterEnd',
                ui =tags$h4(id='textInvalid', 
-                            "masih ada tutupan lahan yang belum dipilih, tabel tidak dapat disimpan"))
+                           "masih ada tutupan lahan yang belum dipilih, tabel tidak dapat disimpan"))
     }
   })
-# ## END Land -------------------------------------------------------------
+  # ## END Land -------------------------------------------------------------
   
   observeEvent(input$satHit, {
     insertUI(selector= paste0("#", ns("satPlaceholder")),
@@ -717,21 +717,21 @@ buttonModule <- function(input, output, session, data, type) {
       tconsum <- rowSums(x[4:ncol(x)]) 
       x[3] <- tconsum
       x
-      })
+    })
     
-      dataDefine[5] <- list(dataDefine$fdSelisih)
-      dataDefine$satSelisih <- satSelisih
-      saveRDS(dataDefine, file = fileName)
-
-      #tampilan keterangan setiap save tabel konsumsi
-      inputSektorTampil<-capture.output(cat(input$sektorSat , sep=", ")) #"tanaman pangan"
-      inputTahun<-paste0("y",input$pilihtahunSat)
-      inputBahanBakarTampil <- capture.output(cat(input$pilihBahanBakar , sep=", "))
-      textTampil <- paste0("Satelit akun yang diedit adalah ","sektor: ",inputSektorTampil," - ","tahun: ",
-                           inputTahun," - ","bahan bakar: ",inputBahanBakarTampil)
-      insertUI(selector='#teksSatSave',
-               where = 'afterEnd',
-               ui = tags$div (textTampil))
+    dataDefine[5] <- list(dataDefine$fdSelisih)
+    dataDefine$satSelisih <- satSelisih
+    saveRDS(dataDefine, file = fileName)
+    
+    #tampilan keterangan setiap save tabel konsumsi
+    inputSektorTampil<-capture.output(cat(input$sektorSat , sep=", ")) #"tanaman pangan"
+    inputTahun<-paste0("y",input$pilihtahunSat)
+    inputBahanBakarTampil <- capture.output(cat(input$pilihBahanBakar , sep=", "))
+    textTampil <- paste0("Satelit akun yang diedit adalah ","sektor: ",inputSektorTampil," - ","tahun: ",
+                         inputTahun," - ","bahan bakar: ",inputBahanBakarTampil)
+    insertUI(selector='#teksSatSave',
+             where = 'afterEnd',
+             ui = tags$div (textTampil))
   })
   
   
@@ -742,7 +742,7 @@ buttonModule <- function(input, output, session, data, type) {
   })
   
   
-
+  
   ################################################################################
   #                                                                              #
   #                                  BUTTON RUN                                  #
@@ -999,6 +999,7 @@ buttonModule <- function(input, output, session, data, type) {
     
     # masukkan semua variabel ke reactiveValues
     scenarioSimulation$selectedFile <- selectedFile
+    scenarioSimulation$fileName <- fileName
     scenarioSimulation$initialYear <-initialYear
     scenarioSimulation$finalYear <- finalYear
     scenarioSimulation$iteration <- iteration
@@ -1254,6 +1255,7 @@ buttonModule <- function(input, output, session, data, type) {
   
   runScenarioVisualization<-reactive({
     selectedFile = scenarioSimulation$selectedFile
+    fileName = scenarioSimulation$fileName
     initialYear = scenarioSimulation$initialYear
     finalYear = scenarioSimulation$finalYear
     iteration = scenarioSimulation$iteration
@@ -1517,6 +1519,28 @@ buttonModule <- function(input, output, session, data, type) {
       )))
     }
     
+    # save tables to RDS
+    # coding u/save input$editLRCRate ke RDS
+    
+    dataDefine <-  readRDS(fileName)
+    dataDefine$scenarioResultGDP <- scenarioResultGDP
+    dataDefine$scenarioResultIncome <- scenarioResultIncome
+    dataDefine$scenarioResultLabour <- scenarioResultLabour
+    dataDefine$scenarioResultEnergyConsumption <- scenarioResultEnergyConsumption
+    dataDefine$scenarioResultEnergyEmission <- scenarioResultEnergyEmission
+    dataDefine$scenarioResultWasteDisposal <- scenarioResultWasteDisposal
+    dataDefine$scenarioResultWasteEmission <- scenarioResultWasteEmission
+    dataDefine$scenarioResultFertilizerUsed <- scenarioResultFertilizerUsed
+    dataDefine$scenarioResultFertilizerEmission <- scenarioResultFertilizerEmission
+    dataDefine$scenarioResultLandReq <- scenarioResultLandReq
+    dataDefine$scenarioResultLandCover <- scenarioResultLandCover
+    dataDefine$scenarioResultLUTM <- scenarioResultLUTM
+    dataDefine$scenarioResultLandEmission <- scenarioResultLandEmission
+    dataDefine$scenarioResultTotalEmission <- scenarioResultTotalEmission
+    dataDefine$scenarioAllResult <- scenarioAllResult
+    saveRDS(dataDefine, file = fileName)
+    
+    
     scenarioSimulation$scenarioResultGDP <- scenarioResultGDP
     scenarioSimulation$scenarioResultIncome <- scenarioResultIncome
     scenarioSimulation$scenarioResultLabour <- scenarioResultLabour
@@ -1570,7 +1594,11 @@ buttonModule <- function(input, output, session, data, type) {
                                   "Buangan Limbah",
                                   "Penggunaan Pupuk",
                                   "Kebutuhan Lahan",
-                                  "Emisi")),
+                                  "Emisi Sektor Energi", 
+                                  "Emisi Sektor Limbah", 
+                                  "Emisi Sektor Pertanian", 
+                                  "Emisi Sektor Lahan", 
+                                  "Emisi Total")),
             selectInput(ns('selectScenarioResultTableYear'),
                         label="Pilih tahun tabel",
                         choices=c(initialYear:finalYear)),
@@ -1629,11 +1657,11 @@ buttonModule <- function(input, output, session, data, type) {
   })
   
   observeEvent(input$saveEditLRCRate,{
+    fileName<-  scenarioSimulation$fileName 
+    
     scenarioSimulation$inputLRCRate<-as.matrix(hot_to_r(input$editLRCRate))
     
     # coding u/save input$editLRCRate ke RDS
-    selectedRow <- as.numeric(strsplit(input$select_button,"_")[[1]][2])
-    fileName<- as.character(ListTableReact()[selectedRow,5]) #nama file
     
     dataDefine <-  readRDS(fileName)
     dataDefine$inputLRCRate <- as.matrix(hot_to_r(input$editLRCRate))
@@ -1642,12 +1670,11 @@ buttonModule <- function(input, output, session, data, type) {
   })
   
   observeEvent(input$saveEditPercentageDiagTPM,{
+    fileName<-  scenarioSimulation$fileName 
+    
     scenarioSimulation$sliderPercentageDiagTPM<-input$sliderPercentageDiagTPM
     
     # coding u/ save input$sliderPercentageDiagTPM ke RDDS
-    selectedRow <- as.numeric(strsplit(input$select_button,"_")[[1]][2])
-    fileName<- as.character(ListTableReact()[selectedRow,5]) #nama file
-    
     dataDefine <-  readRDS(fileName)
     dataDefine$inputPercentageDiagTPM <- input$sliderPercentageDiagTPM
     saveRDS(dataDefine, file = fileName)
@@ -1689,10 +1716,15 @@ buttonModule <- function(input, output, session, data, type) {
     scenarioResultIncome <- scenarioSimulation$scenarioResultIncome
     scenarioResultLabour <- scenarioSimulation$scenarioResultLabour
     scenarioResultEnergyConsumption <- scenarioSimulation$scenarioResultEnergyConsumption
+    scenarioResultEnergyEmission <- scenarioSimulation$scenarioResultEnergyEmission
     scenarioResultWasteDisposal <- scenarioSimulation$scenarioResultWasteDisposal
+    scenarioResultWasteEmission <- scenarioSimulation$scenarioResultWasteEmission
     scenarioResultFertilizerUsed <- scenarioSimulation$scenarioResultFertilizerUsed
+    scenarioResultFertilizerEmission <- scenarioSimulation$scenarioResultFertilizerEmission
     scenarioResultLandReq <- scenarioSimulation$scenarioResultLandReq
+    scenarioResultLandEmission <-scenarioSimulation$scenarioResultLandEmission
     scenarioResultTotalEmission  <- scenarioSimulation$scenarioResultTotalEmission 
+    
     
     if(input$selectScenarioResultTable=="PDRB"){
       scenarioResultGDP[scenarioResultGDP$year==input$selectScenarioResultTableYear,]
@@ -1715,7 +1747,19 @@ buttonModule <- function(input, output, session, data, type) {
     } else if (input$selectScenarioResultTable=="Kebutuhan Lahan"){
       scenarioResultLandReq[scenarioResultLandReq$year==input$selectScenarioResultTableYear,] 
       
-    } else if (input$selectScenarioResultTable=="Emisi"){
+    } else if (input$selectScenarioResultTable=="Emisi Sektor Energi"){
+      scenarioResultEnergyEmission[scenarioResultEnergyEmission$year==input$selectScenarioResultTableYear,] 
+      
+    } else if (input$selectScenarioResultTable=="Emisi Sektor Limbah"){
+      scenarioResultWasteEmission[scenarioResultWasteEmission$year==input$selectScenarioResultTableYear,] 
+      
+    } else if (input$selectScenarioResultTable=="Emisi Sektor Pertanian"){
+      scenarioResultFertilizerEmission[scenarioResultFertilizerEmission$year==input$selectScenarioResultTableYear,] 
+      
+    } else if (input$selectScenarioResultTable=="Emisi Sektor Lahan"){
+      scenarioResultLandEmission[scenarioResultLandEmission$year==input$selectScenarioResultTableYear,] 
+      
+    } else if (input$selectScenarioResultTable=="Emisi Total"){
       scenarioResultTotalEmission[scenarioResultTotalEmission$Year==input$selectScenarioResultTableYear,] 
     } 
   })
