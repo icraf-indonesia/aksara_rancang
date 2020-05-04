@@ -130,7 +130,7 @@ observeEvent(input$inputLogin, {
   allDataProv$ioAddedValue = ioAddedValue
   allDataProv$satelliteLabour = satelliteLabour
   allDataProv$satelliteEnergy = satelliteEnergy
-  allDataProv$waste = satelliteWaste
+  allDataProv$satelliteWaste = satelliteWaste
   allDataProv$emissionFactorEnergy = emissionFactorEnergy
   allDataProv$emissionFactorWaste = emissionFactorWaste
   allDataProv$ioFinalDemandComponent = ioFinalDemandComponent
@@ -343,8 +343,6 @@ blackBoxInputs <- function(){
   # Coefficient primary input
   analysisCPI <- t(t(ioAddedValue) / ioTotalOutput)
   
-  ###END: analysis ####
-  
   # for calculate landTable, LPC, LRC historis 
   LU_tahun<-as.data.frame(LU_tahun[,3:ncol(LU_tahun)])
   LU_tahun<-as.matrix(LU_tahun)
@@ -358,7 +356,7 @@ blackBoxInputs <- function(){
   LPC_his[is.infinite(LPC_his)]<-0
   LRC_his<-1/LPC_his
   LRC_his[is.infinite(LRC_his)]<-0
-  landTable_his<-cbind(sector, landTable_his, landReq_his, LPC_his, LRC_his)
+  landTable_his<-cbind(ioSector, landTable_his, landReq_his, LPC_his, LRC_his)
   colnames(landTable_his)<-c("Sektor", "Kategori", colnames(LDMProp_his),"Total Kebutuhan Lahan", "LPC", "LRC")
   tahun<-as.vector(str_extract_all(colnames(LU_tahun), '[0-9]+'))
   tahun<-as.data.frame(tahun)
@@ -412,8 +410,10 @@ blackBoxInputs <- function(){
   
   return(list_table)
 }
+###END: analysis ####
 
-###*historical input####
+
+###BEGIN: BAU projection####
 allInputs <- eventReactive(input$button, {
   inSector <- input$ioSector
   if(is.null(inSector))
@@ -802,7 +802,7 @@ output$tableDesc <- renderText({
       paste0("Direct Backward Linkage (DBL) menunjukkan tingkat keterkaitan kebelakang dari sebuah sektor ekonomi.
                Nilai DBL yang tinggi dari sebuah sektor menunjukkan bahwa sektor tersebut banyak menggunakan output yang dihasilkan oleh sektor lain dalam menghasilkan outputnya sendiri")
     } else if(input$pprkResults == "Forward Linkage"){
-      paste0("Direct Forward Linkage (DBL) menunjukkan tingkat keterkaitan kedepan dari sebuah sektor ekonomi.
+      paste0("Direct Forward Linkage (DFL) menunjukkan tingkat keterkaitan kedepan dari sebuah sektor ekonomi.
         Nilai DFL yang tinggi dari sebuah sektor menunjukkan bahwa output dari sektor tersebut banyak digunakan oleh sektor lain.")
     } else if(input$pprkResults == "Angka Pengganda Output"){
       paste0("Angka Pengganda Output menunjukkan dampak perubahan permintaan akhir sebuah sektor terhadap total output masing-masing sektor di sebuah daerah.
@@ -1019,7 +1019,7 @@ output$tableIO <- renderDataTable({
   totalrow_addval <- rowSums(ioAddedValue)
   totalcol_addval <- colSums(ioAddedValue)
   total_addval <- sum(totalrow_addval)
-  addval_table <- cbind(addvalcom, ioAddedValue, totalrow_addval)
+  addval_table <- cbind(ioAddedValueComponent, ioAddedValue, totalrow_addval)
   total_addval_table <- as.data.frame(cbind("JUMLAH INPUT", t(totalcol_addval), total_addval))
   
   remaining_col <- ncol(io_table) - ncol(total_addval_table) 
@@ -1053,7 +1053,7 @@ output$SatelitEnergi <- renderDataTable({
   } else {
     sec <- allInputs()
   }
-  energy <- sec$energy
+  satelliteEnergy <- sec$satelliteEnergy
 }, extensions = "FixedColumns", options=list(paging = FALSE, scrollY='70vh', scrollX=TRUE, fixedColumns=list(leftColumns=3)))  
 
 output$SatelitLimbah <- renderDataTable({
@@ -1062,7 +1062,7 @@ output$SatelitLimbah <- renderDataTable({
   } else {
     sec <- allInputs()
   }
-  waste <- sec$waste
+  satelliteWaste <- sec$satelliteWaste
 }, extensions = "FixedColumns", options=list(paging = FALSE, scrollY='70vh', scrollX=TRUE, fixedColumns=list(leftColumns=3)))
 
 output$SatelitLahan <- renderDataTable({
@@ -1093,7 +1093,7 @@ generate_table<-function(table, first_year, second_year, value=0.00){
   table
 }
 observeEvent(input$generateBAUTable, {
-  allDataProv$bau_scenario <- data.frame(Lapangan_usaha=as.character(allDataProv$sector[,1])) # reset table
+  allDataProv$bau_scenario <- data.frame(Lapangan_usaha=as.character(allDataProv$ioSector[,1])) # reset table
   allDataProv$bau_scenario <- generate_table(allDataProv$bau_scenario, as.numeric(input$dateFrom), as.numeric(input$dateTo))
   recordActivities(paste0("Membuat tabel proyeksi BAU tahun ", input$dateFrom, "-", input$dateTo), "Berhasil", paste0(Sys.time()))
   notif_id <<- showNotification("Tabel berhasil dimuat", duration = 4, closeButton = TRUE, type = "warning")
@@ -1438,8 +1438,6 @@ observeEvent(input$saveLDMPropManual,{
   }
 })
 
-
-
 ##### untuk isi satu kolom dengan normalisasi #####
 output$LDMUINormal<- renderUI({
   tagList(tags$b ('Hasil perhitungan normalisasi'),
@@ -1491,7 +1489,6 @@ observeEvent(input$saveLDMPropNormal,{
   removeUI(selector='#pesanHitungLDMYes')
   
 })
-
 
 ##### simpan tabel LDM ke dalam folder ####
 observeEvent(input$saveLDMTable,{
@@ -1579,8 +1576,8 @@ output$projTypeLandUI<-renderUI(
 observeEvent(input$buttonBAU, {
   if(debugMode){
     sec <- blackBoxInputs()
-    otherEm <- sec$otherEm
-    population <- sec$population
+    baselineEmission <- sec$baselineEmission
+    populationProjection <- sec$populationProjection
   } else {
     sec <- allInputs()
     inPopTable <- input$populationTable
@@ -1591,21 +1588,21 @@ observeEvent(input$buttonBAU, {
     if(is.null(inEmOtherTable))
       return(NULL)
     
-    population <- read.table(inPopTable$datapath, header=TRUE, sep=",")
-    otherEm <- read.table(inEmOtherTable$datapath, header=TRUE, sep=",")
+    baselineEmission <- read.table(inPopTable$datapath, header=TRUE, sep=",")
+    baselineEmission <- read.table(inEmOtherTable$datapath, header=TRUE, sep=",")
     
   }
-  sector <- sec$sector
-  indem <- sec$indem
-  findem <- sec$findem
-  addval <- sec$addval
-  findemcom <- sec$findemcom
-  addvalcom <- sec$addvalcom
-  labour <- sec$labour
-  energy <- sec$energy
-  ef_energy <- sec$ef_energy
-  waste <-sec$waste
-  ef_waste <- sec$ef_waste
+  ioSector <- sec$ioSector
+  ioIntermediateDemand <- sec$ioIntermediateDemand
+  ioFinalDemand <- sec$ioFinalDemand
+  ioAddedValue <- sec$ioAddedValue
+  ioFinalDemandComponent <- sec$ioFinalDemandComponent
+  ioAddedValueComponent <- sec$ioAddedValueComponent
+  satelliteLabour <- sec$satelliteLabour
+  satelliteEnergy <- sec$satelliteEnergy
+  emissionFactorEnergy <- sec$emissionFactorEnergy
+  satelliteWaste <-sec$satelliteWaste
+  emissionFactorWaste <- sec$emissionFactorWaste
   bau_scenario <- allDataProv$bau_scenario
   
   LU_tahun<-sec$LU_tahun
@@ -1620,80 +1617,87 @@ observeEvent(input$buttonBAU, {
   }
   
   
-  import_row <- 1
-  income_row <- 2
-  profit_row <- 3
+  rowImport <- 1
+  rowIncome <- 2
+  rowProfit <- 3
   
   gdpRate <- as.numeric(input$gdpRate)/100
-  startT <- as.numeric(input$dateFrom)
-  endT <- as.numeric(input$dateTo)
+  initialYear <- as.numeric(input$dateFrom) #startT
+  finalYear <- as.numeric(input$dateTo) #endT
   
-  indem_matrix <- as.matrix(indem)
-  addval_matrix <- as.matrix(addval)
-  dimensi <- ncol(indem_matrix)
+  matrixIoIntermediateDemand <- as.matrix(ioIntermediateDemand)
+  matrixIoAddedValue <- as.matrix(ioAddedValue)
+  ioDimention <- ncol(ioIntermediateDemand)
   
-  indem_colsum <- colSums(indem_matrix)
-  addval_colsum <- colSums(addval_matrix)
-  fin_con <- 1/(indem_colsum+addval_colsum)
-  fin_con[is.infinite(fin_con)] <- 0
-  tinput_invers <- diag(fin_con)
-  A <- indem_matrix %*% tinput_invers
-  I <- as.matrix(diag(dimensi))
-  I_A <- I-A
-  leontief <- solve(I_A)
+  colSumsMatrixIoIntermediateDemand <- colSums(matrixIoIntermediateDemand)
+  colSumsMatrixIoAddedValue <- colSums(matrixIoAddedValue)
+  ioTotalOutput <- colSumsMatrixIoIntermediateDemand + colSumsMatrixIoAddedValue # ioTotalInput 
+  ioTotalOutputInverse <- 1/ioTotalOutput
+  ioTotalOutputInverse[is.infinite(ioTotalOutputInverse)] <- 0
+  ioTotalOutputInverse <- diag(ioTotalOutputInverse)
+  A <- matrixIoIntermediateDemand %*% ioTotalOutputInverse
+  I <- as.matrix(diag(ioDimention))
+  ioLeontif <- I-A
+  ioLeontiefInverse <- solve(ioLeontif)
   
   # mult_matrix <- function(input_mx = matrix(), column = 5){
   #   res_mx <- matrix(c(rep(as.numeric(input_mx), column)), nrow = nrow(input_mx), ncol = column)
   #   return(res_mx)
   # }
   
-  satelliteImpact <- function(sat_type = "energy", tbl_sat = data.frame(), tbl_output_matrix = matrix(), emission_lookup = data.frame()){ 
-    if(sat_type == "energy" | sat_type == "waste"){
-      impact <- list() # impact$cons; impact$emission
-      # if(sat_type == "energy") impact$cons <- energy else impact$cons <- waste
-      impact$cons <- tbl_sat
-      
-      prop <- impact$cons[, 4:ncol(impact$cons)]/impact$cons[, 3]
-      impact$cons[, 4:ncol(impact$cons)] <- prop
-      
-      coeff_sat <- tinput_invers %*% as.matrix(impact$cons[,3])
-      coeff_matrix <- diag(as.numeric(coeff_sat), ncol = nrow(impact$cons), nrow = nrow(impact$cons))
-      impact$cons[,3] <- coeff_matrix %*% tbl_output_matrix
-      colnames(impact$cons)[3] <- "Tconsumption"
-      
-      impact$cons[,4:ncol(impact$cons)] <- impact$cons[,4:ncol(impact$cons)]*impact$cons[, 3]
-      
-      order_cname <- names(impact$cons)[4:ncol(impact$cons)]
-      em_f <- numeric()
-      for(m in 1:length(order_cname)){
-        em_f <- c(em_f, emission_lookup[which(emission_lookup[,1]==order_cname[m]), 2])
-      }
-      em_f <- diag(em_f, nrow = length(em_f), ncol = length(em_f))
-      
-      impact$emission <- impact$cons
-      impact$emission[,4:ncol(impact$emission)] <- as.matrix(impact$cons[,4:ncol(impact$cons)]) %*% em_f
-      impact$emission[,3] <- rowSums(impact$emission[,4: ncol(impact$emission)])
-      colnames(impact$emission)[3] <- "Temission"
-    } else { # for labour case
-      impact <- list()
-      impact$cons <- tbl_sat
-      coeff_sat <- tinput_invers %*% as.matrix(impact$cons[,3])
-      coeff_matrix <- diag(as.numeric(coeff_sat), ncol = nrow(impact$cons), nrow = nrow(impact$cons))
-      impact$cons[,3] <- coeff_matrix %*% tbl_output_matrix
+  functionSatelliteImpact <- function(type = "energy", satellite = data.frame(), matrix_output = matrix(), emission_factor = data.frame()) { 
+    impact <- list()
+    
+    # impact$consumption
+    impact$consumption <- satellite
+    
+    # calculate the proportion
+    if(type != "labour"){
+      proportionConsumption <- impact$consumption[, 4:ncol(impact$consumption)] / impact$consumption[, 3]
+      impact$consumption[, 4:ncol(impact$consumption)] <- proportionConsumption
     }
-    impact$cons[is.na(impact$cons)] <- 0
-    impact$emission[is.na(impact$emission)] <- 0
+    
+    # calculate the coefficient & the new total satellite consumption 
+    coefficientConsumption <- as.matrix(impact$consumption[,3]) / ioTotalOutput
+    impact$consumption[,3] <- coefficientConsumption * matrix_output
+    
+    # calculate emission
+    if(type != "labour"){
+      
+      colnames(impact$consumption)[3] <- "Tconsumption"
+      
+      # get the new satellite consumption for each sector
+      # total consumption * proportion
+      impact$consumption[,4:ncol(impact$consumption)] <- impact$consumption[,4:ncol(impact$consumption)] * impact$consumption[, 3]
+      
+      # checking the order of factor emission 
+      orderEnergyType <- names(impact$consumption)[4:ncol(impact$consumption)]
+      emissionFactor <- numeric()
+      for(m in 1:length(orderEnergyType)){
+        emissionFactor <- c(emissionFactor, emission_factor[which(emission_factor[,1]==orderEnergyType[m]), 2])
+      }
+      emissionFactor <- diag(emissionFactor, nrow = length(emissionFactor), ncol = length(emissionFactor))
+      
+      # impact$emission
+      impact$emission <- impact$consumption
+      impact$emission[,4:ncol(impact$emission)] <- as.matrix(impact$consumption[,4:ncol(impact$consumption)]) %*% emissionFactor
+      impact$emission[,3] <- rowSums(impact$emission[,4: ncol(impact$emission)])
+      impact$emission[is.na(impact$emission)] <- 0
+      colnames(impact$emission)[3] <- "Temission"
+    } 
+    
+    impact$consumption[is.na(impact$consumption)] <- 0
     return(impact)
+    
   }
   
-  coef_primary_input <- addval_matrix %*% tinput_invers # imports, value added, etc.
+  coef_primary_input <- matrixIoAddedValue %*% ioTotalOutputInverse # imports, value added, etc.
   
   # Calculation of final demand projection====
-  findem_matrix <- as.matrix(findem)
-  findem_rowsum <- as.matrix(rowSums(findem_matrix))
-  
-  findem_proportion <- findem/findem_rowsum
-  findem_proportion[is.na(findem_proportion)] <- 0
+  matrixIoFinalDemand <- as.matrix(ioFinalDemand) #findem_matrix
+  rowSumsMatrixIoFinalDemand <- as.matrix(rowSums(matrixIoFinalDemand)) #findem_rowsum
+  proportionFinalDemand <- ioFinalDemand/rowSumsMatrixIoFinalDemand #findem_proportion
+  proportionFinalDemand[is.na(proportionFinalDemand)] <- 0
   
   coef_grise <- (1+gdpRate)
   bau_scenario$Lapangan_usaha <- NULL
