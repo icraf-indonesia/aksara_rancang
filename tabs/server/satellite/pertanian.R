@@ -1,5 +1,5 @@
 ###*allInput####
-allInputs <- eventReactiveallInputs <- eventReactive(input$button, {
+allInputs <- eventReactive(input$button, {
   inSector <- input$ioSector
   if(is.null(inSector))
     return(NULL)
