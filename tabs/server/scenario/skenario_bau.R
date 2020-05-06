@@ -14,8 +14,15 @@ output$testTableBAU <- renderDataTable({
   testTableBAU 
 })
 
+output$testTableBAU2 <- renderDataTable({
+  testTableBAU2 <- read_excel("data/test.xlsx")
+  testTableBAU2 
+})
+
 #############################
 observeEvent(input$runButton1, {
+  removeUI("tab2")
+  removeUI("tab3")
   insertUI(selector='#placeholderTable',
            where='afterEnd',
            ui= tagList(rHandsontableOutput("testEditTableBAU"),
@@ -28,6 +35,8 @@ observeEvent(input$runButton1, {
 })
 
 observeEvent(input$runButton2, {
+  removeUI("tab1")
+  removeUI("tab3")
   insertUI(selector='#placeholderTable2',
            where='afterEnd',
            ui= tagList(plotlyOutput("plotBAU"),
@@ -40,6 +49,19 @@ observeEvent(input$runButton2, {
   )
 })
 
+observeEvent(input$runButton3, {
+  removeUI("tab1")
+  removeUI("tab2")
+  insertUI(selector='#placeholderTable3',
+           where='afterEnd',
+           ui= tagList(dataTableOutput("testTableBAU2"),
+                       actionBttn(inputId = "saveBttn-bau3",
+                                  label = "Simpan",
+                                  style = "fill",
+                                  color = "success",
+                                  icon = icon("check"), size = "sm"))
+  )
+})
 # output$defUIManual<- renderUI({
 #   tagLis(rHandsontableOutput(ns('editDefine')),
 #   )

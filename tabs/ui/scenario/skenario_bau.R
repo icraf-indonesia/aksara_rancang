@@ -12,14 +12,15 @@ bauScenario <- tabPanel(title = "Skenario BAU",
                                                                                options = list(`live-search` = TRUE))
                                                             ),
                                                             column(width = 1, style = "padding-top: 57px;",
-                                                                   actionBttn(inputId = "partidos_gerar_visualizacoes1",
+                                                                   actionBttn(inputId = "runButton3",
                                                                               label = "Jalankan",
                                                                               style = "fill",
                                                                               color = "success",
                                                                               icon = icon("check"), size = "sm")
                                                             )
-                                              )
-                                     ),
+                                                     ),
+                                              tags$div(id="placeholderTable3")
+                                              ),
                                      tabPanel("Rate Table", id="tab2",
                                               column(width = 12,
                                                             column(width = 2,
