@@ -12,14 +12,14 @@ bauScenario <- tabPanel(title = "Skenario BAU",
                                                                                options = list(`live-search` = TRUE))
                                                             ),
                                                             column(width = 1, style = "padding-top: 57px;",
-                                                                   actionBttn(inputId = "runButton3",
+                                                                   actionBttn(inputId = "runButton1",
                                                                               label = "Jalankan",
                                                                               style = "fill",
                                                                               color = "success",
                                                                               icon = icon("check"), size = "sm")
                                                             )
                                                      ),
-                                              tags$div(id="placeholderTable3")
+                                              tags$div(id="placeholderTable1")
                                               ),
                                      tabPanel("Rate Table", id="tab2",
                                               column(width = 12,
@@ -45,14 +45,14 @@ bauScenario <- tabPanel(title = "Skenario BAU",
                                                                                options = list(`live-search` = TRUE))
                                                             ),
                                                             column(width = 2, style = "padding-top: 57px;",
-                                                                   actionBttn(inputId = "runButton1",
+                                                                   actionBttn(inputId = "runButton2",
                                                                               label = "Buat Tabel",
                                                                               style = "fill",
                                                                               color = "success",
                                                                               icon = icon("check"), size = "sm")
                                                                    )
                                                      ),
-                                              tags$div(id="placeholderTable")
+                                              tags$div(id="placeholderTable2")
                                               ),
                                      tabPanel("Hasil Analisis", id="tab3", 
                                               column(width = 12,
@@ -65,14 +65,14 @@ bauScenario <- tabPanel(title = "Skenario BAU",
                                                                         selected = "Proyeksi PDRB")
                                                      ),
                                                      column(width = 1, style = "padding-top: 57px;",
-                                                            actionBttn(inputId = "runButton2",
+                                                            actionBttn(inputId = "runButton3",
                                                                        label = "Jalankan",
                                                                        style = "fill",
                                                                        color = "success",
                                                                        icon = icon("check"), size = "sm")
                                                      )
                                               ),
-                                              tags$div(id="placeholderTable2")
+                                              tags$div(id="placeholderTable3")
                                      )
                               )
                               ### Output ####

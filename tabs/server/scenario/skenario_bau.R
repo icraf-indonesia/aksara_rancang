@@ -3,29 +3,30 @@ output$testEditTableBAU <- renderRHandsontable({
   rhandsontable(testEditTableBAU)
 })
 
-
 output$plotBAU <- renderPlotly({
   plotBAU<- plot_ly(economics, x = ~date, y = ~pop)
   plotBAU
 })
 
-output$testTableBAU <- renderDataTable({
-  testTableBAU <- read_excel("data/test.xlsx")
-  testTableBAU 
-})
-
-output$testTableBAU2 <- renderDataTable({
+output$testTableBAU1 <- renderDataTable({
   testTableBAU2 <- read_excel("data/test.xlsx")
   testTableBAU2 
 })
 
+output$testTableBAU2 <- renderDataTable({
+  testTableBAU <- read_excel("data/test.xlsx")
+  testTableBAU 
+})
+
+
+
 #############################
 observeEvent(input$runButton1, {
-  removeUI("tab2")
-  removeUI("tab3")
-  insertUI(selector='#placeholderTable',
+  removeUI("#testTableBAU1")
+  removeUI("#saveBttn-bau1")
+  insertUI(selector='#placeholderTable1',
            where='afterEnd',
-           ui= tagList(rHandsontableOutput("testEditTableBAU"),
+           ui= tagList(dataTableOutput("testTableBAU1"),
                        actionBttn(inputId = "saveBttn-bau1",
                                   label = "Simpan",
                                   style = "fill",
@@ -35,12 +36,11 @@ observeEvent(input$runButton1, {
 })
 
 observeEvent(input$runButton2, {
-  removeUI("tab1")
-  removeUI("tab3")
+  removeUI("#testEditTableBAU")
+  removeUI("#saveBttn-bau2")
   insertUI(selector='#placeholderTable2',
            where='afterEnd',
-           ui= tagList(plotlyOutput("plotBAU"),
-                       dataTableOutput("testTableBAU"),
+           ui= tagList(rHandsontableOutput("testEditTableBAU"),
                        actionBttn(inputId = "saveBttn-bau2",
                                   label = "Simpan",
                                   style = "fill",
@@ -50,11 +50,15 @@ observeEvent(input$runButton2, {
 })
 
 observeEvent(input$runButton3, {
-  removeUI("tab1")
-  removeUI("tab2")
+  removeUI("#analysisTitle")
+  removeUI("#plotBAU")
+  removeUI("#testTableBAU2")
+  removeUI("#saveBttn-bau3")
   insertUI(selector='#placeholderTable3',
            where='afterEnd',
-           ui= tagList(dataTableOutput("testTableBAU2"),
+           ui= tagList(h3("Plot", id="analysisTitle"),
+                       plotlyOutput("plotBAU"),
+                       dataTableOutput("testTableBAU2"),
                        actionBttn(inputId = "saveBttn-bau3",
                                   label = "Simpan",
                                   style = "fill",
@@ -62,6 +66,7 @@ observeEvent(input$runButton3, {
                                   icon = icon("check"), size = "sm"))
   )
 })
+
 # output$defUIManual<- renderUI({
 #   tagLis(rHandsontableOutput(ns('editDefine')),
 #   )
