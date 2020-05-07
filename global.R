@@ -60,7 +60,7 @@ tab_files <- tab_files[-grep(x = tab_files, pattern = "server")]
 
 suppressMessages(lapply(tab_files, source))
 
-### global variable
+###global variable
 
 #ID
 username<-"dw"
@@ -104,7 +104,6 @@ landData <- list(
 #daftar nama FAKTOR EMISI 
 faktorEmisi <- as.character(emissionFactorEnergy[,1])  ###energi: nama 26 bahan bakar
 
-
 #ist konsumsi energi
 listConsumBAU <- lapply(bauSeriesOfImpactEnergy, 
                         function(x){
@@ -116,7 +115,6 @@ listConsumZero <- lapply(listConsumBAU, function(x){
   x[, 3:ncol(bauSeriesOfImpactEnergy[[1]][[1]])] <- 0 #dari kolom tcons sampai bahan bakar terakhir
   return(x)
 })
-
 
 #alamat rds untuk menampilkan daftar di ListTableReact
 selectedSektor <- "energi"
@@ -135,7 +133,6 @@ energyData <- list(
 #                                                                              #
 ################################################################################
 
-
 #daftar nama FAKTOR EMISI 
 faktorEmisi <- as.character(emissionFactorWaste[,1])  ###limbah: nama2 limbah
 
@@ -150,7 +147,6 @@ listConsumZero <- lapply(listConsumBAU, function(x){
   x[, 3:ncol(bauSeriesOfImpactWaste[[1]][[1]])] <- 0 #dari kolom tcons sampai bahan bakar terakhir
   return(x)
 })
-
 
 #alamat rds untuk menampilkan daftar di ListTableReact
 selectedSektor <- "limbah"
@@ -183,7 +179,6 @@ listConsumZero <- lapply(listConsumBAU, function(x){
   x[, 3:ncol(bauSeriesOfImpactAgriculture[[1]][[1]])] <- 0 #dari kolom tcons sampai bahan bakar terakhir
   return(x)
 })
-
 
 #alamat rds untuk menampilkan daftar di ListTableReact
 selectedSektor <- "pertanian"

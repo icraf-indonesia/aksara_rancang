@@ -342,13 +342,7 @@ buttonModule <- function(input, output, session, data, type) {
       
     })
   }
-  
-  
-  
-  
-  
-  
-  
+
   ################################################################################
   #                                                                              #
   #                     ALUR BUTTON KONSTRUKSI EKONOMI                           #
@@ -490,7 +484,6 @@ buttonModule <- function(input, output, session, data, type) {
                sheetName = namaSheet)
   })
   
-  
   ################################################################################
   #                                                                              #
   #                   ALUR BUTTON KONSTRUKSI SATELIT AKUN                        #
@@ -499,8 +492,7 @@ buttonModule <- function(input, output, session, data, type) {
   satAkun <- reactiveValues(
     table1 = NULL
   )
-  
-  
+
   # START LAND ----------------------------------------------------------
   observeEvent(input$satLandHit, {
     insertUI(selector= paste0("#", ns("satLandPlaceholder")),
@@ -573,7 +565,6 @@ buttonModule <- function(input, output, session, data, type) {
               type = "dropdown", source = sort(colnames(LDMProp_his)[landCover_his!=0])) 
     
   })
-  
   
   ##### simpan tabel Sat baru ke dalam folder ####
   observeEvent(input$saveModalSatLand,{
@@ -658,7 +649,6 @@ buttonModule <- function(input, output, session, data, type) {
     )
   })
   
-  
   valSat<- eventReactive(c(input$showYearSat),{
     selectedRow <- as.numeric(strsplit(input$select_button,"_")[[1]][2])
     fileName<- as.character(ListTableReact()[selectedRow,5]) #nama file
@@ -730,15 +720,11 @@ buttonModule <- function(input, output, session, data, type) {
              ui = tags$div (textTampil))
   })
   
-  
-  
   ### tutup modal dialog Econ ###
   observeEvent(input$closeModalFD,{
     removeModal()
   })
-  
-  
-  
+
   ################################################################################
   #                                                                              #
   #                                  BUTTON RUN                                  #
@@ -797,9 +783,7 @@ buttonModule <- function(input, output, session, data, type) {
   )
   
   observeEvent(input$run_button_trigger, {
-    
     removeUI(selector=paste0('#',ns('scenarioResultVisualization')))
-    
     # reset reactiveValues to NULL
     scenarioSimulation$selectedFile <- NULL
     scenarioSimulation$initialYear <- NULL
