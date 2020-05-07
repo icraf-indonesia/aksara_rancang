@@ -1,5 +1,6 @@
 ### Server: Data Historis ###
 
+###BEGIN: initiate all variables & function####
 # debug mode
 debugMode <- 1
 notif_id <- NULL
@@ -7,23 +8,23 @@ notif_id <- NULL
 provList <- readRDS("data/provList")
 # usersList <- load("usersList")
 
-# LDMProp_new<-reactiveValues(
-#   tablo = NULL,
-#   coba= NULL
-# )
-# 
-# tabel<-reactiveValues(
-#   manualSave=NULL
-# )
+LDMProp_new<-reactiveValues(
+  tablo = NULL,
+  coba= NULL
+)
 
-# ldmRV<-reactiveValues(
-#   LDMListFile = unique(list.files(paste0("LDMData/Prov/"))),   # ganti mas alfa
-#   LDMTotFile= unique(length(list.files("LDMData/Prov/")))   # ganti mas alfa
-# )
+tabel<-reactiveValues(
+  manualSave=NULL
+)
 
-# editable<-reactiveValues(
-#   BAULahan_landCover=NULL
-# )
+ldmRV<-reactiveValues(
+  LDMListFile = unique(list.files(paste0("LDMData/Prov/"))),   # ganti mas alfa
+  LDMTotFile= unique(length(list.files("LDMData/Prov/")))   # ganti mas alfa
+)
+
+editable<-reactiveValues(
+  BAULahan_landCover=NULL
+)
 
 allDataProv <- reactiveValues(
   username = NULL,
@@ -38,6 +39,7 @@ allDataProv <- reactiveValues(
   satelliteAgriculture = NULL,
   emissionFactorEnergy = NULL,
   emissionFactorWaste = NULL,
+  emissionFactorAgriculture = NULL,
   ioFinalDemandComponent = NULL,
   ioAddedValueComponent = NULL,
   populationProjection = NULL,
@@ -90,16 +92,11 @@ observeEvent(input$inputLogin, {
   # print(selectedProv)
   
   # if(password %in% provList$Password){
-  #   
+  #
   # } else {
   #   return(NULL)
   # }
   # usersList <- data.frame(id=NULL, fullname=NULL, username=NULL, password=NULL, provinsi=NULL)
-  
-  datapath <- paste0("data/", selectedProv, "/")
-  userFolder <- paste0(datapath, username)
-  if(!dir.exists(userFolder)) dir.create(userFolder, mode = 777)
-  # system(paste0("chmod -R 777 ", userFolder))
   
   datapath <- paste0("data/", selectedProv, "/")
   userFolder <- paste0(datapath, username)
@@ -114,10 +111,9 @@ observeEvent(input$inputLogin, {
   satelliteEnergy <- readRDS(paste0(datapath, "energy"))
   satelliteWaste <- readRDS(paste0(datapath, "waste"))
   satelliteAgriculture <- readRDS(paste0(datapath, "agriculture"))
-  # satelliteAgriculture <- read.table("D:/YUMNA/ICRAF/icraf-indonesia/aksara_rancang/data/JaBar/satellite_pertanian.csv", header = T, sep = ",")
   emissionFactorEnergy <- readRDS(paste0(datapath, "ef_energy"))
   emissionFactorWaste <- readRDS(paste0(datapath, "ef_waste"))
-  # emissionFactorAgriculture <- read.table("D:/My_Development/RProjects/lcd-scenario/raw/jabar_in_redcluwe/17_faktor_emisi_pertanian.csv", header = T, sep = ",")
+  emissionFactorAgriculture <- readRDS(paste0(datapath, "ef_agriculture"))
   ioFinalDemandComponent <- readRDS(paste0(datapath, "findemcom"))
   ioAddedValueComponent <- readRDS(paste0(datapath, "addvalcom"))
   population <- readRDS(paste0(datapath, "currentPopulation"))
@@ -165,6 +161,7 @@ observeEvent(input$inputLogin, {
   allDataProv$satelliteAgriculture = satelliteAgriculture
   allDataProv$emissionFactorEnergy = emissionFactorEnergy
   allDataProv$emissionFactorWaste = emissionFactorWaste
+  allDataProv$emissionFactorAgriculture = emissionFactorAgriculture
   allDataProv$ioFinalDemandComponent = ioFinalDemandComponent
   allDataProv$ioAddedValueComponent = ioAddedValueComponent
   allDataProv$populationProjection = populationProjection
@@ -195,9 +192,11 @@ observeEvent(input$inputLogin, {
   
   notif_id <<- showNotification("Anda berhasil masuk", duration = 4, closeButton = TRUE, type = "warning")
   updateTabItems(session, "tabs", selected = "pageOne")
+  
 })
 
 blackBoxInputs <- function(){
+  # browser()
   ioSector <- allDataProv$ioSector
   ioIntermediateDemand <- allDataProv$ioIntermediateDemand
   ioFinalDemand <- allDataProv$ioFinalDemand
@@ -208,6 +207,7 @@ blackBoxInputs <- function(){
   satelliteAgriculture <- allDataProv$satelliteAgriculture
   emissionFactorEnergy <- allDataProv$emissionFactorEnergy
   emissionFactorWaste <- allDataProv$emissionFactorWaste
+  emissionFactorAgriculture <- allDataProv$emissionFactorAgriculture
   ioFinalDemandComponent <- allDataProv$ioFinalDemandComponent
   ioAddedValueComponent <- allDataProv$ioAddedValueComponent
   populationProjection <- allDataProv$populationProjection
@@ -258,9 +258,9 @@ blackBoxInputs <- function(){
   rowIncome <- 2 #income_row <- 2
   rowProfit <- 3
   
-  initialYear <- 2016
-  finalYear <- 2030
-  iteration <- finalYear - initialYear
+  # initialYear <- input$dateFrom
+  # finalYear <- input$dateTo
+  # iteration <- finalYear - initialYear
   
   functionSatelliteImpact <- function(type = "energy", satellite = data.frame(), matrix_output = matrix(), emission_factor = data.frame()) { 
     impact <- list()
@@ -371,10 +371,10 @@ blackBoxInputs <- function(){
   emissionWaste <- as.matrix(satelliteWaste[,4:ncol(satelliteWaste)]) %*% emissionFactorWasteDiagonal #em_waste
   emissionWasteTotal <- rowSums(emissionWaste) #em_waste_total
   
-  # # Emission from agriculture-fertilizer
-  # emissionFactorAgricultureDiagonal <- diag(emissionFactorAgriculture[,2], ncol = nrow(emissionFactorAgriculture), nrow = nrow(emissionFactorAgriculture))
-  # emissionAgriculture <- as.matrix(satelliteAgriculture[,4:ncol(satelliteAgriculture)]) %*% emissionFactorAgricultureDiagonal
-  # emissionAgricultureTotal <- rowSums(emissionAgriculture)
+  # Emission from agriculture-fertilizer
+  emissionFactorAgricultureDiagonal <- diag(emissionFactorAgriculture[,2], ncol = nrow(emissionFactorAgriculture), nrow = nrow(emissionFactorAgriculture))
+  emissionAgriculture <- as.matrix(satelliteAgriculture[,4:ncol(satelliteAgriculture)]) %*% emissionFactorAgricultureDiagonal
+  emissionAgricultureTotal <- rowSums(emissionAgriculture)
   
   # Wages
   analysisWages <- as.matrix(t(ioAddedValue[2,])) #wages
@@ -500,12 +500,13 @@ blackBoxInputs <- function(){
                      ioAddedValue=ioAddedValue, 
                      satelliteLabour=satelliteLabour, 
                      satelliteEnergy=satelliteEnergy, 
+                     satelliteAgriculture=satelliteAgriculture,
                      ioFinalDemandComponent=ioFinalDemandComponent, 
                      ioAddedValueComponent=ioAddedValueComponent,
                      satelliteWaste=satelliteWaste,
-                     satelliteAgriculture=satelliteAgriculture,
                      emissionFactorEnergy=emissionFactorEnergy,
                      emissionFactorWaste=emissionFactorWaste,
+                     emissionFactorAgriculture=emissionFactorAgriculture,
                      # landcover=allDataProv$LU_tahun,
                      analysisIncomePerCapita=analysisIncomePerCapita,
                      baselineEmission=baselineEmission,
@@ -518,13 +519,24 @@ blackBoxInputs <- function(){
                      # tahun=tahun, 
                      # landTable_his=landTable_his,
                      baselineEmission=baselineEmission, 
-                     LDMProp_his = LDMProp_his, #bedanya 2
+                     LDMProp_his=LDMProp_his, #bedanya 2
                      ### Function in BAU Scenario ###
-                     analysisLRC = analysisLRC,
-                     landReq_his = landReq_his,
-                     landCover_his = landCover_his,
-                     LDMProp_sektor = LDMProp_sektor,
-                     LUTMTemplate_his = LUTMTemplate_his
+                     analysisLRC=analysisLRC,
+                     landReq_his=landReq_his,
+                     landCover_his=landCover_his,
+                     LDMProp_sektor=LDMProp_sektor,
+                     LUTMTemplate_his=LUTMTemplate_his,
+                     LUTM_his=LUTM_his,
+                     TPM=TPM,
+                     carbonStock_his=carbonStock_his,
+                     ioDimention=ioDimention,
+                     proportionFinalDemand=proportionFinalDemand,
+                     analysisCT=analysisCT,
+                     analysisCPI=analysisCPI,
+                     LRCRate_his=LRCRate_his,
+                     LRCRate_2=LRCRate_2,
+                     ioPeriod=ioPeriod
+                     
   ) 
   
   return(list_table)
@@ -572,6 +584,10 @@ allInputs <- eventReactive(input$button, {
   if(is.null(inEmissionFactorLandWasteTable))
     return(NULL)
   
+  inEmissionFactorAgricultureTable <- input$emissionFactorAgricultureTable
+  if(is.null(inEmissionFactorLandWasteTable))
+    return(NULL)
+  
   inFinalDemandComp <- input$ioFinalDemandComponent
   if(is.null(inFinalDemandComp))
     return(NULL) 
@@ -590,6 +606,7 @@ allInputs <- eventReactive(input$button, {
   satelliteAgriculture <- read.table(inAgriculture$datapath, header=TRUE, sep=",")
   emissionFactorEnergy <- read.table(inEmissionFactorEnergiTable$datapath, header=TRUE, sep=",")
   emissionFactorWaste <- read.table(inEmissionFactorLandWasteTable$datapath, header=TRUE, sep=",")
+  emissionFactorAgriculture <- read.table(inEmissionFactorAgricultureTable$datapath, header=TRUE, sep=",")
   ioFinalDemandComponent <- read.table(inFinalDemandComp$datapath, header=FALSE, sep=",")
   ioAddedValueComponent <- read.table(inAddedValueComp$datapath, header=FALSE, sep=",")
   
@@ -598,9 +615,9 @@ allInputs <- eventReactive(input$button, {
   rowIncome <- 2
   rowProfit <- 3
   
-  initialYear <- 2016
-  finalYear <- 2030
-  iteration <- finalYear - initialYear
+  # initialYear <- input$dateFrom
+  # finalYear <- input$dateTo
+  # iteration <- finalYear - initialYear
   
   matrixIoIntermediateDemand <- as.matrix(ioIntermediateDemand)
   matrixIoAddedValue <- as.matrix(ioAddedValue)
@@ -693,13 +710,14 @@ allInputs <- eventReactive(input$button, {
                      ioAddedValue=ioAddedValue, 
                      satelliteLabour=satelliteLabour, 
                      satelliteEnergy=satelliteEnergy, 
+                     satelliteWaste=satelliteWaste,
+                     satelliteAgriculture=satelliteAgriculture,
                      ioFinalDemandComponent=ioFinalDemandComponent, 
                      ioAddedValueComponent=ioAddedValueComponent,
-                     satelliteWaste=satelliteWaste,
+                     emissionFactorAgriculture=emissionFactorAgriculture,
                      emissionFactorWaste=emissionFactorWaste,
                      emissionFactorEnergy=emissionFactorEnergy,
-                     analysisIncomePerCapita=analysisIncomePerCapita,
-                     satelliteAgriculture=satelliteAgriculture
+                     analysisIncomePerCapita=analysisIncomePerCapita
   ) 
   list_table
 })
