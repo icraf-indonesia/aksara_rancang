@@ -1,4 +1,3 @@
-
 buttonUI <- function(id) {
   ns <- NS(id)
   
@@ -14,10 +13,7 @@ buttonUI <- function(id) {
   )
 }
 
-
-
 buttonModule <- function(input, output, session, data, type) {
-  
   
   # load the namespace
   ns <- session$ns

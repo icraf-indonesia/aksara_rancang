@@ -165,6 +165,7 @@ a:focus, a:hover {
 .col-sm-2 {
     width: 16.66666667%;
     padding-top: 30px;
+    padding-left: 0px;
 }
 
 .well {

@@ -30,7 +30,7 @@ allInputs <- eventReactive(input$button, {
   if(is.null(inWaste))
     return(NULL)
   
-  inAgriculture <- input$agricultureTablle
+  inAgriculture <- input$agricultureTable
   if(is.null(inAgriculture))
     return(NULL)
   
@@ -39,6 +39,10 @@ allInputs <- eventReactive(input$button, {
     return(NULL)
   
   inEmissionFactorLandWasteTable <- input$emissionFactorLandWasteTable
+  if(is.null(inEmissionFactorLandWasteTable))
+    return(NULL)
+  
+  inEmissionFactorAgricultureTable <- input$emissionFactorAgricultureTable
   if(is.null(inEmissionFactorLandWasteTable))
     return(NULL)
   
@@ -60,6 +64,7 @@ allInputs <- eventReactive(input$button, {
   satelliteAgriculture <- read.table(inAgriculture$datapath, header=TRUE, sep=",")
   emissionFactorEnergy <- read.table(inEmissionFactorEnergiTable$datapath, header=TRUE, sep=",")
   emissionFactorWaste <- read.table(inEmissionFactorLandWasteTable$datapath, header=TRUE, sep=",")
+  emissionFactorAgriculture <- read.table(inEmissionFactorAgricultureTable$datapath, header=TRUE, sep=",")
   ioFinalDemandComponent <- read.table(inFinalDemandComp$datapath, header=FALSE, sep=",")
   ioAddedValueComponent <- read.table(inAddedValueComp$datapath, header=FALSE, sep=",")
   
@@ -68,9 +73,9 @@ allInputs <- eventReactive(input$button, {
   rowIncome <- 2
   rowProfit <- 3
   
-  initialYear <- 2016
-  finalYear <- 2030
-  iteration <- finalYear - initialYear
+  # initialYear <- input$dateFrom
+  # finalYear <- input$dateTo
+  # iteration <- finalYear - initialYear
   
   matrixIoIntermediateDemand <- as.matrix(ioIntermediateDemand)
   matrixIoAddedValue <- as.matrix(ioAddedValue)
@@ -163,13 +168,14 @@ allInputs <- eventReactive(input$button, {
                      ioAddedValue=ioAddedValue, 
                      satelliteLabour=satelliteLabour, 
                      satelliteEnergy=satelliteEnergy, 
+                     satelliteWaste=satelliteWaste,
+                     satelliteAgriculture=satelliteAgriculture,
                      ioFinalDemandComponent=ioFinalDemandComponent, 
                      ioAddedValueComponent=ioAddedValueComponent,
-                     satelliteWaste=satelliteWaste,
+                     emissionFactorAgriculture=emissionFactorAgriculture,
                      emissionFactorWaste=emissionFactorWaste,
                      emissionFactorEnergy=emissionFactorEnergy,
-                     analysisIncomePerCapita=analysisIncomePerCapita,
-                     satelliteAgriculture=satelliteAgriculture
+                     analysisIncomePerCapita=analysisIncomePerCapita
   ) 
   list_table
 })
