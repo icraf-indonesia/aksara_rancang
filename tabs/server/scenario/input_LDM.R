@@ -478,8 +478,8 @@ output$projTypeEconomyUI<-renderUI(
 # })
 
 output$resultUI<-renderUI(
-  tagList(h3("Hasil Analasis"),
-          tags$div(id='bauplaceholder'),
+  tagList(tags$div(id='bauplaceholder'),
+          hr(),
           conditionalPanel(
             condition="input.bauResults!='Proyeksi Upah per Kapita' & input.bauResults!='Proyeksi Total Emisi'",
             uiOutput("yearSelection")),

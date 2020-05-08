@@ -4,12 +4,13 @@ shinyServer(function(input, output, session, data, type){
   ##-- ANALYSIS ----
   source("tabs/server/analysis/data_historis.R", local = TRUE)
   source("tabs/server/analysis/hasil_analisis.R", local = TRUE)
-  ##-- ELEIÇÕES ----
+  ##-- SATELLITE ----
   source("tabs/server/satellite/energi.R", local = TRUE)
   source("tabs/server/satellite/lahan.R", local = TRUE)
   source("tabs/server/satellite/limbah.R", local = TRUE)
   source("tabs/server/satellite/pertanian.R", local = TRUE)
-  ##-- PARTIDOS ----
+  ##-- SCENARIO ----
+  # source("tabs/server/scenario/input_LDM.R", local = TRUE)
   source("tabs/server/scenario/skenario_bau.R", local = TRUE)
   source("tabs/server/scenario/skenario_intervensi.R", local = TRUE)
   ##-- HELP ----

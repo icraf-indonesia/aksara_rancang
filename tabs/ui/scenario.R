@@ -5,6 +5,7 @@ tabScenario <- tabPanel(title = "Skenario & Simulasi",
                       value = "tabScenario",
                       hr(),
                       tabsetPanel(
+                        inputLDM,
                         bauScenario,
                         intScenario
                       )

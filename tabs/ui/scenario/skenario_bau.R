@@ -1,14 +1,14 @@
 bauScenario <- tabPanel(title = "Skenario BAU", 
                               value = "bauScenario",
                         br(),
-                        pickerInput(inputId = "selectProjType",
-                                    label = "Tipe Proyeksi",
-                                    choices = c("Proyeksi BAU berdasarkan perubahan tutupan lahan", "Proyeksi BAU berdasarkan pertumbuhan ekonomi"),
-                                    selected = NULL,
-                                    options = list(`live-search` = TRUE)),
-                        hr(),
-                        conditionalPanel(condition = "input.selectProjType=='Proyeksi BAU berdasarkan pertumbuhan ekonomi'",
-                                         tags$div(id="inputProjType"),
+                        # pickerInput(inputId = "selectProjType",
+                        #             label = "Tipe Proyeksi",
+                        #             choices = c("Proyeksi BAU berdasarkan perubahan tutupan lahan", "Proyeksi BAU berdasarkan pertumbuhan ekonomi"),
+                        #             selected = NULL,
+                        #             options = list(`live-search` = TRUE)),
+                        # hr(),
+                        # conditionalPanel(condition = "input.selectProjType=='Proyeksi BAU berdasarkan pertumbuhan ekonomi'",
+                        #                  tags$div(id="inputProjType"),
                                          div(uiOutput("projTypeEconomyUI"),
                                              hr(),
                                              tags$div(id="gdpRateUI",
@@ -31,32 +31,32 @@ bauScenario <- tabPanel(title = "Skenario BAU",
                                              ),
                                          # uiOutput("resultUI"),
                                          conditionalPanel(condition = "input.buttonBAU>0",
-                                                          h3("Hasil Analisis"),
+                                                          # h3("Hasil Analasis"),
                                                           uiOutput("resultUI"))
                                              # conditionalPanel(
                                              #   condition = "input.buttonBAU>0",
                                              #   removeUI("#tableBAUType"),
                                              #   uiOutput("resultUI"))
-                                         ),
-                        conditionalPanel(condition = "input.selectProjType=='Proyeksi BAU berdasarkan perubahan tutupan lahan'",
-                                         tags$div(id="inputProjType"),
-                                         div(br(),
-                                             fluidRow(
-                                               # h3(style="padding-left: 15px;", "Pilih Data Input BAU"), 
-                                               box(width=12,
-                                                   #        tabPanel("Tabel LDM Proporsi", id="TabPanelBAUDataLDMProp",
-                                                   div(style="overflow-x: scroll", 
-                                                       uiOutput("LDMFileOptions"),
-                                                       dataTableOutput("LDMListTable"),
-                                                       dataTableOutput("LDMTampil"),
-                                                       uiOutput('LDMTableTampilUI'),
-                                                       uiOutput('modalLDMUI'))
-                                               )
-                                             ),
-                                             hr(),
-                                             uiOutput("projTypeLandUI")
-                                             )
-                                         ))
+                                         )
+                        # conditionalPanel(condition = "input.selectProjType=='Proyeksi BAU berdasarkan perubahan tutupan lahan'",
+                        #                  tags$div(id="inputProjType"),
+                        #                  div(br(),
+                        #                      fluidRow(
+                        #                        # h3(style="padding-left: 15px;", "Pilih Data Input BAU"), 
+                        #                        box(width=12,
+                        #                            #        tabPanel("Tabel LDM Proporsi", id="TabPanelBAUDataLDMProp",
+                        #                            div(style="overflow-x: scroll", 
+                        #                                uiOutput("LDMFileOptions"),
+                        #                                dataTableOutput("LDMListTable"),
+                        #                                dataTableOutput("LDMTampil"),
+                        #                                uiOutput('LDMTableTampilUI'),
+                        #                                uiOutput('modalLDMUI'))
+                        #                        )
+                        #                      ),
+                        #                      hr(),
+                        #                      uiOutput("projTypeLandUI")
+                        #                      )
+                        #                  ))
                                              
                         #       tabBox(id="tabPanelBAU", width = 12, 
                         #              tabPanel("Proyeksi BAU berdasarkan Pertumbuhan Ekonomi", id="inputProjType",
