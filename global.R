@@ -46,9 +46,13 @@ library(limSolve)
 # data("regUF")
 
 # source skenario aksi ----------------------------------------
-source("_DB/debug_TIN.R") #dikomen (data_historis & scenario_bau)
+library(reshape2)
+library(limSolve)
+library(plotly)
+library(rlist)
+#source("_DB/debug_TIN.R") #dikomen (data_historis & scenario_bau)
 #source("_DB/global.R") #dikomen
-source("module.R")
+#source("module.R")
 # end source skenario aksi ------------------------------------
 
 ##-- Chamando as funções criadas ----
