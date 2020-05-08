@@ -5,6 +5,8 @@ library(rlist)
 
 
 ###BEGIN: initiate all variables & function####
+#ID
+username<-"dw"
 # username <- "alfanugraha"
 # password <- "1234"
 selectedProv = "JaBar"

@@ -47,7 +47,7 @@ library(limSolve)
 
 # source skenario aksi ----------------------------------------
 source("_DB/debug_TIN.R") #dikomen (data_historis & scenario_bau)
-source("_DB/global.R") #dikomen
+#source("_DB/global.R") #dikomen
 source("module.R")
 # end source skenario aksi ------------------------------------
 
