@@ -1,9 +1,4 @@
 ### global variable
-
-#ID
-username<-"dw"
-
-
 ### nama 52 Sector
 Sector<-ioSector[,1]
 Sector <- as.character(Sector)

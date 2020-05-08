@@ -44,7 +44,7 @@ library(gridExtra)
 # data("regUF")
 
 # source skenario aksi ----------------------------------------
-# source("_DB/debug_TIN.R")
+source("_DB/debug_TIN.R")
 # source("_DB/global.R")
 source("module.R")
 # end source skenario aksi ------------------------------------
