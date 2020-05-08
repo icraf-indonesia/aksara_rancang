@@ -1,4 +1,4 @@
-##-- Pacotes ----
+##-- Library ----
 library(dplyr)
 library(dbplyr)
 library(data.table)
@@ -41,10 +41,6 @@ library(gridExtra)
 
 library(limSolve)
 
-# ##-- Chamando os shapes do mapsBR ----
-# data("regMun")
-# data("regUF")
-
 # source skenario aksi ----------------------------------------
 library(reshape2)
 library(limSolve)
@@ -55,12 +51,12 @@ library(rlist)
 #source("module.R")
 # end source skenario aksi ------------------------------------
 
-##-- Chamando as funções criadas ----
+##-- Template function ----
 source("functions/utils.R")
 source("functions/plot_functions.R")
 cores <- c("#098ebb", "#fdc23a", "#e96449", "#818286")
 
-##-- Chamando os componentes do header shiny ----
+##-- Template tabs function ----
 tab_files <- list.files(path = "tabs", full.names = T, recursive = T)
 tab_files <- tab_files[-grep(x = tab_files, pattern = "server")]
 

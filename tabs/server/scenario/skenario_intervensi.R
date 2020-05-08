@@ -1,13 +1,8 @@
-
-
-
 ###BEGIN: initiate all variables & function####
 #ID
 username<-"dw"
 selectedProv = "JaBar"
 datapath <- paste0("_DB/data/", selectedProv, "/")
-
-
 
 ioSector <- read.table("_DB/jabar_in_redcluwe/01_sektor.csv ", header = F, sep = ",")
 ioIntermediateDemand <- readRDS(paste0(datapath, "indem"))
@@ -584,10 +579,7 @@ analysisCT <- t( t(matrixIoIntermediateDemand) / ioTotalOutput)
 # Coefficient primary input
 analysisCPI <- t(t(ioAddedValue) / ioTotalOutput)
 
-
 ###END: analysis ####
-
-
 
 ###BEGIN: BAU projection####
 
@@ -607,7 +599,6 @@ bauSeriesOfImpactWaste <- list()
 bauSeriesOfImpactAgriculture <- list()
 bauSeriesOfImpactLand1<-list()
 bauSeriesOfImpactLand2<-list()
-
 
 # Historical consumption and emission data
 eval(parse(text=paste0("bauSeriesOfIntermediateDemand$y",ioPeriod," <- matrixIoIntermediateDemand")))
@@ -729,7 +720,6 @@ if(any(unlist(sapply(bauSeriesOfImpactLand1,'[[', "landCover"))<0)==TRUE){
   }
 }
 
-
 # LUTM Projection 
 projectionYear <- initialYear
 listYear <- paste0("y", ioPeriod)
@@ -761,7 +751,6 @@ for(step in 1:(iteration+1)){
   listYear <- c(listYear, timeStep)
   projectionYear <- initialYear+step
 }
-
 # jika tidak berhasil menghitung LUTM, force to enter advanceMode pada UI (spt pada land cover)
 
 #####END : BAU projection ####
@@ -933,7 +922,6 @@ for(t in 1:iteration){
 }
 
 # 14. Land Emission by sector 
-
 resultLandEmission <- bauSeriesOfImpactLand2[[2]][["emission"]]
 resultLandEmission$year <- initialYear
 resultLandEmission <-resultLandEmission[,c("year", names(bauSeriesOfImpactLand2[[2]][["emission"]]))]
@@ -997,8 +985,8 @@ ggplot(data=bauAllResult, aes(x=Year, y=ResultTotalGDP, group=1)) + geom_line() 
 ggplot(data=bauAllResult, aes(x=Year, y=CummulativeGDP, group=1)) + geom_line() + geom_point()
 ggplot(data=bauAllResult, aes(x=Year, y=CummulativeEmissionIntensity, group=1)) + geom_line() + geom_point()
 
-
 #####END : BAU projection visualization ####
+
 
 ### nama 52 Sector
 Sector <- ioSector[,1]
@@ -1013,7 +1001,6 @@ fdZero <- fdBau
 fdZero[,2:16] <- 0
 
 ### BEGIN : SEKTOR LAHAN ####
-
 # inSatelliteLand <-paste0("data/", selectedProv, "/inputLandCoverZero.csv")
 # satelliteLand <- read.table(inSatelliteLand, header = T, sep = ",")
 satelliteLand <- read.table("data/JaBar/inputLandCoverZero.csv", header = T, sep = ",")
