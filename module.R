@@ -208,10 +208,7 @@ buttonModule <- function(input, output, session, data, type) {
   output$ListTable <- renderDataTable({
     ListTableReact()
   }, escape = FALSE)
-  
-  
-  
-  
+
   if(type=="land"){
     observeEvent(input$select_button_trigger,{
       showModal(
@@ -241,7 +238,6 @@ buttonModule <- function(input, output, session, data, type) {
               ),
               title="Sunting Intervensi Ekonomi"
             ),
-            
             
             ################################################################################
             #                                                                              #
@@ -308,7 +304,6 @@ buttonModule <- function(input, output, session, data, type) {
               title="Sunting Intervensi Ekonomi"
             ),
             
-            
             ################################################################################
             #                                                                              #
             #                        BUTTON KONSTRUKSI SATELIT AKUN                        #
@@ -356,7 +351,6 @@ buttonModule <- function(input, output, session, data, type) {
     selectedFile
   })
   
-  
   observeEvent(input$econHit, {
     insertUI(selector=paste0("#", ns("FDPlaceholder")),
              where='afterEnd',
@@ -399,7 +393,6 @@ buttonModule <- function(input, output, session, data, type) {
   finalDemand <- reactiveValues(
     table1 = NULL
   )
-  
   
   valFD<- eventReactive(c(input$showYearEco),{
     selectedRow <- as.numeric(strsplit(input$select_button,"_")[[1]][2])
@@ -500,7 +493,6 @@ buttonModule <- function(input, output, session, data, type) {
              ui= uiOutput(ns('satLandUIManual'))
     )
   })
-  
   
   output$satLandUIManual<- renderUI({
     

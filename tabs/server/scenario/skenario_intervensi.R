@@ -3,9 +3,8 @@ callModule(buttonModule, "forWaste", wasteData, type="waste")
 callModule(buttonModule, "forAgri", agriData, type="agriculture")
 callModule(buttonModule, "forLand", landData, type="land")
 
-
 ### nama 52 Sector
-Sector<-ioSector[,1]
+Sector <- ioSector[,1]
 Sector <- as.character(Sector)
 
 ### DATA MASTER
@@ -16,13 +15,11 @@ fdBau$Sektor <- as.character(fdBau$Sektor)
 fdZero <- fdBau
 fdZero[,2:16] <- 0
 
-################################################################################
-#                                                                              #
-#                                sektor lahan                                  #
-#                                                                              #
-################################################################################
-satelliteLand <- read.table("_DB/jabar_in_redcluwe/inputLandCoverZero.csv", header = T, sep = ",")
+### BEGIN : SEKTOR LAHAN ####
 
+# inSatelliteLand <-paste0("data/", selectedProv, "/inputLandCoverZero.csv")
+# satelliteLand <- read.table(inSatelliteLand, header = T, sep = ",")
+satelliteLand <- read.table("data/JaBar/inputLandCoverZero.csv", header = T, sep = ",")
 colSectorLand <- factor(colnames(LDMProp_his),ordered=T)
 
 #alamat rds untuk menampilkan daftar di ListTableReact
@@ -33,16 +30,12 @@ landData <- list(
   listConsumZero=satelliteLand,
   alamatFile=alamatFile
 )
+### END : SEKTOR LAHAN ####
 
-################################################################################
-#                                                                              #
-#                                sektor energi                                 #
-#                                                                              #
-################################################################################
+### BEGIN : SEKTOR ENERGI ####
 
 #daftar nama FAKTOR EMISI 
 faktorEmisi <- as.character(emissionFactorEnergy[,1])  ###energi: nama 26 bahan bakar
-
 
 #ist konsumsi energi
 listConsumBAU <- lapply(bauSeriesOfImpactEnergy, 
@@ -56,7 +49,6 @@ listConsumZero <- lapply(listConsumBAU, function(x){
   return(x)
 })
 
-
 #alamat rds untuk menampilkan daftar di ListTableReact
 selectedSektor <- "energi"
 alamatFile <- paste0("_DB/skenarioData/", selectedProv, "/", selectedSektor)
@@ -67,13 +59,9 @@ energyData <- list(
   listConsumZero=listConsumZero,
   alamatFile=alamatFile
 )
+### END : SEKTOR ENERGI ####
 
-################################################################################
-#                                                                              #
-#                                sektor limbah                                 #
-#                                                                              #
-################################################################################
-
+### BEGIN : SEKTOR LIMBAH ####
 
 #daftar nama FAKTOR EMISI 
 faktorEmisi <- as.character(emissionFactorWaste[,1])  ###limbah: nama2 limbah
@@ -101,12 +89,9 @@ wasteData <- list(
   listConsumZero=listConsumZero,
   alamatFile=alamatFile
 )
+### END : SEKTOR LIMBAH ####
 
-################################################################################
-#                                                                              #
-#                                sektor pertanian                              #
-#                                                                              #
-################################################################################
+### BEGIN : SEKTOR PERTANIAN ####
 
 #daftar nama FAKTOR EMISI 
 faktorEmisi <- as.character(emissionFactorAgriculture[,1])  ###agri: nama pupuk
@@ -123,7 +108,6 @@ listConsumZero <- lapply(listConsumBAU, function(x){
   return(x)
 })
 
-
 #alamat rds untuk menampilkan daftar di ListTableReact
 selectedSektor <- "pertanian"
 alamatFile <- paste0("_DB/skenarioData/", selectedProv, "/", selectedSektor)
@@ -134,3 +118,4 @@ agriData <- list(
   listConsumZero=listConsumZero,
   alamatFile=alamatFile
 )
+### END : SEKTOR PERTANIAN ####
