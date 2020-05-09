@@ -1,6 +1,5 @@
 buttonUI <- function(id) {
   ns <- NS(id)
-  
   tagList(
     actionButton(ns("modalDefineButton"),'Deskripsi Skenario'),
     tags$br(),
@@ -14,10 +13,8 @@ buttonUI <- function(id) {
 }
 
 buttonModule <- function(input, output, session, data, type) {
-  
   # load the namespace
   ns <- session$ns
-  
   ################################################################################
   #                                                                              #
   #                        BUTTON DEFINE                                         #
@@ -57,7 +54,6 @@ buttonModule <- function(input, output, session, data, type) {
     ))
   })
   
-  
   observeEvent(input$defHit, {
     insertUI(selector='#defPlaceholder',
              where='afterEnd',
@@ -69,7 +65,6 @@ buttonModule <- function(input, output, session, data, type) {
     tagList(rHandsontableOutput(ns('editDefine')),
     )
   })
-  
   
   valDef<- reactive({
     namaSken <- input$intervensiDef
@@ -87,7 +82,6 @@ buttonModule <- function(input, output, session, data, type) {
     
     tableDef
   })
-  
   
   output$editDefine <- renderRHandsontable({
     rhandsontable(valDef(),
@@ -130,11 +124,9 @@ buttonModule <- function(input, output, session, data, type) {
     shinyjs::js$refresh()
   })
   
-  
   observeEvent(input$cancelModalDef,{
     removeModal()
   })
-  
   
   ListButton_fun <- function(FUN, len, id, ...) {
     inputs <- character(len)
@@ -156,7 +148,6 @@ buttonModule <- function(input, output, session, data, type) {
     r <- lapply(dirFile, funcFile)
     r
   })
-  
   
   ### buat tabel daftar nama file reaktif ###
   ListTableReact <- reactive({
