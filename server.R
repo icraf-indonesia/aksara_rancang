@@ -14,6 +14,8 @@ shinyServer(function(input, output, session, data, type){
   source("tabs/server/scenario/skenario_bau_debug.R", local = TRUE)
   # source("module_debug.R",local = TRUE)
   source("tabs/server/scenario/skenario_intervensi_debug.R", local = TRUE)
+  ##-- trade off ----
+  source("tabs/server/tradeoff.R", local = TRUE)
   ##-- HELP ----
   source("tabs/server/help.R", local = TRUE)
 })

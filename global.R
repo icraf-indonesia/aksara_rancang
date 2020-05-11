@@ -44,12 +44,23 @@ library(limSolve)
 # source skenario aksi ----------------------------------------
 library(reshape2)
 library(limSolve)
-library(plotly)
 library(rlist)
 #source("_DB/debug_TIN.R") #dikomen (data_historis & scenario_bau)
 #source("_DB/global.R") #dikomen
 source("module_debug.R")
 # end source skenario aksi ------------------------------------
+
+
+# tab trade off -----------------------------------------------------------
+library(shinyBS)
+library(gtools)
+library(plyr)
+#source("_DB/debug_TIN.R")
+# end trade off -----------------------------------------------------------
+
+
+
+
 
 ##-- Template function ----
 source("functions/utils.R")
