@@ -1,4 +1,4 @@
-hasil_analisis <- tabPanel(title = "Hasil Analasis", 
+hasil_analisis <- tabPanel(title = "Hasil Analisis", 
                         value = "hasil_analisis",
                         # br(), hr(),
                         column(width = 12,
