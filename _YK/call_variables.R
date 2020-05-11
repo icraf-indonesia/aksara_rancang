@@ -5,36 +5,36 @@
 # userFolder <- paste0(datapath, username)
 # if(!dir.exists(userFolder)) dir.create(userFolder, mode = 777)
 
-sec <- blackBoxInputs()
-analysis <- sec$result
+# dataHistoris <- blackBoxInputs()
+analysis <- dataHistoris$result
 
-selectedProv = sec$selectedProv
-username = sec$username
+selectedProv = dataHistoris$selectedProv
+username = dataHistoris$username
 
 ### Begin: Main Variables ###
-ioSector = sec$ioSector
-ioIntermediateDemand = sec$ioIntermediateDemand
-ioFinalDemand = sec$ioFinalDemand
-ioFinalDemandComponent = sec$ioFinalDemandComponent
-ioAddedValue = sec$ioAddedValue
-ioAddedValueComponent = sec$ioAddedValueComponent
-ioLeontif = sec$ioLeontif
-ioLeontiefInverse = sec$ioLeontiefInverse
-ioPeriod = sec$ioPeriod
-satelliteLabour = sec$satelliteLabour
-satelliteEnergy = sec$satelliteEnergy
-satelliteWaste = sec$satelliteWaste
-satelliteAgriculture = sec$satelliteAgriculture
-emissionFactorEnergy = sec$emissionFactorEnergy
-emissionFactorWaste = sec$emissionFactorWaste
-emissionFactorAgriculture = sec$emissionFactorAgriculture
-population = sec$population
-populationProjection = sec$populationProjection
-baselineEmission = sec$baselineEmission
-analysisIncomePerCapita = sec$analysisIncomePerCapita
-GDPAll = sec$GDPAll
-LDMProp = sec$LDMProp_his #bedanya 1
-LDMProp_his = sec$LDMProp_his #bedanya 2
+ioSector = dataHistoris$ioSector
+ioIntermediateDemand = dataHistoris$ioIntermediateDemand
+ioFinalDemand = dataHistoris$ioFinalDemand
+ioFinalDemandComponent = dataHistoris$ioFinalDemandComponent
+ioAddedValue = dataHistoris$ioAddedValue
+ioAddedValueComponent = dataHistoris$ioAddedValueComponent
+ioLeontif = dataHistoris$ioLeontif
+ioLeontiefInverse = dataHistoris$ioLeontiefInverse
+ioPeriod = dataHistoris$ioPeriod
+satelliteLabour = dataHistoris$satelliteLabour
+satelliteEnergy = dataHistoris$satelliteEnergy
+satelliteWaste = dataHistoris$satelliteWaste
+satelliteAgriculture = dataHistoris$satelliteAgriculture
+emissionFactorEnergy = dataHistoris$emissionFactorEnergy
+emissionFactorWaste = dataHistoris$emissionFactorWaste
+emissionFactorAgriculture = dataHistoris$emissionFactorAgriculture
+population = dataHistoris$population
+populationProjection = dataHistoris$populationProjection
+baselineEmission = dataHistoris$baselineEmission
+analysisIncomePerCapita = dataHistoris$analysisIncomePerCapita
+GDPAll = dataHistoris$GDPAll
+LDMProp = dataHistoris$LDMProp_his #bedanya 1
+LDMProp_his = dataHistoris$LDMProp_his #bedanya 2
 growthRate = allDataProv$growthRate
 # LU_tahun=LU_tahun
 # landTable_t0=landTable_t0
@@ -83,52 +83,52 @@ finalYear <- input$dateTo
 iteration <- finalYear - initialYear
 
 ### Begin: Variables in BAU Scenario ###
-analysisCPI = sec$analysisCPI
-analysisCT = sec$analysisCT
-analysisLRC = sec$analysisLRC
-carbonStock_his = sec$carbonStock_his
-ioDimention = sec$ioDimention
-landReq_his = sec$landReq_his
-landCover_his = sec$landCover_his
-LDMProp_sektor = sec$LDMProp_sektor
-LRCRate_his = sec$LRCRate_his
-LRCRate_2 = sec$LRCRate_2
-LUTMTemplate_his = sec$LUTMTemplate_his
-LUTM_his = sec$LUTM_his
-proportionFinalDemand = sec$proportionFinalDemand
-TPM = sec$TPM
-linkagesTable = sec$linkagesTable
-multiplierAll = sec$multiplierAll
-rtffile = sec$rtffile
+analysisCPI = dataHistoris$analysisCPI
+analysisCT = dataHistoris$analysisCT
+analysisLRC = dataHistoris$analysisLRC
+carbonStock_his = dataHistoris$carbonStock_his
+ioDimention = dataHistoris$ioDimention
+landReq_his = dataHistoris$landReq_his
+landCover_his = dataHistoris$landCover_his
+LDMProp_sektor = dataHistoris$LDMProp_sektor
+LRCRate_his = dataHistoris$LRCRate_his
+LRCRate_2 = dataHistoris$LRCRate_2
+LUTMTemplate_his = dataHistoris$LUTMTemplate_his
+LUTM_his = dataHistoris$LUTM_his
+proportionFinalDemand = dataHistoris$proportionFinalDemand
+TPM = dataHistoris$TPM
+linkagesTable = dataHistoris$linkagesTable
+multiplierAll = dataHistoris$multiplierAll
+rtffile = dataHistoris$rtffile
 
 ### BAU Results ###
-populationProjection = bauResults$populationProjection
-baselineEmission = bauResults$baselineEmission
-resultGDP = bauResults$resultGDP
-resultIncomePerCapita = bauResults$resultIncomePerCapita
-resultIncome = bauResults$resultIncome
-resultLabour = bauResults$resultLabour
-resultEnergyConsumption = bauResults$resultEnergyConsumption
-resultEnergyEmission = bauResults$resultEnergyEmission
-resultWasteDisposal = bauResults$resultWasteDisposal
-resultWasteEmission = bauResults$resultWasteEmission
-resultTotalEmission = bauResults$resultTotalEmission
-bauSeriesOfImpactLabour = bauResults$bauSeriesOfImpactLabour
-bauSeriesOfImpactEnergy = bauResults$bauSeriesOfImpactEnergy
-bauSeriesOfImpactWaste = bauResults$bauSeriesOfImpactWastebauSeriesOfOutput 
-bauSeriesOfOutput = bauResults$bauSeriesOfOutput
-bauSeriesOfGDP = bauResults$bauSeriesOfGDP
-bauSeriesOfFinalDemandComponent = bauResults$bauSeriesOfFinalDemandComponent
-bauSeriesOfIntermediateDemand = bauResults$bauSeriesOfIntermediateDemand
-bauSeriesOfAddedValue = bauResults$bauSeriesOfAddedValue
-growthRateSeries = bauResults$growthRateSeries
-finalYear = bauResults$finalYear
-initialYear = bauResults$initialYear
-resultLandCover = bauResults$resultLandCover
-bauSeriesOfImpactLand1 = bauResults$bauSeriesOfImpactLand1
-bauSeriesOfImpactLand2 = bauResults$bauSeriesOfImpactLand2
-bauSeriesOfFinalDemandTable = bauResults$bauSeriesOfFinalDemandTable
-bauSeriesOfImpactAgriculture = bauResults$bauSeriesOfImpactAgriculture
+populationProjection = dataBau$populationProjection
+baselineEmission = dataBau$baselineEmission
+resultGDP = dataBau$resultGDP
+resultIncomePerCapita = dataBau$resultIncomePerCapita
+resultIncome = dataBau$resultIncome
+resultLabour = dataBau$resultLabour
+resultEnergyConsumption = dataBau$resultEnergyConsumption
+resultEnergyEmission = dataBau$resultEnergyEmission
+resultWasteDisposal = dataBau$resultWasteDisposal
+resultWasteEmission = dataBau$resultWasteEmission
+resultTotalEmission = dataBau$resultTotalEmission
+bauSeriesOfImpactLabour = dataBau$bauSeriesOfImpactLabour
+bauSeriesOfImpactEnergy = dataBau$bauSeriesOfImpactEnergy
+bauSeriesOfImpactWaste = dataBau$bauSeriesOfImpactWastebauSeriesOfOutput 
+bauSeriesOfOutput = dataBau$bauSeriesOfOutput
+bauSeriesOfGDP = dataBau$bauSeriesOfGDP
+bauSeriesOfFinalDemandComponent = dataBau$bauSeriesOfFinalDemandComponent
+bauSeriesOfIntermediateDemand = dataBau$bauSeriesOfIntermediateDemand
+bauSeriesOfAddedValue = dataBau$bauSeriesOfAddedValue
+growthRateSeries = dataBau$growthRateSeries
+finalYear = dataBau$finalYear
+initialYear = dataBau$initialYear
+resultLandCover = dataBau$resultLandCover
+bauSeriesOfImpactLand1 = dataBau$bauSeriesOfImpactLand1
+bauSeriesOfImpactLand2 = dataBau$bauSeriesOfImpactLand2
+bauSeriesOfFinalDemandTable = dataBau$bauSeriesOfFinalDemandTable
+bauSeriesOfImpactAgriculture = dataBau$bauSeriesOfImpactAgriculture
 
 ### Begin: BAU Results (Old code) ###
 # populationProjection = bauResults$population

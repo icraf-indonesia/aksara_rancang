@@ -1,5 +1,5 @@
 ###*bau input####
-generate_table<-function(table, first_year, second_year, value=0.00){
+generate_table<-function(table, first_year, second_year, value=0.05){
   n <- second_year-first_year
   eval(parse(text=(paste0("table$y", first_year, " <- value"))))
   for(i in 1:n){
@@ -575,7 +575,8 @@ observeEvent(input$buttonBAU, {
   # browser()
   
   ###BEGIN : Define function ####
-  functionVar <- blackBoxInputs()
+  sec <- blackBoxInputs()
+  
   #1 Function for ...
   functionSatelliteImpact <- function(type = "energy", satellite = data.frame(), matrix_output = matrix(), emission_factor = data.frame()) { 
     impact <- list()
@@ -633,39 +634,39 @@ observeEvent(input$buttonBAU, {
     
     impact<-list()
     if(type=="historis"){
-      impact$LRC <- functionVar$analysisLRC ###panggil dari blackbox input
-      impact$landReq <- functionVar$landReq_his
-      impact$landCover <- functionVar$landCover_his
+      impact$LRC <- sec$analysisLRC ###panggil dari blackbox input
+      impact$landReq <- sec$landReq_his
+      impact$landCover <- sec$landCover_his
     } else{
       # browser()
       if(advanceMode== TRUE){
-        impact$LRC<-functionVar$analysisLRC*LRCRate^(currYear-functionVar$ioPeriod)
+        impact$LRC<-sec$analysisLRC*LRCRate^(currYear-sec$ioPeriod)
       } else{
         if (runNum == 1 ){
-          impact$LRC<-functionVar$analysisLRC*(functionVar$LRCRate_his^(currYear-functionVar$ioPeriod))
+          impact$LRC<-sec$analysisLRC*(sec$LRCRate_his^(currYear-sec$ioPeriod))
         } else if (runNum ==2 ){
-          impact$LRC<-functionVar$analysisLRC*(functionVar$LRCRate_2^(currYear-functionVar$ioPeriod))
+          impact$LRC<-sec$analysisLRC*(sec$LRCRate_2^(currYear-sec$ioPeriod))
         }
       }
       # Land Requirement
       impact$landReq<-diag(impact$LRC[,1]) %*% rbind(as.matrix(matrix_output[,1]),0)
-      impact$landReq[nrow(as.matrix(impact$landReq)),]<-sum(functionVar$landCover_his[,1])-sum(as.matrix(impact$landReq[1:nrow(as.matrix(impact$landReq))-1,]))
+      impact$landReq[nrow(as.matrix(impact$landReq)),]<-sum(sec$landCover_his[,1])-sum(as.matrix(impact$landReq[1:nrow(as.matrix(impact$landReq))-1,]))
       # Land Cover
-      impact$landCover<-functionVar$LDMProp_sektor %*% as.matrix(impact$landReq)
-      rownames(impact$landCover)<-colnames(functionVar$LDMProp_his)
+      impact$landCover<-sec$LDMProp_sektor %*% as.matrix(impact$landReq)
+      rownames(impact$landCover)<-colnames(sec$LDMProp_his)
       
     }
     
     # Rapikan
-    impact$landReq <- data.frame(c(rownames(functionVar$ioSector), nrow(functionVar$ioSector)+1),
-                                 c(as.character(functionVar$ioSector[,1]), "lainnya (tidak menghasilkan output)"),
+    impact$landReq <- data.frame(c(rownames(sec$ioSector), nrow(sec$ioSector)+1),
+                                 c(as.character(sec$ioSector[,1]), "lainnya (tidak menghasilkan output)"),
                                  impact$landReq, stringsAsFactors = FALSE)
     
     colnames(impact$landReq)<-c("id.sector", "sector", "land.requirement")
     
     
     impact$landCover <- data.frame(as.character(1:23),
-                                   colnames(functionVar$LDMProp_his),
+                                   colnames(sec$LDMProp_his),
                                    impact$landCover[,1],stringsAsFactors=FALSE)
     colnames(impact$landCover)<-c("id.land.use", "land.use", "luas.land.use")
     
@@ -694,18 +695,18 @@ observeEvent(input$buttonBAU, {
     impact<- list()
     
     if (type=="historis"){
-      impact$landCover<-functionVar$landCover_his
+      impact$landCover<-sec$landCover_his
       # impact$matrixE<-NULL
       # impact$matrixF<-NULL
       # impact$matrixG<-NULL
       # impact$matrixH<-NULL
-      impact$LUTM<-functionVar$LUTM_his
+      impact$LUTM<-sec$LUTM_his
       
     } else{
       
       # set multiiplier for making matrix H
       if(advanceMode==TRUE){
-        multiplier <- matrix(percentage, nrow=ncol(functionVar$TPM), ncol=1)
+        multiplier <- matrix(percentage, nrow=ncol(sec$TPM), ncol=1)
       } else {
         if(runNum==1){ multiplier = 0.8
         } else if (runNum ==2) {multiplier <- 0.5
@@ -714,13 +715,13 @@ observeEvent(input$buttonBAU, {
         } else if (runNum==5) {multiplier <- 0
         } else if (runNum==6) {
           multiplier <- 0.1
-          LUTMTemplate <- matrix(NA, nrow=nrow(functionVar$LUTMTemplate_his),ncol=ncol(functionVar$LUTMTemplate_his))
-          rownames(LUTMTemplate)<-rownames(functionVar$LUTMTemplate_his)
-          colnames(LUTMTemplate)<-colnames(functionVar$LUTMTemplate_his)
+          LUTMTemplate <- matrix(NA, nrow=nrow(sec$LUTMTemplate_his),ncol=ncol(sec$LUTMTemplate_his))
+          rownames(LUTMTemplate)<-rownames(sec$LUTMTemplate_his)
+          colnames(LUTMTemplate)<-colnames(sec$LUTMTemplate_his)
           for (i in 1:nrow(sec$landCover_his)){
             if (sum(sec$landCover_his[i,])==0){
-              LUTMTemplate[i,]<-matrix(0,ncol=ncol(functionVar$LUTMTemplate_his)) #LUTMTemplate bisa diedit di interface
-              LUTMTemplate[,i]<-matrix(0,nrow=ncol(functionVar$LUTMTemplate_his))
+              LUTMTemplate[i,]<-matrix(0,ncol=ncol(sec$LUTMTemplate_his)) #LUTMTemplate bisa diedit di interface
+              LUTMTemplate[,i]<-matrix(0,nrow=ncol(sec$LUTMTemplate_his))
             } else {}
           }
           # LUTMTemplate<-read.csv("_TIN/data/JaBar/LUTMTemplate_his2.csv", header=TRUE)
@@ -848,7 +849,7 @@ observeEvent(input$buttonBAU, {
     impact$emission<-matrix(NA,nrow=nrow(as.matrix(impact$LUTM)), ncol=ncol(as.matrix(impact$LUTM)))
     for (a in 1:nrow(impact$LUTM)){
       for (b in 1:ncol(impact$LUTM)){
-        impact$emission[a,b]<-as.numeric(impact$LUTM[a,b])*(functionVar$carbonStock_his[b,]-functionVar$carbonStock_his[a,])*3.67*(-1)
+        impact$emission[a,b]<-as.numeric(impact$LUTM[a,b])*(sec$carbonStock_his[b,]-sec$carbonStock_his[a,])*3.67*(-1)
       }
     }
     
@@ -858,14 +859,14 @@ observeEvent(input$buttonBAU, {
     
     # rapikan
     impact$landCover <- data.frame(as.character(1:23),
-                                   colnames(functionVar$LDMProp_his),
+                                   colnames(sec$LDMProp_his),
                                    impact$landCover[,1],stringsAsFactors=FALSE)
     colnames(impact$landCover)<-c("id.land.use", "land.use", "luas.land.use")
     
     impact$LUTM <- data.frame(as.character(1:23),
-                              colnames(functionVar$LDMProp_his),
+                              colnames(sec$LDMProp_his),
                               impact$LUTM,stringsAsFactors=FALSE)
-    colnames(impact$LUTM)<-c("id.land.use", "land.use", colnames(functionVar$LDMProp_his))
+    colnames(impact$LUTM)<-c("id.land.use", "land.use", colnames(sec$LDMProp_his))
     
     impact$emission <- data.frame(rownames(allDataProv$ioSector),
                                   as.character(allDataProv$ioSector[,1]),
@@ -875,18 +876,61 @@ observeEvent(input$buttonBAU, {
     
     return(impact)
   }
+  
+  #4 Function for calculating LUTM new LUTMTemplate, additional matrix G, additional matrix H, & delta land Cover (inputLandCover)
+  functionSatelliteLand3<-function (inputLandScen = NULL,
+                                    timeScen = timeStep){
+    impact<-list()
+    
+    if (is.null(inputLandScen)){
+      impact$LUTMTemplate<-LUTMTemplate_his
+      impact$additionalG<-NULL
+      impact$additionalH<-NULL
+      impact$inputLandCover<-NULL
+    } else{
+      # calculate scenario LUTM Template
+      impact$LUTMTemplate<-LUTMTemplate_his
+      impact$LUTMTemplate[impact$LUTMTemplate!="0"]<-NA
+      rownames(impact$LUTMTemplate)<-colnames(impact$LUTMTemplate)
+      for (i in 1:nrow(inputLandScen)){
+        impact$LUTMTemplate[paste0(inputLandScen[i,1]), paste0(inputLandScen[i,2])]<- NA
+      }
+      impact$LUTMTemplate[is.na(impact$LUTMTemplate)]<-paste0("x",1:length(impact$LUTMTemplate[is.na(impact$LUTMTemplate)]))
+      
+      # additional G & additional H
+      impact$additionalG<-matrix(0,ncol=length(impact$LUTMTemplate[impact$LUTMTemplate!=0]), nrow=nrow(inputLandScen))
+      impact$additionalH<-matrix(ncol=1, nrow=nrow(inputLandScen))
+      
+      colnames(impact$additionalG)<-as.character(impact$LUTMTemplate[impact$LUTMTemplate!=0])
+      
+      for (i in 1:nrow(inputLandScen)){
+        impact$additionalG[i,impact$LUTMTemplate[paste0(inputLandScen[i,1]), paste0(inputLandScen[i,2])]]<-1
+        impact$additionalH[i,1]<-inputLandScen[i,paste0(timeScen)]
+      }
+      
+      # inputLandCover
+      impact$inputLandCover<- matrix(0,ncol=1, nrow=23)
+      rownames(impact$inputLandCover)<-colnames(impact$LUTMTemplate)
+      
+      for (landCoverClass in unique(inputLandScen[,2])){
+        impact$inputLandCover[paste(landCoverClass),]<-sum(inputLandScen[inputLandScen[,2]==paste(landCoverClass), timeScen]) # pertambahan luas <- positif jumlah total luas kelas tupla yang sama di tahun akhir
+      } 
+      
+      for (landCoverClass in as.character(unique(inputLandScen[,1]))){
+        impact$inputLandCover[landCoverClass,]<--sum(inputLandScen[inputLandScen[,1]==paste(landCoverClass), timeScen]) # penurunan luas <- negatif jumlah total luas kelas tupla yang sama tahun akhir
+      } 
+    }
+    return (impact)
+  }
   ###END : Define function ####
   
   sec <- blackBoxInputs()
   analysisResult <- sec$result
-  # ioDimention <- ncol(allDataProv$ioIntermediateDemand)
-  # ioPeriod <- allDataProv$ioPeriod
   
   rowImport <- 1
   rowIncome <- 2
   rowProfit <- 3
   
-  # browser()
   initialYear <- as.numeric(input$initialYear)
   finalYear <- as.numeric(input$finalYear)
   iteration <- finalYear - initialYear
@@ -911,9 +955,9 @@ observeEvent(input$buttonBAU, {
   bauSeriesOfIntermediateDemand <- list()
   bauSeriesOfAddedValue <- list()
   bauSeriesOfFinalDemandComponent <- list()
-  bauSeriesOfbauSeriesOfImpactLabour <- list()
-  bauSeriesOfbauSeriesOfImpactEnergy <- list()
-  bauSeriesOfbauSeriesOfImpactWaste <- list()
+  bauSeriesOfImpactLabour <- list()
+  bauSeriesOfImpactEnergy <- list()
+  bauSeriesOfImpactWaste <- list()
   bauSeriesOfImpactAgriculture <- list()
   bauSeriesOfImpactLand1<-list() ###perlu dipanggil landCover <- bauSeriesOfImpactLand1$landCover
   bauSeriesOfImpactLand2<-list() ###perlu dipanggil jadiin reactive value: bauResult$bauSeriesOfImpactLand2 <- bauSeriesOfImpactLand2
@@ -923,9 +967,9 @@ observeEvent(input$buttonBAU, {
   eval(parse(text=paste0("bauSeriesOfIntermediateDemand$y",sec$ioPeriod," <- matrixIoIntermediateDemand")))
   eval(parse(text=paste0("bauSeriesOfAddedValue$y",sec$ioPeriod," <- matrixIoAddedValue")))
   eval(parse(text=paste0("bauSeriesOfFinalDemandComponent$y",sec$ioPeriod," <- matrixIoFinalDemand")))
-  eval(parse(text=paste0("bauSeriesOfbauSeriesOfImpactLabour$y",sec$ioPeriod," <- functionSatelliteImpact('labour', satellite = satelliteLabour, matrix_output = as.matrix(ioTotalOutput))")))
-  eval(parse(text=paste0("bauSeriesOfbauSeriesOfImpactEnergy$y",sec$ioPeriod,"<- functionSatelliteImpact('energy', satellite = satelliteEnergy, matrix_output = as.matrix(ioTotalOutput), emission_factor = emissionFactorEnergy)")))
-  eval(parse(text=paste0("bauSeriesOfbauSeriesOfImpactWaste$y",sec$ioPeriod," <- functionSatelliteImpact('waste', satellite = satelliteWaste, matrix_output = as.matrix(ioTotalOutput), emission_factor = emissionFactorWaste)")))
+  eval(parse(text=paste0("bauSeriesOfImpactLabour$y",sec$ioPeriod," <- functionSatelliteImpact('labour', satellite = satelliteLabour, matrix_output = as.matrix(ioTotalOutput))")))
+  eval(parse(text=paste0("bauSeriesOfImpactEnergy$y",sec$ioPeriod,"<- functionSatelliteImpact('energy', satellite = satelliteEnergy, matrix_output = as.matrix(ioTotalOutput), emission_factor = emissionFactorEnergy)")))
+  eval(parse(text=paste0("bauSeriesOfImpactWaste$y",sec$ioPeriod," <- functionSatelliteImpact('waste', satellite = satelliteWaste, matrix_output = as.matrix(ioTotalOutput), emission_factor = emissionFactorWaste)")))
   eval(parse(text=paste0("bauSeriesOfImpactAgriculture$y",sec$ioPeriod,"<- functionSatelliteImpact('agriculture', satellite = satelliteAgriculture, matrix_output = as.matrix(ioTotalOutput), emission_factor = emissionFactorAgriculture)")))
   
   # historical LRC, land requirement, & land cover 
@@ -960,9 +1004,9 @@ observeEvent(input$buttonBAU, {
     eval(parse(text = paste0("bauSeriesOfGDP$", timeStep, "<- colSums(bauSeriesOfAddedValue$", timeStep, "[setdiff(1:nrow(matrixIoAddedValue), rowImport),])")))
     
     # Impact projection
-    eval(parse(text= paste0("bauSeriesOfbauSeriesOfImpactLabour$", timeStep, " <- functionSatelliteImpact('labour', satellite = satelliteLabour, matrix_output = as.matrix(projectionOutput))")))
-    eval(parse(text= paste0("bauSeriesOfbauSeriesOfImpactEnergy$", timeStep, " <- functionSatelliteImpact('energy', satellite = satelliteEnergy, matrix_output = as.matrix(projectionOutput), emission_factor = emissionFactorEnergy)")))
-    eval(parse(text= paste0("bauSeriesOfbauSeriesOfImpactWaste$", timeStep, " <- functionSatelliteImpact('waste', satellite = satelliteWaste, matrix_output = as.matrix(projectionOutput), emission_factor = emissionFactorWaste)")))
+    eval(parse(text= paste0("bauSeriesOfImpactLabour$", timeStep, " <- functionSatelliteImpact('labour', satellite = satelliteLabour, matrix_output = as.matrix(projectionOutput))")))
+    eval(parse(text= paste0("bauSeriesOfImpactEnergy$", timeStep, " <- functionSatelliteImpact('energy', satellite = satelliteEnergy, matrix_output = as.matrix(projectionOutput), emission_factor = emissionFactorEnergy)")))
+    eval(parse(text= paste0("bauSeriesOfImpactWaste$", timeStep, " <- functionSatelliteImpact('waste', satellite = satelliteWaste, matrix_output = as.matrix(projectionOutput), emission_factor = emissionFactorWaste)")))
     eval(parse(text= paste0("bauSeriesOfImpactAgriculture$", timeStep, " <- functionSatelliteImpact('agriculture', satellite = satelliteAgriculture, matrix_output = as.matrix(projectionOutput), emission_factor = emissionFactorAgriculture)")))
     
     listYear <- c(listYear, timeStep)
@@ -1046,37 +1090,37 @@ observeEvent(input$buttonBAU, {
   for(step in 1:(iteration+1)){
     for (i in 1:6){   # 5 tipe yg akan dirun otomatis
       timeStep <- paste0("y", projectionYear)
-      #       eval(parse(text=paste0(
-      #       "bauSeriesOfImpactLand2$",timeStep,"<-tryCatch({
-      #         functionSatelliteLand2 (type ='projected',
-      #                           landCoverProjection = as.matrix(bauSeriesOfImpactLand1[['",timeStep,"']][['landCover']][['luas.land.use']]) ,
-      #                           landCoverProjectionMin=  as.matrix(bauSeriesOfImpactLand1[[paste0('y',",projectionYear,"-1)]][['landCover']][['luas.land.use']]),
-      #                           LUTMTemplate = LUTMTemplate_his, 
-      #                           advanceMode = FALSE,
-      #                           runNum =",i," , 
-      #                           GDP=as.matrix(bauSeriesOfGDP$",timeStep,")
-      #   )
-      # }, warning = function (a){NA}, error = function(b){NA})"
-      #       )))
       eval(parse(text=paste0(
-        "bauSeriesOfImpactLand2$",timeStep,"<-
-          functionSatelliteLand2 (type ='projected',
-                            landCoverProjection = as.matrix(bauSeriesOfImpactLand1[['",timeStep,"']][['landCover']][['luas.land.use']]) ,
-                            landCoverProjectionMin=  as.matrix(bauSeriesOfImpactLand1[[paste0('y',",projectionYear,"-1)]][['landCover']][['luas.land.use']]),
-                            LUTMTemplate = sec$LUTMTemplate_his, 
-                            advanceMode = FALSE,
-                            runNum =",i," , 
-                            GDP=as.matrix(bauSeriesOfGDP$",timeStep,")
-    )"
+        "bauSeriesOfImpactLand2$",timeStep,"<-tryCatch({
+              functionSatelliteLand2 (type ='projected',
+                                landCoverProjection = as.matrix(bauSeriesOfImpactLand1[['",timeStep,"']][['landCover']][['luas.land.use']]) ,
+                                landCoverProjectionMin=  as.matrix(bauSeriesOfImpactLand1[[paste0('y',",projectionYear,"-1)]][['landCover']][['luas.land.use']]),
+                                LUTMTemplate = LUTMTemplate_his,
+                                advanceMode = FALSE,
+                                runNum =",i," ,
+                                GDP=as.matrix(bauSeriesOfGDP$",timeStep,")
+        )
+      }, warning = function (a){NA}, error = function(b){NA})"
       )))
-      # if(any(is.na(bauSeriesOfImpactLand2[[timeStep]]))==FALSE){
-      #   print(paste0("use constraint ", i ," to make LUTM ",timeStep))
-      #   break
-      # } else {
-      #   if(i==6){
-      #     print(paste0("tidak berhasil menghitung LUTM ",timeStep))
-      #   } 
-      # }
+      #   eval(parse(text=paste0(
+      #     "bauSeriesOfImpactLand2$",timeStep,"<-
+      #       functionSatelliteLand2 (type ='projected',
+      #                         landCoverProjection = as.matrix(bauSeriesOfImpactLand1[['",timeStep,"']][['landCover']][['luas.land.use']]) ,
+      #                         landCoverProjectionMin=  as.matrix(bauSeriesOfImpactLand1[[paste0('y',",projectionYear,"-1)]][['landCover']][['luas.land.use']]),
+      #                         LUTMTemplate = sec$LUTMTemplate_his, 
+      #                         advanceMode = FALSE,
+      #                         runNum =",i," , 
+      #                         GDP=as.matrix(bauSeriesOfGDP$",timeStep,")
+      # )"
+      #   )))
+      if(any(is.na(bauSeriesOfImpactLand2[[timeStep]]))==FALSE){
+        print(paste0("use constraint ", i ," to make LUTM ",timeStep))
+        break
+      } else {
+        if(i==6){
+          print(paste0("tidak berhasil menghitung LUTM ",timeStep))
+        }
+      }
     }
     listYear <- c(listYear, timeStep)
     projectionYear <- initialYear+step
@@ -1128,7 +1172,7 @@ observeEvent(input$buttonBAU, {
   resultLabour <- data.frame(year = 0, id.sector = 0, sector= "", labour = 0, stringsAsFactors = FALSE)
   for(t in 0:iteration){
     t_curr <- initialYear + t
-    add.row <- data.frame(bauSeriesOfbauSeriesOfImpactLabour[[t+2]][[1]])
+    add.row <- data.frame(bauSeriesOfImpactLabour[[t+2]][[1]])
     names(add.row) <- names(resultLabour)[2:4]
     add.row$year <- t_curr
     add.row <- add.row[, names(resultLabour)]
@@ -1137,12 +1181,12 @@ observeEvent(input$buttonBAU, {
   resultLabour <- resultLabour[resultLabour$year != 0, ]
   
   # 5. Energy cons (indicator number 2)
-  resultEnergyConsumption <- bauSeriesOfbauSeriesOfImpactEnergy[[2]][[1]]
+  resultEnergyConsumption <- bauSeriesOfImpactEnergy[[2]][[1]]
   resultEnergyConsumption$year <- initialYear
-  resultEnergyConsumption <- resultEnergyConsumption[, c("year", names(bauSeriesOfbauSeriesOfImpactEnergy[[2]][[1]]))]
+  resultEnergyConsumption <- resultEnergyConsumption[, c("year", names(bauSeriesOfImpactEnergy[[2]][[1]]))]
   for(t in 1:iteration){
     t_curr <- initialYear + t
-    add.row <- data.frame(bauSeriesOfbauSeriesOfImpactEnergy[[t+2]][[1]]) # [[2]] for emission
+    add.row <- data.frame(bauSeriesOfImpactEnergy[[t+2]][[1]]) # [[2]] for emission
     add.row$year <- t_curr
     add.row <- add.row[, names(resultEnergyConsumption)]
     resultEnergyConsumption <- data.frame(rbind(resultEnergyConsumption, add.row), stringsAsFactors = FALSE)
@@ -1150,12 +1194,12 @@ observeEvent(input$buttonBAU, {
   names(resultEnergyConsumption)[2:3] <- c("id.sector", "sector")
   
   # 6. Energy emission (indicator number 3)
-  resultEnergyEmission <- bauSeriesOfbauSeriesOfImpactEnergy[[2]][[2]]
+  resultEnergyEmission <- bauSeriesOfImpactEnergy[[2]][[2]]
   resultEnergyEmission$year <- initialYear
-  resultEnergyEmission <- resultEnergyEmission[, c("year", names(bauSeriesOfbauSeriesOfImpactEnergy[[2]][[2]]))]
+  resultEnergyEmission <- resultEnergyEmission[, c("year", names(bauSeriesOfImpactEnergy[[2]][[2]]))]
   for(t in 1:iteration){
     t_curr <- initialYear + t
-    add.row <- data.frame(bauSeriesOfbauSeriesOfImpactEnergy[[t+2]][[2]]) # [[2]] for emission
+    add.row <- data.frame(bauSeriesOfImpactEnergy[[t+2]][[2]]) # [[2]] for emission
     add.row$year <- t_curr
     add.row <- add.row[, names(resultEnergyEmission)]
     resultEnergyEmission <- data.frame(rbind(resultEnergyEmission, add.row), stringsAsFactors = FALSE)
@@ -1163,12 +1207,12 @@ observeEvent(input$buttonBAU, {
   names(resultEnergyEmission)[2:3] <- c("id.sector", "sector")
   
   # 7. Waste cons (indicator number 2)
-  resultWasteDisposal <- bauSeriesOfbauSeriesOfImpactWaste[[2]][[1]]
+  resultWasteDisposal <- bauSeriesOfImpactWaste[[2]][[1]]
   resultWasteDisposal$year <- initialYear
-  resultWasteDisposal <- resultWasteDisposal[, c("year", names(bauSeriesOfbauSeriesOfImpactWaste[[2]][[1]]))]
+  resultWasteDisposal <- resultWasteDisposal[, c("year", names(bauSeriesOfImpactWaste[[2]][[1]]))]
   for(t in 1:iteration){
     t_curr <- initialYear + t
-    add.row <- data.frame(bauSeriesOfbauSeriesOfImpactWaste[[t+2]][[1]]) # [[2]] for emission
+    add.row <- data.frame(bauSeriesOfImpactWaste[[t+2]][[1]]) # [[2]] for emission
     add.row$year <- t_curr
     add.row <- add.row[, names(resultWasteDisposal)]
     resultWasteDisposal <- data.frame(rbind(resultWasteDisposal, add.row), stringsAsFactors = FALSE)
@@ -1177,12 +1221,12 @@ observeEvent(input$buttonBAU, {
   names(resultWasteDisposal)[2:3] <- c("id.sector", "sector")
   
   # 8. Waste emission (indicator number 3)
-  resultWasteEmission <- bauSeriesOfbauSeriesOfImpactWaste[[2]][[2]]
+  resultWasteEmission <- bauSeriesOfImpactWaste[[2]][[2]]
   resultWasteEmission$year <- initialYear
-  resultWasteEmission <- resultWasteEmission[, c("year", names(bauSeriesOfbauSeriesOfImpactWaste[[2]][[2]]))]
+  resultWasteEmission <- resultWasteEmission[, c("year", names(bauSeriesOfImpactWaste[[2]][[2]]))]
   for(t in 1:iteration){
     t_curr <- initialYear + t
-    add.row <- data.frame(bauSeriesOfbauSeriesOfImpactWaste[[t+2]][[2]]) # [[2]] for emission
+    add.row <- data.frame(bauSeriesOfImpactWaste[[t+2]][[2]]) # [[2]] for emission
     add.row$year <- t_curr
     add.row <- add.row[, names(resultWasteEmission)]
     resultWasteEmission <- data.frame(rbind(resultWasteEmission, add.row), stringsAsFactors = FALSE)
@@ -1319,6 +1363,138 @@ observeEvent(input$buttonBAU, {
   
   #####END : BAU projection visualization #### 
   
+  ####  BEGIN: create energyData #####
+  
+  LDMProp_his<-allDataProv$LDMProp_his
+  selectedProv<-allDataProv$selectedProv
+  
+  ### nama 52 Sector
+  Sector <- ioSector[,1]
+  Sector <- as.character(Sector)
+  
+  ### DATA MASTER
+  fdBau <- bauSeriesOfFinalDemandTable[,-2] #tabel 2015 nya ga masuk
+  fdBau$Sektor <- as.character(fdBau$Sektor) 
+  
+  ## FD zero
+  fdZero <- fdBau
+  fdZero[,2:16] <- 0
+  
+  ### BEGIN : SEKTOR LAHAN ####
+  # inSatelliteLand <-paste0("data/", selectedProv, "/inputLandCoverZero.csv")
+  # satelliteLand <- read.table(inSatelliteLand, header = T, sep = ",")
+  satelliteLand <- read.table("data/JaBar/inputLandCoverZero.csv", header = T, sep = ",")
+  colSectorLand <- factor(colnames(LDMProp_his),ordered=T)
+  
+  #alamat rds untuk menampilkan daftar di ListTableReact
+  selectedSektor <- "lahan"
+  alamatFile <- paste0("_DB/skenarioData/", selectedProv, "/", selectedSektor)
+  
+  landData <- list(
+    listConsumZero=satelliteLand,
+    alamatFile=alamatFile
+  )
+  
+  bauResults$landData <- landData
+  ### END : SEKTOR LAHAN ####
+  
+  ### BEGIN : SEKTOR ENERGI ####
+  
+  #daftar nama FAKTOR EMISI 
+  faktorEmisi <- as.character(emissionFactorEnergy[,1])  ###energi: nama 26 bahan bakar
+  
+  #ist konsumsi energi
+  listConsumBAU <- lapply(bauSeriesOfImpactEnergy, 
+                          function(x){
+                            x[[1]]
+                          })
+  listConsumBAU <- listConsumBAU[-1] #tahun 2015 dihilangkan
+  
+  listConsumZero <- lapply(listConsumBAU, function(x){
+    x[, 3:ncol(bauSeriesOfImpactEnergy[[1]][[1]])] <- 0 #dari kolom tcons sampai bahan bakar terakhir
+    return(x)
+  })
+  
+  #alamat rds untuk menampilkan daftar di ListTableReact
+  selectedSektor <- "energi"
+  alamatFile <- paste0("_DB/skenarioData/", selectedProv, "/", selectedSektor)
+  
+  energyData <- list(
+    faktorEmisi=faktorEmisi,
+    listConsumBAU=listConsumBAU,
+    listConsumZero=listConsumZero,
+    alamatFile=alamatFile
+  )
+  
+  bauResults$energyData <- energyData
+  ### END : SEKTOR ENERGI ####
+  
+  ### BEGIN : SEKTOR LIMBAH ####
+  
+  #daftar nama FAKTOR EMISI 
+  faktorEmisi <- as.character(emissionFactorWaste[,1])  ###limbah: nama2 limbah
+  
+  #list konsumsi energi
+  listConsumBAU <- lapply(bauSeriesOfImpactWaste, 
+                          function(x){
+                            x[[1]]
+                          })
+  listConsumBAU <- listConsumBAU[-1] #tahun 2015 dihilangkan
+  
+  listConsumZero <- lapply(listConsumBAU, function(x){
+    x[, 3:ncol(bauSeriesOfImpactWaste[[1]][[1]])] <- 0 #dari kolom tcons sampai bahan bakar terakhir
+    return(x)
+  })
+  
+  
+  #alamat rds untuk menampilkan daftar di ListTableReact
+  selectedSektor <- "limbah"
+  alamatFile <- paste0("_DB/skenarioData/", selectedProv, "/", selectedSektor)
+  
+  wasteData <- list(
+    faktorEmisi=faktorEmisi,
+    listConsumBAU=listConsumBAU,
+    listConsumZero=listConsumZero,
+    alamatFile=alamatFile
+  )
+  
+  bauResults$wasteData <- wasteData
+  ### END : SEKTOR LIMBAH ####
+  
+  ### BEGIN : SEKTOR PERTANIAN ####
+  
+  #daftar nama FAKTOR EMISI 
+  faktorEmisi <- as.character(emissionFactorAgriculture[,1])  ###agri: nama pupuk
+  
+  #list konsumsi energi
+  listConsumBAU <- lapply(bauSeriesOfImpactAgriculture, 
+                          function(x){
+                            x[[1]]
+                          })
+  listConsumBAU <- listConsumBAU[-1] #tahun 2015 dihilangkan
+  
+  listConsumZero <- lapply(listConsumBAU, function(x){
+    x[, 3:ncol(bauSeriesOfImpactAgriculture[[1]][[1]])] <- 0 #dari kolom tcons sampai bahan bakar terakhir
+    return(x)
+  })
+  
+  #alamat rds untuk menampilkan daftar di ListTableReact
+  selectedSektor <- "pertanian"
+  alamatFile <- paste0("_DB/skenarioData/", selectedProv, "/", selectedSektor)
+  
+  agriData <- list(
+    faktorEmisi=faktorEmisi,
+    listConsumBAU=listConsumBAU,
+    listConsumZero=listConsumZero,
+    alamatFile=alamatFile
+  )
+  
+  bauResults$agriData <- agriData
+  ### END : SEKTOR PERTANIAN ####
+  
+  #### END: create energyData ####
+  
+  
   recordActivities("Simulasi skenario BAU", "Berhasil", paste0(Sys.time()))
   notif_id <<- showNotification("Simulasi skenario bisnis seperti biasa telah berhasil", duration = 4, closeButton = TRUE, type = "warning")
   
@@ -1333,9 +1509,9 @@ observeEvent(input$buttonBAU, {
   bauResults$resultWasteDisposal = resultWasteDisposal
   bauResults$resultWasteEmission = resultWasteEmission
   bauResults$resultTotalEmission = resultTotalEmission
-  bauResults$bauSeriesOfImpactLabour = bauSeriesOfbauSeriesOfImpactLabour
-  bauResults$bauSeriesOfImpactEnergy = bauSeriesOfbauSeriesOfImpactEnergy
-  bauResults$bauSeriesOfImpactWaste = bauSeriesOfbauSeriesOfImpactWaste
+  bauResults$bauSeriesOfImpactLabour = bauSeriesOfImpactLabour
+  bauResults$bauSeriesOfImpactEnergy = bauSeriesOfImpactEnergy
+  bauResults$bauSeriesOfImpactWaste = bauSeriesOfImpactWaste
   bauResults$bauSeriesOfGDP = bauSeriesOfGDP
   bauResults$bauSeriesOfOutput = bauSeriesOfOutput
   bauResults$bauSeriesOfFinalDemandComponent = bauSeriesOfFinalDemandComponent
@@ -1347,6 +1523,8 @@ observeEvent(input$buttonBAU, {
   bauResults$resultLandCover = resultLandCover
   bauResults$bauSeriesOfImpactLand1 = bauSeriesOfImpactLand1
   bauResults$bauSeriesOfImpactLand2 = bauSeriesOfImpactLand2
+  bauResults$bauSeriesOfFinalDemandTable = bauSeriesOfFinalDemandTable
+  bauSeriesOfImpactAgriculture = bauResults$bauSeriesOfImpactAgriculture
   # bauResults$landCover_t1=landCover_t1
   # bauResults$landCover_t1_years=landCover_t1_years
   

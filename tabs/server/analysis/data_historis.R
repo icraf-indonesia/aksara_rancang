@@ -86,7 +86,7 @@ recordActivities <- function(latestAct, message, dateTime){
 
 observeEvent(input$inputLogin, {
   fullname <- input$fullname
-  username <- input$username
+  username <- "dw" #edit 
   password <- input$password
   selectedProv <- input$categoryProvince
   # print(selectedProv)

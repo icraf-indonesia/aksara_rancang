@@ -1,5 +1,5 @@
 intScenario <- tabPanel(title = "Skenario Intervensi", 
-                   value = "intScenario",
+                        value = "intScenario", 
                    tabBox(id="tabPanelIntervensi", width = 12,
                           tabPanel("Energi & Transportasi",
                                    tags$br(),
