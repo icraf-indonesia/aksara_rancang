@@ -521,5 +521,4 @@ observeEvent(input$buttonBAU, {
     LDMProp = readRDS(paste0("LDMData/Prov/",input$LDMPropUse))  #ganti mas alfa
   }
   
-
- 
+})

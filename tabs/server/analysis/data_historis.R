@@ -502,6 +502,7 @@ blackBoxInputs <- function(){
                      ioIntermediateDemand=ioIntermediateDemand, 
                      ioFinalDemand=ioFinalDemand, 
                      ioAddedValue=ioAddedValue, 
+                     ioLeontiefInverse=ioLeontiefInverse,
                      satelliteLabour=satelliteLabour, 
                      satelliteEnergy=satelliteEnergy, 
                      satelliteAgriculture=satelliteAgriculture,

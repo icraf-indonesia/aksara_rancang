@@ -14,9 +14,8 @@ buttonUI <- function(id) {
 
 buttonModule <- function(input, output, session, data, type, dataBau, dataHistoris) {
   
-  
   ###### BEGIN: call variables #####
-  analysis <- dataHistoris$result
+  analysis = dataHistoris$result
   selectedProv = dataHistoris$selectedProv
   username = dataHistoris$username
   
@@ -137,6 +136,7 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
   bauSeriesOfImpactLand2 = dataBau$bauSeriesOfImpactLand2
   bauSeriesOfFinalDemandTable = dataBau$bauSeriesOfFinalDemandTable
   bauSeriesOfImpactAgriculture = dataBau$bauSeriesOfImpactAgriculture
+  bauSeriesOfFinalDemand = dataBau$bauSeriesOfFinalDemand
   
   #1 Function for ...
   functionSatelliteImpact <- function(type = "energy", satellite = data.frame(), matrix_output = matrix(), emission_factor = data.frame()) { 
@@ -1380,7 +1380,7 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
                                                                                                   satellite = satelliteEnergy,
                                                                                                   matrix_output = as.matrix(projectionOutput),
                                                                                                   emission_factor = emissionFactorEnergy,
-                                                                                                  additional_satellite= additionalSatelliteEnergy[['",timeStep,"']],
+                                                                                                  additional_satellite=additionalSatelliteEnergy[['",timeStep,"']],
                                                                                                   additional_emission_factor=additionalEmissionFactorEnergy[['",timeStep,"']])")))
       eval(parse(text= paste0("scenarioSeriesOfImpactWaste$", timeStep, " <- functionSatelliteImpact('waste',
                                                                                                  satellite = satelliteWaste,
