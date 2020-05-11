@@ -122,32 +122,33 @@ finalYear = bauResults$finalYear
 initialYear = bauResults$initialYear
 resultLandCover = bauResults$resultLandCover
 bauSeriesOfImpactLand1 = bauResults$bauSeriesOfImpactLand1
+bauSeriesOfImpactLand2 = bauResults$bauSeriesOfImpactLand2
 
 ### Begin: BAU Results (Old code) ###
-populationProjection = bauResults$population
-baselineEmission = bauResults$otherEm
-resultGDP = bauResults$GDP_table
-resultIncomePerCapita = bauResults$income_percapita_table
-resultIncome = bauResults$income_table
-resultLabour = bauResults$labour_table
-resultEnergyConsumption = bauResults$energy_consumption_table 
-resultEnergyEmission = bauResults$energy_emission_table
-resultWasteDisposal  = bauResults$waste_disposal_table
-resultWasteEmission = bauResults$waste_emission_table
-resultTotalEmission = bauResults$total_emission_table
-bauSeriesOfImpactLabour = bauResults$impactLabour
-bauSeriesOfImpactEnergy = bauResults$impactEnergy
-bauSeriesOfImpactWaste = bauResults$impactWaste
-bauSeriesOfGDP = bauResults$GDPSeries
-bauSeriesOfOutput = bauResults$tOutputSeries =
-bauSeriesOfFinalDemandComponent = bauResults$FDSeries
-bauSeriesOfIntermediateDemand = bauResults$IDSeries
-bauSeriesOfAddedValue = bauResults$AVSeries
-growthRateSeries = bauResults$GDP_rate
-finalYear = bauResults$dateTo
-initialYear = bauResults$dateFrom
-resultLandCover = bauResults$resultLandCover
-bauSeriesOfImpactLand1 = bauResults$bauSeriesOfImpactLand1
-bauSeriesOfImpactLand2 = bauResults$bauSeriesOfImpactLand2
+# populationProjection = bauResults$population
+# baselineEmission = bauResults$otherEm
+# resultGDP = bauResults$GDP_table
+# resultIncomePerCapita = bauResults$income_percapita_table
+# resultIncome = bauResults$income_table
+# resultLabour = bauResults$labour_table
+# resultEnergyConsumption = bauResults$energy_consumption_table 
+# resultEnergyEmission = bauResults$energy_emission_table
+# resultWasteDisposal  = bauResults$waste_disposal_table
+# resultWasteEmission = bauResults$waste_emission_table
+# resultTotalEmission = bauResults$total_emission_table
+# bauSeriesOfImpactLabour = bauResults$impactLabour
+# bauSeriesOfImpactEnergy = bauResults$impactEnergy
+# bauSeriesOfImpactWaste = bauResults$impactWaste
+# bauSeriesOfGDP = bauResults$GDPSeries
+# bauSeriesOfOutput = bauResults$tOutputSeries =
+# bauSeriesOfFinalDemandComponent = bauResults$FDSeries
+# bauSeriesOfIntermediateDemand = bauResults$IDSeries
+# bauSeriesOfAddedValue = bauResults$AVSeries
+# growthRateSeries = bauResults$GDP_rate
+# finalYear = bauResults$dateTo
+# initialYear = bauResults$dateFrom
+# resultLandCover = bauResults$resultLandCover
+# bauSeriesOfImpactLand1 = bauResults$bauSeriesOfImpactLand1
+# bauSeriesOfImpactLand2 = bauResults$bauSeriesOfImpactLand2
 
 ###END: initiate all variables & function####
