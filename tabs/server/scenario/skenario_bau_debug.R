@@ -575,7 +575,8 @@ observeEvent(input$buttonBAU, {
   # browser()
   
   ###BEGIN : Define function ####
-  functionVar <- blackBoxInputs()
+  sec <- blackBoxInputs()
+  
   #1 Function for ...
   functionSatelliteImpact <- function(type = "energy", satellite = data.frame(), matrix_output = matrix(), emission_factor = data.frame()) { 
     impact <- list()
@@ -633,39 +634,39 @@ observeEvent(input$buttonBAU, {
     
     impact<-list()
     if(type=="historis"){
-      impact$LRC <- functionVar$analysisLRC ###panggil dari blackbox input
-      impact$landReq <- functionVar$landReq_his
-      impact$landCover <- functionVar$landCover_his
+      impact$LRC <- sec$analysisLRC ###panggil dari blackbox input
+      impact$landReq <- sec$landReq_his
+      impact$landCover <- sec$landCover_his
     } else{
       # browser()
       if(advanceMode== TRUE){
-        impact$LRC<-functionVar$analysisLRC*LRCRate^(currYear-functionVar$ioPeriod)
+        impact$LRC<-sec$analysisLRC*LRCRate^(currYear-sec$ioPeriod)
       } else{
         if (runNum == 1 ){
-          impact$LRC<-functionVar$analysisLRC*(functionVar$LRCRate_his^(currYear-functionVar$ioPeriod))
+          impact$LRC<-sec$analysisLRC*(sec$LRCRate_his^(currYear-sec$ioPeriod))
         } else if (runNum ==2 ){
-          impact$LRC<-functionVar$analysisLRC*(functionVar$LRCRate_2^(currYear-functionVar$ioPeriod))
+          impact$LRC<-sec$analysisLRC*(sec$LRCRate_2^(currYear-sec$ioPeriod))
         }
       }
       # Land Requirement
       impact$landReq<-diag(impact$LRC[,1]) %*% rbind(as.matrix(matrix_output[,1]),0)
-      impact$landReq[nrow(as.matrix(impact$landReq)),]<-sum(functionVar$landCover_his[,1])-sum(as.matrix(impact$landReq[1:nrow(as.matrix(impact$landReq))-1,]))
+      impact$landReq[nrow(as.matrix(impact$landReq)),]<-sum(sec$landCover_his[,1])-sum(as.matrix(impact$landReq[1:nrow(as.matrix(impact$landReq))-1,]))
       # Land Cover
-      impact$landCover<-functionVar$LDMProp_sektor %*% as.matrix(impact$landReq)
-      rownames(impact$landCover)<-colnames(functionVar$LDMProp_his)
+      impact$landCover<-sec$LDMProp_sektor %*% as.matrix(impact$landReq)
+      rownames(impact$landCover)<-colnames(sec$LDMProp_his)
       
     }
     
     # Rapikan
-    impact$landReq <- data.frame(c(rownames(functionVar$ioSector), nrow(functionVar$ioSector)+1),
-                                 c(as.character(functionVar$ioSector[,1]), "lainnya (tidak menghasilkan output)"),
+    impact$landReq <- data.frame(c(rownames(sec$ioSector), nrow(sec$ioSector)+1),
+                                 c(as.character(sec$ioSector[,1]), "lainnya (tidak menghasilkan output)"),
                                  impact$landReq, stringsAsFactors = FALSE)
     
     colnames(impact$landReq)<-c("id.sector", "sector", "land.requirement")
     
     
     impact$landCover <- data.frame(as.character(1:23),
-                                   colnames(functionVar$LDMProp_his),
+                                   colnames(sec$LDMProp_his),
                                    impact$landCover[,1],stringsAsFactors=FALSE)
     colnames(impact$landCover)<-c("id.land.use", "land.use", "luas.land.use")
     
@@ -694,18 +695,18 @@ observeEvent(input$buttonBAU, {
     impact<- list()
     
     if (type=="historis"){
-      impact$landCover<-functionVar$landCover_his
+      impact$landCover<-sec$landCover_his
       # impact$matrixE<-NULL
       # impact$matrixF<-NULL
       # impact$matrixG<-NULL
       # impact$matrixH<-NULL
-      impact$LUTM<-functionVar$LUTM_his
+      impact$LUTM<-sec$LUTM_his
       
     } else{
       
       # set multiiplier for making matrix H
       if(advanceMode==TRUE){
-        multiplier <- matrix(percentage, nrow=ncol(functionVar$TPM), ncol=1)
+        multiplier <- matrix(percentage, nrow=ncol(sec$TPM), ncol=1)
       } else {
         if(runNum==1){ multiplier = 0.8
         } else if (runNum ==2) {multiplier <- 0.5
@@ -714,13 +715,13 @@ observeEvent(input$buttonBAU, {
         } else if (runNum==5) {multiplier <- 0
         } else if (runNum==6) {
           multiplier <- 0.1
-          LUTMTemplate <- matrix(NA, nrow=nrow(functionVar$LUTMTemplate_his),ncol=ncol(functionVar$LUTMTemplate_his))
-          rownames(LUTMTemplate)<-rownames(functionVar$LUTMTemplate_his)
-          colnames(LUTMTemplate)<-colnames(functionVar$LUTMTemplate_his)
+          LUTMTemplate <- matrix(NA, nrow=nrow(sec$LUTMTemplate_his),ncol=ncol(sec$LUTMTemplate_his))
+          rownames(LUTMTemplate)<-rownames(sec$LUTMTemplate_his)
+          colnames(LUTMTemplate)<-colnames(sec$LUTMTemplate_his)
           for (i in 1:nrow(sec$landCover_his)){
             if (sum(sec$landCover_his[i,])==0){
-              LUTMTemplate[i,]<-matrix(0,ncol=ncol(functionVar$LUTMTemplate_his)) #LUTMTemplate bisa diedit di interface
-              LUTMTemplate[,i]<-matrix(0,nrow=ncol(functionVar$LUTMTemplate_his))
+              LUTMTemplate[i,]<-matrix(0,ncol=ncol(sec$LUTMTemplate_his)) #LUTMTemplate bisa diedit di interface
+              LUTMTemplate[,i]<-matrix(0,nrow=ncol(sec$LUTMTemplate_his))
             } else {}
           }
           # LUTMTemplate<-read.csv("_TIN/data/JaBar/LUTMTemplate_his2.csv", header=TRUE)
@@ -848,7 +849,7 @@ observeEvent(input$buttonBAU, {
     impact$emission<-matrix(NA,nrow=nrow(as.matrix(impact$LUTM)), ncol=ncol(as.matrix(impact$LUTM)))
     for (a in 1:nrow(impact$LUTM)){
       for (b in 1:ncol(impact$LUTM)){
-        impact$emission[a,b]<-as.numeric(impact$LUTM[a,b])*(functionVar$carbonStock_his[b,]-functionVar$carbonStock_his[a,])*3.67*(-1)
+        impact$emission[a,b]<-as.numeric(impact$LUTM[a,b])*(sec$carbonStock_his[b,]-sec$carbonStock_his[a,])*3.67*(-1)
       }
     }
     
@@ -858,14 +859,14 @@ observeEvent(input$buttonBAU, {
     
     # rapikan
     impact$landCover <- data.frame(as.character(1:23),
-                                   colnames(functionVar$LDMProp_his),
+                                   colnames(sec$LDMProp_his),
                                    impact$landCover[,1],stringsAsFactors=FALSE)
     colnames(impact$landCover)<-c("id.land.use", "land.use", "luas.land.use")
     
     impact$LUTM <- data.frame(as.character(1:23),
-                              colnames(functionVar$LDMProp_his),
+                              colnames(sec$LDMProp_his),
                               impact$LUTM,stringsAsFactors=FALSE)
-    colnames(impact$LUTM)<-c("id.land.use", "land.use", colnames(functionVar$LDMProp_his))
+    colnames(impact$LUTM)<-c("id.land.use", "land.use", colnames(sec$LDMProp_his))
     
     impact$emission <- data.frame(rownames(allDataProv$ioSector),
                                   as.character(allDataProv$ioSector[,1]),
@@ -875,18 +876,61 @@ observeEvent(input$buttonBAU, {
     
     return(impact)
   }
+  
+  #4 Function for calculating LUTM new LUTMTemplate, additional matrix G, additional matrix H, & delta land Cover (inputLandCover)
+  functionSatelliteLand3<-function (inputLandScen = NULL,
+                                    timeScen = timeStep){
+    impact<-list()
+    
+    if (is.null(inputLandScen)){
+      impact$LUTMTemplate<-LUTMTemplate_his
+      impact$additionalG<-NULL
+      impact$additionalH<-NULL
+      impact$inputLandCover<-NULL
+    } else{
+      # calculate scenario LUTM Template
+      impact$LUTMTemplate<-LUTMTemplate_his
+      impact$LUTMTemplate[impact$LUTMTemplate!="0"]<-NA
+      rownames(impact$LUTMTemplate)<-colnames(impact$LUTMTemplate)
+      for (i in 1:nrow(inputLandScen)){
+        impact$LUTMTemplate[paste0(inputLandScen[i,1]), paste0(inputLandScen[i,2])]<- NA
+      }
+      impact$LUTMTemplate[is.na(impact$LUTMTemplate)]<-paste0("x",1:length(impact$LUTMTemplate[is.na(impact$LUTMTemplate)]))
+      
+      # additional G & additional H
+      impact$additionalG<-matrix(0,ncol=length(impact$LUTMTemplate[impact$LUTMTemplate!=0]), nrow=nrow(inputLandScen))
+      impact$additionalH<-matrix(ncol=1, nrow=nrow(inputLandScen))
+      
+      colnames(impact$additionalG)<-as.character(impact$LUTMTemplate[impact$LUTMTemplate!=0])
+      
+      for (i in 1:nrow(inputLandScen)){
+        impact$additionalG[i,impact$LUTMTemplate[paste0(inputLandScen[i,1]), paste0(inputLandScen[i,2])]]<-1
+        impact$additionalH[i,1]<-inputLandScen[i,paste0(timeScen)]
+      }
+      
+      # inputLandCover
+      impact$inputLandCover<- matrix(0,ncol=1, nrow=23)
+      rownames(impact$inputLandCover)<-colnames(impact$LUTMTemplate)
+      
+      for (landCoverClass in unique(inputLandScen[,2])){
+        impact$inputLandCover[paste(landCoverClass),]<-sum(inputLandScen[inputLandScen[,2]==paste(landCoverClass), timeScen]) # pertambahan luas <- positif jumlah total luas kelas tupla yang sama di tahun akhir
+      } 
+      
+      for (landCoverClass in as.character(unique(inputLandScen[,1]))){
+        impact$inputLandCover[landCoverClass,]<--sum(inputLandScen[inputLandScen[,1]==paste(landCoverClass), timeScen]) # penurunan luas <- negatif jumlah total luas kelas tupla yang sama tahun akhir
+      } 
+    }
+    return (impact)
+  }
   ###END : Define function ####
   
   sec <- blackBoxInputs()
   analysisResult <- sec$result
-  # ioDimention <- ncol(allDataProv$ioIntermediateDemand)
-  # ioPeriod <- allDataProv$ioPeriod
   
   rowImport <- 1
   rowIncome <- 2
   rowProfit <- 3
-  
-  # browser()
+
   initialYear <- as.numeric(input$initialYear)
   finalYear <- as.numeric(input$finalYear)
   iteration <- finalYear - initialYear
