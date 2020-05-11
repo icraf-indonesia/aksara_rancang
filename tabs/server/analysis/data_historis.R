@@ -527,6 +527,7 @@ blackBoxInputs <- function(){
                      LDMProp_his=LDMProp_his, #bedanya 2
                      ### Function in BAU Scenario ###
                      analysisLRC=analysisLRC,
+                     analysisLPC=analysisLPC,
                      landReq_his=landReq_his,
                      landCover_his=landCover_his,
                      LDMProp_sektor=LDMProp_sektor,
