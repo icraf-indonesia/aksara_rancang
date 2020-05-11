@@ -1,12 +1,13 @@
+###BEGIN: initiate all variables & function####
 selectedProv <- input$categoryProvince
-datapath <- paste0("data/", selectedProv, "/")
-userFolder <- paste0(datapath, username)
-if(!dir.exists(userFolder)) dir.create(userFolder, mode = 777)
+# datapath <- paste0("data/", selectedProv, "/")
+# userFolder <- paste0(datapath, username)
+# if(!dir.exists(userFolder)) dir.create(userFolder, mode = 777)
 
 sec <- blackBoxInputs()
 analysis <- sec$result
 
-### Begin: Main Variables ####
+### Begin: Main Variables ###
 ioSector = sec$ioSector
 ioIntermediateDemand = sec$ioIntermediateDemand
 ioFinalDemand = sec$ioFinalDemand
@@ -30,14 +31,14 @@ analysisIncomePerCapita = sec$analysisIncomePerCapita
 GDPAll = sec$GDPAll
 LDMProp = sec$LDMProp_his #bedanya 1
 LDMProp_his = sec$LDMProp_his #bedanya 2
+growthRate = allDataProv$growthRate
 # LU_tahun=LU_tahun
 # landTable_t0=landTable_t0
 # landReq=landReq
 # tahun=tahun
 # landTable_his=landTable_his
-### End: Main Variables ####
 
-### Begin: Result ####
+### Begin: Result ###
 analysisBPD = analysis$analysisBPD
 analysisFPD = analysis$analysisFPD
 analysisGDP = analysis$analysisGDP
@@ -53,7 +54,29 @@ analysisCE = analysis$analysisCE
 analysisCW = analysis$analysisCW
 emissionEnergyTotal = analysis$emissionEnergyTotal
 emissionWasteTotal = analysis$emissionWasteTotal
-### End: Result ####
+
+matrixIoIntermediateDemand <- as.matrix(ioIntermediateDemand)
+matrixIoAddedValue <- as.matrix(ioAddedValue)
+nrowMatrixIoAddedValue <- nrow(matrixIoAddedValue)
+ioDimention <- ncol(ioIntermediateDemand)
+matrixIoFinalDemand <- as.matrix(ioFinalDemand)
+rowSumsMatrixIoFinalDemand <- as.matrix(rowSums(matrixIoFinalDemand))
+proportionFinalDemand <- ioFinalDemand/rowSumsMatrixIoFinalDemand
+proportionFinalDemand[is.na(proportionFinalDemand)] <- 0
+colSumsMatrixIoIntermediateDemand <- colSums(matrixIoIntermediateDemand)
+colSumsMatrixIoAddedValue <- colSums(matrixIoAddedValue)
+ioTotalOutput <- colSumsMatrixIoIntermediateDemand + colSumsMatrixIoAddedValue
+ioTotalOutputInverse <- 1/ioTotalOutput
+ioTotalOutputInverse[is.infinite(ioTotalOutputInverse)] <- 0
+ioTotalOutputInverse <- diag(ioTotalOutputInverse)
+
+rowImport <- 1
+rowIncome <- 2
+rowProfit <- 3
+
+initialYear <- input$dateFrom
+finalYear <- input$dateTo
+iteration <- finalYear - initialYear
 
 ### Begin: Variables in BAU Scenario ###
 analysisCPI = sec$analysisCPI
@@ -70,9 +93,11 @@ LUTMTemplate_his = sec$LUTMTemplate_his
 LUTM_his = sec$LUTM_his
 proportionFinalDemand = sec$proportionFinalDemand
 TPM = sec$TPM
-### End: Variables in BAU Scenario ###
+linkagesTable = sec$linkagesTable
+multiplierAll = sec$multiplierAll
+rtffile = sec$rtffile
 
-### Begin: BAU Results ####
+### BAU Results ###
 populationProjection = bauResults$populationProjection
 baselineEmission = bauResults$baselineEmission
 resultGDP = bauResults$resultGDP
@@ -97,10 +122,8 @@ finalYear = bauResults$finalYear
 initialYear = bauResults$initialYear
 resultLandCover = bauResults$resultLandCover
 bauSeriesOfImpactLand1 = bauResults$bauSeriesOfImpactLand1
-bauSeriesOfImpactLand2 = bauResults$bauSeriesOfImpactLand2
-### End: BAU Results ####
 
-### Begin: BAU Results (Old code) ####
+### Begin: BAU Results (Old code) ###
 populationProjection = bauResults$population
 baselineEmission = bauResults$otherEm
 resultGDP = bauResults$GDP_table
@@ -126,4 +149,5 @@ initialYear = bauResults$dateFrom
 resultLandCover = bauResults$resultLandCover
 bauSeriesOfImpactLand1 = bauResults$bauSeriesOfImpactLand1
 bauSeriesOfImpactLand2 = bauResults$bauSeriesOfImpactLand2
-### End: BAU Results (Old code) ####
+
+###END: initiate all variables & function####

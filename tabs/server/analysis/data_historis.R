@@ -535,8 +535,10 @@ blackBoxInputs <- function(){
                      analysisCPI=analysisCPI,
                      LRCRate_his=LRCRate_his,
                      LRCRate_2=LRCRate_2,
-                     ioPeriod=ioPeriod
-                     
+                     ioPeriod=ioPeriod,
+                     linkagesTable=linkagesTable,
+                     multiplierAl=multiplierAll,
+                     rtffile=rtffile
   ) 
   
   return(list_table)
