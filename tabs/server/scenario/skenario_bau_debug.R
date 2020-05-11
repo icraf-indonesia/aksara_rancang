@@ -516,8 +516,8 @@ output$projTypeLandUI<-renderUI(
 observeEvent(input$buttonBAU, {
   if(debugMode){
     sec <- blackBoxInputs()
-    otherEm <- sec$baselineEmission
-    population <- sec$populationProjection
+    baselineEmission <- sec$baselineEmission
+    populationProjection <- sec$populationProjection
   } else {
     sec <- allInputs()
     inPopTable <- input$populationTable
@@ -1322,8 +1322,8 @@ observeEvent(input$buttonBAU, {
   recordActivities("Simulasi skenario BAU", "Berhasil", paste0(Sys.time()))
   notif_id <<- showNotification("Simulasi skenario bisnis seperti biasa telah berhasil", duration = 4, closeButton = TRUE, type = "warning")
   
-  bauResults$population = sec$populationProjection ###dipakai yg kanan
-  bauResults$otherEm = sec$baselineEmission ###kiri diganti menjadi nama variable yg kanan
+  bauResults$populationProjection = sec$populationProjection ###dipakai yg kanan
+  bauResults$baselineEmission = sec$baselineEmission ###kiri diganti menjadi nama variable yg kanan
   bauResults$resultGDP = resultGDP
   bauResults$resultIncomePerCapita = resultIncomePerCapita
   bauResults$resultIncome = resultIncome
@@ -1345,6 +1345,8 @@ observeEvent(input$buttonBAU, {
   bauResults$finalYear = finalYear
   bauResults$initialYear = initialYear
   bauResults$resultLandCover = resultLandCover
+  bauResults$bauSeriesOfImpactLand1 = bauSeriesOfImpactLand1
+  bauResults$bauSeriesOfImpactLand2 = bauSeriesOfImpactLand2
   # bauResults$landCover_t1=landCover_t1
   # bauResults$landCover_t1_years=landCover_t1_years
   

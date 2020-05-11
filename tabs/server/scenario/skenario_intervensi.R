@@ -1,3 +1,8 @@
+callModule(buttonModule, "forEnergy", energyData, type="energy")
+callModule(buttonModule, "forWaste", wasteData, type="waste")
+callModule(buttonModule, "forAgri", agriData, type="agriculture")
+callModule(buttonModule, "forLand", landData, type="land")
+
 ###BEGIN: initiate all variables & function####
 #ID
 username<-"dw"
@@ -1103,8 +1108,3 @@ agriData <- list(
   alamatFile=alamatFile
 )
 ### END : SEKTOR PERTANIAN ####
-
-callModule(buttonModule, "forEnergy", energyData, type="energy")
-callModule(buttonModule, "forWaste", wasteData, type="waste")
-callModule(buttonModule, "forAgri", agriData, type="agriculture")
-callModule(buttonModule, "forLand", landData, type="land")

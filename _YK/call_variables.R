@@ -73,32 +73,57 @@ TPM = sec$TPM
 ### End: Variables in BAU Scenario ###
 
 ### Begin: BAU Results ####
-bauResults$populationProjection = sec$populationProjection
-bauResults$populationProjection = populationProjection
-bauResults$baselineEmission = sec$baselineEmission 
-bauResults$baselineEmission = baselineEmission 
-bauResults$resultGDP = resultGDP
-bauResults$resultIncomePerCapita = resultIncomePerCapita
-bauResults$resultIncome = resultIncome
-bauResults$resultLabour = resultLabour
-bauResults$resultEnergyConsumption = resultEnergyConsumption
-bauResults$resultEnergyEmission = resultEnergyEmission
-bauResults$resultWasteDisposal = resultWasteDisposal
-bauResults$resultWasteEmission = resultWasteEmission
-bauResults$resultTotalEmission = resultTotalEmission
-bauResults$bauSeriesOfImpactLabour = bauSeriesOfImpactLabour
-bauResults$bauSeriesOfImpactEnergy = bauSeriesOfImpactEnergy
-bauResults$bauSeriesOfImpactWaste = bauSeriesOfImpactWaste
-bauResults$bauSeriesOfGDP = bauSeriesOfGDP
-bauResults$bauSeriesOfOutput = bauSeriesOfOutput
-bauResults$bauSeriesOfFinalDemandComponent = bauSeriesOfFinalDemandComponent
-bauResults$bauSeriesOfIntermediateDemand = bauSeriesOfIntermediateDemand
-bauResults$bauSeriesOfAddedValue = bauSeriesOfAddedValue
-bauResults$growthRateSeries = growthRateSeries
-bauResults$finalYear = finalYear
-bauResults$initialYear = initialYear
-bauResults$resultLandCover = resultLandCover
+populationProjection = bauResults$populationProjection
+baselineEmission = bauResults$baselineEmission
+resultGDP = bauResults$resultGDP
+resultIncomePerCapita = bauResults$resultIncomePerCapita
+resultIncome = bauResults$resultIncome
+resultLabour = bauResults$resultLabour
+resultEnergyConsumption = bauResults$resultEnergyConsumption
+resultEnergyEmission = bauResults$resultEnergyEmission
+resultWasteDisposal = bauResults$resultWasteDisposal
+resultWasteEmission = bauResults$resultWasteEmission
+resultTotalEmission = bauResults$resultTotalEmission
+bauSeriesOfImpactLabour = bauResults$bauSeriesOfImpactLabour
+bauSeriesOfImpactEnergy = bauResults$bauSeriesOfImpactEnergy
+bauSeriesOfImpactWaste = bauResults$bauSeriesOfImpactWastebauSeriesOfOutput 
+bauSeriesOfOutput = bauResults$bauSeriesOfOutput
+bauSeriesOfGDP = bauResults$bauSeriesOfGDP
+bauSeriesOfFinalDemandComponent = bauResults$bauSeriesOfFinalDemandComponent
+bauSeriesOfIntermediateDemand = bauResults$bauSeriesOfIntermediateDemand
+bauSeriesOfAddedValue = bauResults$bauSeriesOfAddedValue
+growthRateSeries = bauResults$growthRateSeries
+finalYear = bauResults$finalYear
+initialYear = bauResults$initialYear
+resultLandCover = bauResults$resultLandCover
+bauSeriesOfImpactLand1 = bauResults$bauSeriesOfImpactLand1
+bauSeriesOfImpactLand2 = bauResults$bauSeriesOfImpactLand2
 ### End: BAU Results ####
 
-bauSeriesOfImpactLand1<-list()
-bauSeriesOfImpactLand2<-list()
+### Begin: BAU Results (Old code) ####
+populationProjection = bauResults$population
+baselineEmission = bauResults$otherEm
+resultGDP = bauResults$GDP_table
+resultIncomePerCapita = bauResults$income_percapita_table
+resultIncome = bauResults$income_table
+resultLabour = bauResults$labour_table
+resultEnergyConsumption = bauResults$energy_consumption_table 
+resultEnergyEmission = bauResults$energy_emission_table
+resultWasteDisposal  = bauResults$waste_disposal_table
+resultWasteEmission = bauResults$waste_emission_table
+resultTotalEmission = bauResults$total_emission_table
+bauSeriesOfImpactLabour = bauResults$impactLabour
+bauSeriesOfImpactEnergy = bauResults$impactEnergy
+bauSeriesOfImpactWaste = bauResults$impactWaste
+bauSeriesOfGDP = bauResults$GDPSeries
+bauSeriesOfOutput = bauResults$tOutputSeries =
+bauSeriesOfFinalDemandComponent = bauResults$FDSeries
+bauSeriesOfIntermediateDemand = bauResults$IDSeries
+bauSeriesOfAddedValue = bauResults$AVSeries
+growthRateSeries = bauResults$GDP_rate
+finalYear = bauResults$dateTo
+initialYear = bauResults$dateFrom
+resultLandCover = bauResults$resultLandCover
+bauSeriesOfImpactLand1 = bauResults$bauSeriesOfImpactLand1
+bauSeriesOfImpactLand2 = bauResults$bauSeriesOfImpactLand2
+### End: BAU Results (Old code) ####
