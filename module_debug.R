@@ -13,6 +13,8 @@ buttonUI <- function(id) {
 }
 
 buttonModule <- function(input, output, session, data, type) {
+  username = "dw"
+  selectedProv = "JaBar"
   # load the namespace
   ns <- session$ns
   ################################################################################
@@ -149,8 +151,10 @@ buttonModule <- function(input, output, session, data, type) {
     r
   })
   
+
   ### buat tabel daftar nama file reaktif ###
   ListTableReact <- reactive({
+    # browser()
     if(identical(list.files(path = data$alamatFile,pattern = paste0("^", username)),character(0))){
       data.frame(
         Nama.Skenario =  "file tidak tersedia",
@@ -788,6 +792,8 @@ buttonModule <- function(input, output, session, data, type) {
     scenarioSimulation$scenarioSeriesOfImpactLand3 <- NULL
     scenarioSimulation$inputLRCRate=NULL
     scenarioSimulation$inputPercentageDiagTPM=NULL
+    
+    source("_YK/call_variables.R")
     
     selectedRow <- as.numeric(strsplit(input$run_button,"_")[[1]][2])
     fileName<- as.character(ListTableReact()[selectedRow,5]) #nama file dari ListTableReact ada di col=5

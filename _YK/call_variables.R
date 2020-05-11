@@ -1,12 +1,15 @@
 ###BEGIN: initiate all variables & function####
 
-selectedProv = sec$selectedProv
+
 # datapath <- paste0("data/", selectedProv, "/")
 # userFolder <- paste0(datapath, username)
 # if(!dir.exists(userFolder)) dir.create(userFolder, mode = 777)
 
 sec <- blackBoxInputs()
 analysis <- sec$result
+
+selectedProv = sec$selectedProv
+username = sec$username
 
 ### Begin: Main Variables ###
 ioSector = sec$ioSector
@@ -124,6 +127,8 @@ initialYear = bauResults$initialYear
 resultLandCover = bauResults$resultLandCover
 bauSeriesOfImpactLand1 = bauResults$bauSeriesOfImpactLand1
 bauSeriesOfImpactLand2 = bauResults$bauSeriesOfImpactLand2
+bauSeriesOfFinalDemandTable = bauResults$bauSeriesOfFinalDemandTable
+bauSeriesOfImpactAgriculture = bauResults$bauSeriesOfImpactAgriculture
 
 ### Begin: BAU Results (Old code) ###
 # populationProjection = bauResults$population

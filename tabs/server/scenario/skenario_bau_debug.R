@@ -1,5 +1,5 @@
 ###*bau input####
-generate_table<-function(table, first_year, second_year, value=0.00){
+generate_table<-function(table, first_year, second_year, value=0.05){
   n <- second_year-first_year
   eval(parse(text=(paste0("table$y", first_year, " <- value"))))
   for(i in 1:n){
@@ -1090,37 +1090,37 @@ observeEvent(input$buttonBAU, {
   for(step in 1:(iteration+1)){
     for (i in 1:6){   # 5 tipe yg akan dirun otomatis
       timeStep <- paste0("y", projectionYear)
-      #       eval(parse(text=paste0(
-      #       "bauSeriesOfImpactLand2$",timeStep,"<-tryCatch({
-      #         functionSatelliteLand2 (type ='projected',
-      #                           landCoverProjection = as.matrix(bauSeriesOfImpactLand1[['",timeStep,"']][['landCover']][['luas.land.use']]) ,
-      #                           landCoverProjectionMin=  as.matrix(bauSeriesOfImpactLand1[[paste0('y',",projectionYear,"-1)]][['landCover']][['luas.land.use']]),
-      #                           LUTMTemplate = LUTMTemplate_his, 
-      #                           advanceMode = FALSE,
-      #                           runNum =",i," , 
-      #                           GDP=as.matrix(bauSeriesOfGDP$",timeStep,")
-      #   )
-      # }, warning = function (a){NA}, error = function(b){NA})"
-      #       )))
-      eval(parse(text=paste0(
-        "bauSeriesOfImpactLand2$",timeStep,"<-
-          functionSatelliteLand2 (type ='projected',
-                            landCoverProjection = as.matrix(bauSeriesOfImpactLand1[['",timeStep,"']][['landCover']][['luas.land.use']]) ,
-                            landCoverProjectionMin=  as.matrix(bauSeriesOfImpactLand1[[paste0('y',",projectionYear,"-1)]][['landCover']][['luas.land.use']]),
-                            LUTMTemplate = sec$LUTMTemplate_his, 
-                            advanceMode = FALSE,
-                            runNum =",i," , 
-                            GDP=as.matrix(bauSeriesOfGDP$",timeStep,")
-    )"
-      )))
-      # if(any(is.na(bauSeriesOfImpactLand2[[timeStep]]))==FALSE){
-      #   print(paste0("use constraint ", i ," to make LUTM ",timeStep))
-      #   break
-      # } else {
-      #   if(i==6){
-      #     print(paste0("tidak berhasil menghitung LUTM ",timeStep))
-      #   } 
-      # }
+            eval(parse(text=paste0(
+            "bauSeriesOfImpactLand2$",timeStep,"<-tryCatch({
+              functionSatelliteLand2 (type ='projected',
+                                landCoverProjection = as.matrix(bauSeriesOfImpactLand1[['",timeStep,"']][['landCover']][['luas.land.use']]) ,
+                                landCoverProjectionMin=  as.matrix(bauSeriesOfImpactLand1[[paste0('y',",projectionYear,"-1)]][['landCover']][['luas.land.use']]),
+                                LUTMTemplate = LUTMTemplate_his,
+                                advanceMode = FALSE,
+                                runNum =",i," ,
+                                GDP=as.matrix(bauSeriesOfGDP$",timeStep,")
+        )
+      }, warning = function (a){NA}, error = function(b){NA})"
+            )))
+    #   eval(parse(text=paste0(
+    #     "bauSeriesOfImpactLand2$",timeStep,"<-
+    #       functionSatelliteLand2 (type ='projected',
+    #                         landCoverProjection = as.matrix(bauSeriesOfImpactLand1[['",timeStep,"']][['landCover']][['luas.land.use']]) ,
+    #                         landCoverProjectionMin=  as.matrix(bauSeriesOfImpactLand1[[paste0('y',",projectionYear,"-1)]][['landCover']][['luas.land.use']]),
+    #                         LUTMTemplate = sec$LUTMTemplate_his, 
+    #                         advanceMode = FALSE,
+    #                         runNum =",i," , 
+    #                         GDP=as.matrix(bauSeriesOfGDP$",timeStep,")
+    # )"
+    #   )))
+      if(any(is.na(bauSeriesOfImpactLand2[[timeStep]]))==FALSE){
+        print(paste0("use constraint ", i ," to make LUTM ",timeStep))
+        break
+      } else {
+        if(i==6){
+          print(paste0("tidak berhasil menghitung LUTM ",timeStep))
+        }
+      }
     }
     listYear <- c(listYear, timeStep)
     projectionYear <- initialYear+step
@@ -1391,6 +1391,8 @@ observeEvent(input$buttonBAU, {
   bauResults$resultLandCover = resultLandCover
   bauResults$bauSeriesOfImpactLand1 = bauSeriesOfImpactLand1
   bauResults$bauSeriesOfImpactLand2 = bauSeriesOfImpactLand2
+  bauResults$bauSeriesOfFinalDemandTable = bauSeriesOfFinalDemandTable
+  bauSeriesOfImpactAgriculture = bauResults$bauSeriesOfImpactAgriculture
   # bauResults$landCover_t1=landCover_t1
   # bauResults$landCover_t1_years=landCover_t1_years
   

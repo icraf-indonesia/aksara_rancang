@@ -48,7 +48,7 @@ library(plotly)
 library(rlist)
 #source("_DB/debug_TIN.R") #dikomen (data_historis & scenario_bau)
 #source("_DB/global.R") #dikomen
-source("module.R")
+source("module_debug.R")
 # end source skenario aksi ------------------------------------
 
 ##-- Template function ----

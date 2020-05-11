@@ -12,8 +12,8 @@ shinyServer(function(input, output, session, data, type){
   ##-- SCENARIO ----
   source("tabs/server/scenario/input_LDM.R", local = TRUE)
   source("tabs/server/scenario/skenario_bau_debug.R", local = TRUE)
-  source("module.R",local = TRUE)
-  source("tabs/server/scenario/skenario_intervensi.R", local = TRUE)
+  # source("module_debug.R",local = TRUE)
+  source("tabs/server/scenario/skenario_intervensi_debug.R", local = TRUE)
   ##-- HELP ----
   source("tabs/server/help.R", local = TRUE)
 })
