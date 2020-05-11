@@ -1,5 +1,6 @@
 ###BEGIN: initiate all variables & function####
-selectedProv <- input$categoryProvince
+
+selectedProv = sec$selectedProv
 # datapath <- paste0("data/", selectedProv, "/")
 # userFolder <- paste0(datapath, username)
 # if(!dir.exists(userFolder)) dir.create(userFolder, mode = 777)

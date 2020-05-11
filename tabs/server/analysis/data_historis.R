@@ -197,6 +197,7 @@ observeEvent(input$inputLogin, {
 
 blackBoxInputs <- function(){
   # browser()
+  selectedProv <- allDataProv$selectedProv
   ioSector <- allDataProv$ioSector
   ioIntermediateDemand <- allDataProv$ioIntermediateDemand
   ioFinalDemand <- allDataProv$ioFinalDemand
@@ -494,6 +495,7 @@ blackBoxInputs <- function(){
   colnames(result)[1] <- "Sektor"
   
   list_table <- list(result=result,
+                     selectedProv=selectedProv,
                      ioSector=ioSector, 
                      ioIntermediateDemand=ioIntermediateDemand, 
                      ioFinalDemand=ioFinalDemand, 
