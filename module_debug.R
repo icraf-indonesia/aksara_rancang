@@ -21,6 +21,9 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
   
   ### Begin: Main Variables ###
   ioSector = dataHistoris$ioSector
+  ### nama 52 Sector
+  Sector = ioSector[,1]
+  Sector = as.character(Sector)
   ioIntermediateDemand = dataHistoris$ioIntermediateDemand
   ioFinalDemand = dataHistoris$ioFinalDemand
   ioFinalDemandComponent = dataHistoris$ioFinalDemandComponent
