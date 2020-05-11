@@ -1394,6 +1394,7 @@ observeEvent(input$buttonBAU, {
   bauResults$bauSeriesOfFinalDemandTable = bauSeriesOfFinalDemandTable
   bauResults$bauSeriesOfImpactAgriculture = bauSeriesOfImpactAgriculture 
   bauResults$bauSeriesOfFinalDemand = bauSeriesOfFinalDemand
+  bauResults$bauAllResult = bauAllResult
   # bauResults$landCover_t1=landCover_t1
   # bauResults$landCover_t1_years=landCover_t1_years
   

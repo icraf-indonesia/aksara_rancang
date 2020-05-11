@@ -137,9 +137,15 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
   bauSeriesOfFinalDemandTable = dataBau$bauSeriesOfFinalDemandTable
   bauSeriesOfImpactAgriculture = dataBau$bauSeriesOfImpactAgriculture
   bauSeriesOfFinalDemand = dataBau$bauSeriesOfFinalDemand
+  bauAllResult = dataBau$bauAllResult
   
   #1 Function for ...
-  functionSatelliteImpact <- function(type = "energy", satellite = data.frame(), matrix_output = matrix(), emission_factor = data.frame()) { 
+  functionSatelliteImpact <- function(type = "energy", 
+                                      satellite = data.frame(), 
+                                      matrix_output = matrix(), 
+                                      emission_factor = data.frame(), 
+                                      additional_satellite= NULL, 
+                                      additional_emission_factor= NULL) { 
     impact <- list()
     
     # impact$consumption
@@ -163,10 +169,17 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
       # get the new satellite consumption for each sector
       # total consumption * proportion
       impact$consumption[,4:ncol(impact$consumption)] <- impact$consumption[,4:ncol(impact$consumption)] * impact$consumption[, 3]
+      if(!is.null(additional_satellite)){
+        impact$consumption[,4:ncol(impact$consumption)]<-impact$consumption[,4:ncol(impact$consumption)]+additional_satellite[,4:ncol(additional_satellite)]
+        impact$consumption[,3]<-rowSums(impact$consumption[,4:ncol(impact$consumption)])
+      }
       
       # checking the order of factor emission 
       orderEnergyType <- names(impact$consumption)[4:ncol(impact$consumption)]
       emissionFactor <- numeric()
+      if (!is.null(additional_emission_factor)){
+        emission_factor<-emission_factor[,2]+additional_emission_factor[,2]
+      }
       for(m in 1:length(orderEnergyType)){
         emissionFactor <- c(emissionFactor, emission_factor[which(emission_factor[,1]==orderEnergyType[m]), 2])
       }
@@ -182,7 +195,6 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
     
     impact$consumption[is.na(impact$consumption)] <- 0
     return(impact)
-    
   }
   
   #2 Function for calculating Land Requirement Coefficient, Land Requirement, & land Cover
@@ -429,8 +441,8 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
                               impact$LUTM,stringsAsFactors=FALSE)
     colnames(impact$LUTM)<-c("id.land.use", "land.use", colnames(LDMProp_his))
     
-    impact$emission <- data.frame(rownames(allDataProv$ioSector),
-                                  as.character(allDataProv$ioSector[,1]),
+    impact$emission <- data.frame(rownames(ioSector),
+                                  as.character(ioSector[,1]),
                                   impact$emission,stringsAsFactors=FALSE)
     colnames(impact$emission)<-c("id.sector", "sector", "emission")
     
@@ -1636,7 +1648,7 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
     inputPercentageDiagTPM = scenarioSimulation$inputPercentageDiagTPM
     print(inputPercentageDiagTPM) #delete after use
     
-    if(any(is.na(scenarioSeriesOfImpactLand2[[timeStep]]))==TRUE){
+    if(any(is.na(unlist(scenarioSeriesOfImpactLand2)))==TRUE){
       if (is.null(inputPercentageDiagTPM)){
         showModal(modalEditPercentageDiagTPM())
       } else{
