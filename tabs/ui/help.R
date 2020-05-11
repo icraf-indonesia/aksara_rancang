@@ -1,0 +1,1 @@
+tabHelp <- tabPanel(title=HTML("Help</a></li><li><a href='javascript:window.location.reload(true)'"), br(), hr(), value="tabHelp")
