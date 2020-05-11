@@ -479,10 +479,6 @@ observeEvent(input$showInterventionTable, {
   LDMProp_his<-allDataProv$LDMProp_his
   selectedProv<-allDataProv$selectedProv
   
-  ### nama 52 Sector
-  Sector <- ioSector[,1]
-  Sector <- as.character(Sector)
-  
   ### DATA MASTER
   fdBau <- bauSeriesOfFinalDemandTable[,-2] #tabel 2015 nya ga masuk
   fdBau$Sektor <- as.character(fdBau$Sektor) 
