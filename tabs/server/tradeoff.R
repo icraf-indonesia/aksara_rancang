@@ -173,7 +173,7 @@ output$ListTable <- renderDataTable({
 
 calculateTradeOff <- eventReactive(input$tradeOffRunButton,{
   #observeEvent(input$tradeOffRunButton, {
-  #browser()
+  browser()
   #nama dile yang msuk ke sini sudah hasil filter diloadRDSAll yang sudah di jalankan run buttonnya saja yang masuk 
   ###### BEGIN: call variables #####
   dataHistoris = blackBoxInputs()
@@ -283,6 +283,8 @@ calculateTradeOff <- eventReactive(input$tradeOffRunButton,{
   resultEnergyEmission = dataBau$resultEnergyEmission
   resultWasteDisposal = dataBau$resultWasteDisposal
   resultWasteEmission = dataBau$resultWasteEmission
+  resultFertilizerUsed = dataBau$resultFertilizerUsed
+  resultFertilizerEmission = dataBau$resultFertilizerEmission
   resultTotalEmission = dataBau$resultTotalEmission
   bauSeriesOfImpactLabour = dataBau$bauSeriesOfImpactLabour
   bauSeriesOfImpactEnergy = dataBau$bauSeriesOfImpactEnergy

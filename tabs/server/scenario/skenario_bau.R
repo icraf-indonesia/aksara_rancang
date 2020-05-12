@@ -448,7 +448,7 @@ observeEvent(input$buttonBAU,{
 
 output$projTypeEconomyUI<-renderUI(
   tagList(selectInput("typeIntervention", "Tipe Intervensi", choices = c("Tipe 1", "Tipe 2")),
-          selectInput("dateFrom", "Tahun awal:", choices = 1990:2100, selected=2015),
+          selectInput("dateFrom", "Tahun awal:", choices = 1990:2100, selected=2016),
           selectInput("dateTo", "Tahun akhir:", choices = 1990:2100, selected=2030),
           # fileInput("populationTable", "Tabel Populasi per Tahun", buttonLabel="Browse...", placeholder="No file selected"),
           # fileInput("emissionSectorRADTable", "Tabel Emisi Sumber Lain", buttonLabel="Browse...", placeholder="No file selected"),
@@ -1331,6 +1331,8 @@ observeEvent(input$buttonBAU, {
   bauResults$energy_emission_table = resultEnergyEmission
   bauResults$waste_disposal_table = resultWasteDisposal
   bauResults$waste_emission_table = resultWasteEmission
+  bauResults$resultFertilizerUsed = resultFertilizerUsed
+  bauResults$resultFertilizerEmission = resultFertilizerEmission
   bauResults$total_emission_table = resultTotalEmission
   bauResults$impactLabour = bauSeriesOfImpactLabour
   bauResults$impactEnergy = bauSeriesOfImpactEnergy
