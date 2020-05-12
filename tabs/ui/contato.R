@@ -1,1 +1,0 @@
-contato <- tabPanel(title = "Contato", value = "contato")

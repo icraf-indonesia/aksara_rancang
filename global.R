@@ -1,32 +1,19 @@
 ##-- Library ----
 library(dplyr)
-library(dbplyr)
 library(data.table)
 library(reshape2)
 library(tidyr)
-library(lubridate)
 library(shiny)
 library(shinydashboard)
 library(shinyWidgets)
-library(rgeos)
 library(shinycssloaders)
 library(ggthemes)
 library(RColorBrewer)
-library(sf)
-library(sp)
-library(scales)
-library(leaflet)
 library(plotly)
-library(highcharter)
 library(DT)
-library(mapview)
-# devtools::install_github("lgsilvaesilva/mapsBR")
-#library(mapsBR)
 library(shinyLP)
-library(readxl)
 library(rhandsontable)
-# library(sodium)
-
+library(sodium)
 library(shinyjs)
 library(digest)
 library(rintrojs)
@@ -36,39 +23,21 @@ library(formattable)
 library(rtf)
 library(stringr)
 library(gridExtra)
-#library(ggradar)
-# library(RColorBrewer)
-
-library(limSolve)
-
-# source skenario aksi ----------------------------------------
-library(reshape2)
 library(limSolve)
 library(rlist)
-#source("_DB/debug_TIN.R") #dikomen (data_historis & scenario_bau)
-#source("_DB/global.R") #dikomen
-source("module_debug.R")
-# end source skenario aksi ------------------------------------
-
-
 # tab trade off -----------------------------------------------------------
 library(shinyBS)
 library(gtools)
 library(plyr)
-#source("_DB/debug_TIN.R")
-# end trade off -----------------------------------------------------------
-
-
-
-
 
 ##-- Template function ----
+source("functions/module.R")
 source("functions/utils.R")
 source("functions/plot_functions.R")
-cores <- c("#098ebb", "#fdc23a", "#e96449", "#818286")
 
 ##-- Template tabs function ----
 tab_files <- list.files(path = "tabs", full.names = T, recursive = T)
 tab_files <- tab_files[-grep(x = tab_files, pattern = "server")]
 
 suppressMessages(lapply(tab_files, source))
+user_database<-readRDS("data/user_database")

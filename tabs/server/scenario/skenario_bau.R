@@ -1,5 +1,5 @@
 ###*bau input####
-generate_table<-function(table, first_year, second_year, value=0.00){
+generate_table<-function(table, first_year, second_year, value=0.05){
   n <- second_year-first_year
   eval(parse(text=(paste0("table$y", first_year, " <- value"))))
   for(i in 1:n){
@@ -9,8 +9,8 @@ generate_table<-function(table, first_year, second_year, value=0.00){
 }
 observeEvent(input$generateBAUTable, {
   allDataProv$growthRate <- data.frame(Lapangan_usaha=as.character(allDataProv$ioSector[,1])) # reset table
-  allDataProv$growthRate <- generate_table(allDataProv$growthRate, as.numeric(input$dateFrom), as.numeric(input$dateTo))
-  recordActivities(paste0("Membuat tabel proyeksi BAU tahun ", input$dateFrom, "-", input$dateTo), "Berhasil", paste0(Sys.time()))
+  allDataProv$growthRate <- generate_table(allDataProv$growthRate, as.numeric(input$initialYear), as.numeric(input$finalYear))
+  recordActivities(paste0("Membuat tabel proyeksi BAU tahun ", input$initialYear, "-", input$finalYear), "Berhasil", paste0(Sys.time()))
   notif_id <<- showNotification("Tabel berhasil dimuat", duration = 4, closeButton = TRUE, type = "warning")
 })
 output$tableBAUType <- renderRHandsontable({
@@ -18,7 +18,7 @@ output$tableBAUType <- renderRHandsontable({
 })
 observeEvent(input$saveTableBauType, {
   # if(input$typeIntervention=='Tipe 1'){
-  #   allDataProv$growthRate <- generate_table(allDataProv$growthRate, as.numeric(input$dateFrom), as.numeric(input$dateTo), value=as.numeric(input$gdpRate/100))
+  #   allDataProv$growthRate <- generate_table(allDataProv$growthRate, as.numeric(input$initialYear), as.numeric(input$finalYear), value=as.numeric(input$gdpRate/100))
   # } 
   if(input$typeIntervention=='Tipe 1'){
     column_year <- paste0("y", input$yearBAUInv)
@@ -30,7 +30,7 @@ observeEvent(input$saveTableBauType, {
     allDataProv$growthRate <- hot_to_r(input$tableBAUType)
   }
   # print(allDataProv$growthRate)
-  recordActivities(paste0("Menyimpan tabel proyeksi BAU tahun ", input$dateFrom, "-", input$dateTo), "Berhasil", paste0(Sys.time()))
+  recordActivities(paste0("Menyimpan tabel proyeksi BAU tahun ", input$initialYear, "-", input$finalYear), "Berhasil", paste0(Sys.time()))
   notif_id <<- showNotification("Tabel berhasil disimpan", duration = 4, closeButton = TRUE, type = "warning")
   # 
   # print(allDataProv$growthRate)
@@ -448,8 +448,8 @@ observeEvent(input$buttonBAU,{
 
 output$projTypeEconomyUI<-renderUI(
   tagList(selectInput("typeIntervention", "Tipe Intervensi", choices = c("Tipe 1", "Tipe 2")),
-          selectInput("dateFrom", "Tahun awal:", choices = 1990:2100, selected=2016),
-          selectInput("dateTo", "Tahun akhir:", choices = 1990:2100, selected=2030),
+          selectInput("initialYear", "Tahun awal:", choices = 1990:2100, selected=2015),
+          selectInput("finalYear", "Tahun akhir:", choices = 1990:2100, selected=2030),
           # fileInput("populationTable", "Tabel Populasi per Tahun", buttonLabel="Browse...", placeholder="No file selected"),
           # fileInput("emissionSectorRADTable", "Tabel Emisi Sumber Lain", buttonLabel="Browse...", placeholder="No file selected"),
           actionButton("generateBAUTable", "Buat Tabel"),
@@ -516,8 +516,8 @@ output$projTypeLandUI<-renderUI(
 observeEvent(input$buttonBAU, {
   if(debugMode){
     sec <- blackBoxInputs()
-    otherEm <- sec$baselineEmission
-    population <- sec$populationProjection
+    baselineEmission <- sec$baselineEmission
+    populationProjection <- sec$populationProjection
   } else {
     sec <- allInputs()
     inPopTable <- input$populationTable
@@ -575,7 +575,8 @@ observeEvent(input$buttonBAU, {
   # browser()
   
   ###BEGIN : Define function ####
-  functionVar <- blackBoxInputs()
+  sec <- blackBoxInputs()
+  
   #1 Function for ...
   functionSatelliteImpact <- function(type = "energy", satellite = data.frame(), matrix_output = matrix(), emission_factor = data.frame()) { 
     impact <- list()
@@ -633,39 +634,39 @@ observeEvent(input$buttonBAU, {
     
     impact<-list()
     if(type=="historis"){
-      impact$LRC <- functionVar$analysisLRC ###panggil dari blackbox input
-      impact$landReq <- functionVar$landReq_his
-      impact$landCover <- functionVar$landCover_his
+      impact$LRC <- sec$analysisLRC ###panggil dari blackbox input
+      impact$landReq <- sec$landReq_his
+      impact$landCover <- sec$landCover_his
     } else{
       # browser()
       if(advanceMode== TRUE){
-        impact$LRC<-functionVar$analysisLRC*LRCRate^(currYear-functionVar$ioPeriod)
+        impact$LRC<-sec$analysisLRC*LRCRate^(currYear-sec$ioPeriod)
       } else{
         if (runNum == 1 ){
-          impact$LRC<-functionVar$analysisLRC*(functionVar$LRCRate_his^(currYear-functionVar$ioPeriod))
+          impact$LRC<-sec$analysisLRC*(sec$LRCRate_his^(currYear-sec$ioPeriod))
         } else if (runNum ==2 ){
-          impact$LRC<-functionVar$analysisLRC*(functionVar$LRCRate_2^(currYear-functionVar$ioPeriod))
+          impact$LRC<-sec$analysisLRC*(sec$LRCRate_2^(currYear-sec$ioPeriod))
         }
       }
       # Land Requirement
       impact$landReq<-diag(impact$LRC[,1]) %*% rbind(as.matrix(matrix_output[,1]),0)
-      impact$landReq[nrow(as.matrix(impact$landReq)),]<-sum(functionVar$landCover_his[,1])-sum(as.matrix(impact$landReq[1:nrow(as.matrix(impact$landReq))-1,]))
+      impact$landReq[nrow(as.matrix(impact$landReq)),]<-sum(sec$landCover_his[,1])-sum(as.matrix(impact$landReq[1:nrow(as.matrix(impact$landReq))-1,]))
       # Land Cover
-      impact$landCover<-functionVar$LDMProp_sektor %*% as.matrix(impact$landReq)
-      rownames(impact$landCover)<-colnames(functionVar$LDMProp_his)
+      impact$landCover<-sec$LDMProp_sektor %*% as.matrix(impact$landReq)
+      rownames(impact$landCover)<-colnames(sec$LDMProp_his)
       
     }
     
     # Rapikan
-    impact$landReq <- data.frame(c(rownames(functionVar$ioSector), nrow(functionVar$ioSector)+1),
-                                 c(as.character(functionVar$ioSector[,1]), "lainnya (tidak menghasilkan output)"),
+    impact$landReq <- data.frame(c(rownames(sec$ioSector), nrow(sec$ioSector)+1),
+                                 c(as.character(sec$ioSector[,1]), "lainnya (tidak menghasilkan output)"),
                                  impact$landReq, stringsAsFactors = FALSE)
     
     colnames(impact$landReq)<-c("id.sector", "sector", "land.requirement")
     
     
     impact$landCover <- data.frame(as.character(1:23),
-                                   colnames(functionVar$LDMProp_his),
+                                   colnames(sec$LDMProp_his),
                                    impact$landCover[,1],stringsAsFactors=FALSE)
     colnames(impact$landCover)<-c("id.land.use", "land.use", "luas.land.use")
     
@@ -694,18 +695,18 @@ observeEvent(input$buttonBAU, {
     impact<- list()
     
     if (type=="historis"){
-      impact$landCover<-functionVar$landCover_his
+      impact$landCover<-sec$landCover_his
       # impact$matrixE<-NULL
       # impact$matrixF<-NULL
       # impact$matrixG<-NULL
       # impact$matrixH<-NULL
-      impact$LUTM<-functionVar$LUTM_his
+      impact$LUTM<-sec$LUTM_his
       
     } else{
       
       # set multiiplier for making matrix H
       if(advanceMode==TRUE){
-        multiplier <- matrix(percentage, nrow=ncol(functionVar$TPM), ncol=1)
+        multiplier <- matrix(percentage, nrow=ncol(sec$TPM), ncol=1)
       } else {
         if(runNum==1){ multiplier = 0.8
         } else if (runNum ==2) {multiplier <- 0.5
@@ -714,13 +715,13 @@ observeEvent(input$buttonBAU, {
         } else if (runNum==5) {multiplier <- 0
         } else if (runNum==6) {
           multiplier <- 0.1
-          LUTMTemplate <- matrix(NA, nrow=nrow(functionVar$LUTMTemplate_his),ncol=ncol(functionVar$LUTMTemplate_his))
-          rownames(LUTMTemplate)<-rownames(functionVar$LUTMTemplate_his)
-          colnames(LUTMTemplate)<-colnames(functionVar$LUTMTemplate_his)
+          LUTMTemplate <- matrix(NA, nrow=nrow(sec$LUTMTemplate_his),ncol=ncol(sec$LUTMTemplate_his))
+          rownames(LUTMTemplate)<-rownames(sec$LUTMTemplate_his)
+          colnames(LUTMTemplate)<-colnames(sec$LUTMTemplate_his)
           for (i in 1:nrow(sec$landCover_his)){
             if (sum(sec$landCover_his[i,])==0){
-              LUTMTemplate[i,]<-matrix(0,ncol=ncol(functionVar$LUTMTemplate_his))    #LUTMTemplate bisa diedit di interface
-              LUTMTemplate[,i]<-matrix(0,nrow=ncol(functionVar$LUTMTemplate_his))
+              LUTMTemplate[i,]<-matrix(0,ncol=ncol(sec$LUTMTemplate_his)) #LUTMTemplate bisa diedit di interface
+              LUTMTemplate[,i]<-matrix(0,nrow=ncol(sec$LUTMTemplate_his))
             } else {}
           }
           # LUTMTemplate<-read.csv("_TIN/data/JaBar/LUTMTemplate_his2.csv", header=TRUE)
@@ -848,7 +849,7 @@ observeEvent(input$buttonBAU, {
     impact$emission<-matrix(NA,nrow=nrow(as.matrix(impact$LUTM)), ncol=ncol(as.matrix(impact$LUTM)))
     for (a in 1:nrow(impact$LUTM)){
       for (b in 1:ncol(impact$LUTM)){
-        impact$emission[a,b]<-as.numeric(impact$LUTM[a,b])*(functionVar$carbonStock_his[b,]-functionVar$carbonStock_his[a,])*3.67*(-1)
+        impact$emission[a,b]<-as.numeric(impact$LUTM[a,b])*(sec$carbonStock_his[b,]-sec$carbonStock_his[a,])*3.67*(-1)
       }
     }
     
@@ -858,14 +859,14 @@ observeEvent(input$buttonBAU, {
     
     # rapikan
     impact$landCover <- data.frame(as.character(1:23),
-                                   colnames(functionVar$LDMProp_his),
+                                   colnames(sec$LDMProp_his),
                                    impact$landCover[,1],stringsAsFactors=FALSE)
     colnames(impact$landCover)<-c("id.land.use", "land.use", "luas.land.use")
     
     impact$LUTM <- data.frame(as.character(1:23),
-                              colnames(functionVar$LDMProp_his),
+                              colnames(sec$LDMProp_his),
                               impact$LUTM,stringsAsFactors=FALSE)
-    colnames(impact$LUTM)<-c("id.land.use", "land.use", colnames(functionVar$LDMProp_his))
+    colnames(impact$LUTM)<-c("id.land.use", "land.use", colnames(sec$LDMProp_his))
     
     impact$emission <- data.frame(rownames(allDataProv$ioSector),
                                   as.character(allDataProv$ioSector[,1]),
@@ -875,20 +876,63 @@ observeEvent(input$buttonBAU, {
     
     return(impact)
   }
+  
+  #4 Function for calculating LUTM new LUTMTemplate, additional matrix G, additional matrix H, & delta land Cover (inputLandCover)
+  functionSatelliteLand3<-function (inputLandScen = NULL,
+                                    timeScen = timeStep){
+    impact<-list()
+    
+    if (is.null(inputLandScen)){
+      impact$LUTMTemplate<-LUTMTemplate_his
+      impact$additionalG<-NULL
+      impact$additionalH<-NULL
+      impact$inputLandCover<-NULL
+    } else{
+      # calculate scenario LUTM Template
+      impact$LUTMTemplate<-LUTMTemplate_his
+      impact$LUTMTemplate[impact$LUTMTemplate!="0"]<-NA
+      rownames(impact$LUTMTemplate)<-colnames(impact$LUTMTemplate)
+      for (i in 1:nrow(inputLandScen)){
+        impact$LUTMTemplate[paste0(inputLandScen[i,1]), paste0(inputLandScen[i,2])]<- NA
+      }
+      impact$LUTMTemplate[is.na(impact$LUTMTemplate)]<-paste0("x",1:length(impact$LUTMTemplate[is.na(impact$LUTMTemplate)]))
+      
+      # additional G & additional H
+      impact$additionalG<-matrix(0,ncol=length(impact$LUTMTemplate[impact$LUTMTemplate!=0]), nrow=nrow(inputLandScen))
+      impact$additionalH<-matrix(ncol=1, nrow=nrow(inputLandScen))
+      
+      colnames(impact$additionalG)<-as.character(impact$LUTMTemplate[impact$LUTMTemplate!=0])
+      
+      for (i in 1:nrow(inputLandScen)){
+        impact$additionalG[i,impact$LUTMTemplate[paste0(inputLandScen[i,1]), paste0(inputLandScen[i,2])]]<-1
+        impact$additionalH[i,1]<-inputLandScen[i,paste0(timeScen)]
+      }
+      
+      # inputLandCover
+      impact$inputLandCover<- matrix(0,ncol=1, nrow=23)
+      rownames(impact$inputLandCover)<-colnames(impact$LUTMTemplate)
+      
+      for (landCoverClass in unique(inputLandScen[,2])){
+        impact$inputLandCover[paste(landCoverClass),]<-sum(inputLandScen[inputLandScen[,2]==paste(landCoverClass), timeScen]) # pertambahan luas <- positif jumlah total luas kelas tupla yang sama di tahun akhir
+      } 
+      
+      for (landCoverClass in as.character(unique(inputLandScen[,1]))){
+        impact$inputLandCover[landCoverClass,]<--sum(inputLandScen[inputLandScen[,1]==paste(landCoverClass), timeScen]) # penurunan luas <- negatif jumlah total luas kelas tupla yang sama tahun akhir
+      } 
+    }
+    return (impact)
+  }
   ###END : Define function ####
   
   sec <- blackBoxInputs()
   analysisResult <- sec$result
-  # ioDimention <- ncol(allDataProv$ioIntermediateDemand)
-  # ioPeriod <- allDataProv$ioPeriod
   
   rowImport <- 1
   rowIncome <- 2
   rowProfit <- 3
-  
-  # browser()
-  initialYear <- as.numeric(input$dateFrom)
-  finalYear <- as.numeric(input$dateTo)
+
+  initialYear <- as.numeric(input$initialYear)
+  finalYear <- as.numeric(input$finalYear)
   iteration <- finalYear - initialYear
   
   bauSeriesOfGDP <- data.frame(Sektor = allDataProv$ioSector[,1], stringsAsFactors = FALSE)
@@ -915,8 +959,9 @@ observeEvent(input$buttonBAU, {
   bauSeriesOfImpactEnergy <- list()
   bauSeriesOfImpactWaste <- list()
   bauSeriesOfImpactAgriculture <- list()
-  bauSeriesOfImpactLand1<-list()
-  bauSeriesOfImpactLand2<-list()
+  bauSeriesOfImpactLand1<-list() ###perlu dipanggil landCover <- bauSeriesOfImpactLand1$landCover
+  bauSeriesOfImpactLand2<-list() ###perlu dipanggil jadiin reactive value: bauResult$bauSeriesOfImpactLand2 <- bauSeriesOfImpactLand2
+  ###untuk dipanggil: bauSeriesOfImpactLand2 <- bauResult$bauSeriesOfImpactLand2
   
   # Historical consumption and emission data
   eval(parse(text=paste0("bauSeriesOfIntermediateDemand$y",sec$ioPeriod," <- matrixIoIntermediateDemand")))
@@ -1045,37 +1090,37 @@ observeEvent(input$buttonBAU, {
   for(step in 1:(iteration+1)){
     for (i in 1:6){   # 5 tipe yg akan dirun otomatis
       timeStep <- paste0("y", projectionYear)
-      #       eval(parse(text=paste0(
-      #       "bauSeriesOfImpactLand2$",timeStep,"<-tryCatch({
-      #         functionSatelliteLand2 (type ='projected',
-      #                           landCoverProjection = as.matrix(bauSeriesOfImpactLand1[['",timeStep,"']][['landCover']][['luas.land.use']]) ,
-      #                           landCoverProjectionMin=  as.matrix(bauSeriesOfImpactLand1[[paste0('y',",projectionYear,"-1)]][['landCover']][['luas.land.use']]),
-      #                           LUTMTemplate = LUTMTemplate_his, 
-      #                           advanceMode = FALSE,
-      #                           runNum =",i," , 
-      #                           GDP=as.matrix(bauSeriesOfGDP$",timeStep,")
-      #   )
-      # }, warning = function (a){NA}, error = function(b){NA})"
-      #       )))
-      eval(parse(text=paste0(
-        "bauSeriesOfImpactLand2$",timeStep,"<-
-          functionSatelliteLand2 (type ='projected',
-                            landCoverProjection = as.matrix(bauSeriesOfImpactLand1[['",timeStep,"']][['landCover']][['luas.land.use']]) ,
-                            landCoverProjectionMin=  as.matrix(bauSeriesOfImpactLand1[[paste0('y',",projectionYear,"-1)]][['landCover']][['luas.land.use']]),
-                            LUTMTemplate = sec$LUTMTemplate_his, 
-                            advanceMode = FALSE,
-                            runNum =",i," , 
-                            GDP=as.matrix(bauSeriesOfGDP$",timeStep,")
-    )"
-      )))
-      # if(any(is.na(bauSeriesOfImpactLand2[[timeStep]]))==FALSE){
-      #   print(paste0("use constraint ", i ," to make LUTM ",timeStep))
-      #   break
-      # } else {
-      #   if(i==6){
-      #     print(paste0("tidak berhasil menghitung LUTM ",timeStep))
-      #   } 
-      # }
+            eval(parse(text=paste0(
+            "bauSeriesOfImpactLand2$",timeStep,"<-tryCatch({
+              functionSatelliteLand2 (type ='projected',
+                                landCoverProjection = as.matrix(bauSeriesOfImpactLand1[['",timeStep,"']][['landCover']][['luas.land.use']]) ,
+                                landCoverProjectionMin=  as.matrix(bauSeriesOfImpactLand1[[paste0('y',",projectionYear,"-1)]][['landCover']][['luas.land.use']]),
+                                LUTMTemplate = LUTMTemplate_his,
+                                advanceMode = FALSE,
+                                runNum =",i," ,
+                                GDP=as.matrix(bauSeriesOfGDP$",timeStep,")
+        )
+      }, warning = function (a){NA}, error = function(b){NA})"
+            )))
+    #   eval(parse(text=paste0(
+    #     "bauSeriesOfImpactLand2$",timeStep,"<-
+    #       functionSatelliteLand2 (type ='projected',
+    #                         landCoverProjection = as.matrix(bauSeriesOfImpactLand1[['",timeStep,"']][['landCover']][['luas.land.use']]) ,
+    #                         landCoverProjectionMin=  as.matrix(bauSeriesOfImpactLand1[[paste0('y',",projectionYear,"-1)]][['landCover']][['luas.land.use']]),
+    #                         LUTMTemplate = sec$LUTMTemplate_his, 
+    #                         advanceMode = FALSE,
+    #                         runNum =",i," , 
+    #                         GDP=as.matrix(bauSeriesOfGDP$",timeStep,")
+    # )"
+    #   )))
+      if(any(is.na(bauSeriesOfImpactLand2[[timeStep]]))==FALSE){
+        print(paste0("use constraint ", i ," to make LUTM ",timeStep))
+        break
+      } else {
+        if(i==6){
+          print(paste0("tidak berhasil menghitung LUTM ",timeStep))
+        }
+      }
     }
     listYear <- c(listYear, timeStep)
     projectionYear <- initialYear+step
@@ -1321,31 +1366,35 @@ observeEvent(input$buttonBAU, {
   recordActivities("Simulasi skenario BAU", "Berhasil", paste0(Sys.time()))
   notif_id <<- showNotification("Simulasi skenario bisnis seperti biasa telah berhasil", duration = 4, closeButton = TRUE, type = "warning")
   
-  bauResults$population = sec$populationProjection
-  bauResults$otherEm = sec$baselineEmission
-  bauResults$GDP_table = resultGDP
-  bauResults$income_percapita_table = resultIncomePerCapita
-  bauResults$income_table = resultIncome
-  bauResults$labour_table = resultLabour
-  bauResults$energy_consumption_table = resultEnergyConsumption
-  bauResults$energy_emission_table = resultEnergyEmission
-  bauResults$waste_disposal_table = resultWasteDisposal
-  bauResults$waste_emission_table = resultWasteEmission
-  bauResults$resultFertilizerUsed = resultFertilizerUsed
-  bauResults$resultFertilizerEmission = resultFertilizerEmission
-  bauResults$total_emission_table = resultTotalEmission
-  bauResults$impactLabour = bauSeriesOfImpactLabour
-  bauResults$impactEnergy = bauSeriesOfImpactEnergy
-  bauResults$impactWaste = bauSeriesOfImpactWaste
-  bauResults$GDPSeries = bauSeriesOfGDP
-  bauResults$tOutputSeries = bauSeriesOfOutput
-  bauResults$FDSeries = bauSeriesOfFinalDemandComponent
-  bauResults$IDSeries = bauSeriesOfIntermediateDemand
-  bauResults$AVSeries = bauSeriesOfAddedValue
-  bauResults$GDP_rate = growthRateSeries
-  bauResults$dateTo = finalYear
-  bauResults$dateFrom = initialYear
+  bauResults$populationProjection = sec$populationProjection ###dipakai yg kanan
+  bauResults$baselineEmission = sec$baselineEmission ###kiri diganti menjadi nama variable yg kanan
+  bauResults$resultGDP = resultGDP
+  bauResults$resultIncomePerCapita = resultIncomePerCapita
+  bauResults$resultIncome = resultIncome
+  bauResults$resultLabour = resultLabour
+  bauResults$resultEnergyConsumption = resultEnergyConsumption
+  bauResults$resultEnergyEmission = resultEnergyEmission
+  bauResults$resultWasteDisposal = resultWasteDisposal
+  bauResults$resultWasteEmission = resultWasteEmission
+  bauResults$resultTotalEmission = resultTotalEmission
+  bauResults$bauSeriesOfImpactLabour = bauSeriesOfImpactLabour
+  bauResults$bauSeriesOfImpactEnergy = bauSeriesOfImpactEnergy
+  bauResults$bauSeriesOfImpactWaste = bauSeriesOfImpactWaste
+  bauResults$bauSeriesOfGDP = bauSeriesOfGDP
+  bauResults$bauSeriesOfOutput = bauSeriesOfOutput
+  bauResults$bauSeriesOfFinalDemandComponent = bauSeriesOfFinalDemandComponent
+  bauResults$bauSeriesOfIntermediateDemand = bauSeriesOfIntermediateDemand
+  bauResults$bauSeriesOfAddedValue = bauSeriesOfAddedValue
+  bauResults$growthRateSeries = growthRateSeries
+  bauResults$finalYear = finalYear
+  bauResults$initialYear = initialYear
   bauResults$resultLandCover = resultLandCover
+  bauResults$bauSeriesOfImpactLand1 = bauSeriesOfImpactLand1
+  bauResults$bauSeriesOfImpactLand2 = bauSeriesOfImpactLand2
+  bauResults$bauSeriesOfFinalDemandTable = bauSeriesOfFinalDemandTable
+  bauResults$bauSeriesOfImpactAgriculture = bauSeriesOfImpactAgriculture 
+  bauResults$bauSeriesOfFinalDemand = bauSeriesOfFinalDemand
+  bauResults$bauAllResult = bauAllResult
   # bauResults$landCover_t1=landCover_t1
   # bauResults$landCover_t1_years=landCover_t1_years
   
@@ -1633,25 +1682,25 @@ allInputsBAULahan <- eventReactive(input$buttonBAULahan, {
 #### END : all inputs BAU sektor lahan ####
 
 output$yearSelection <- renderUI({
-  selectInput("selectedYear", "Tahun", "Pilih tahun", choices=c(input$dateFrom:input$dateTo))
+  selectInput("selectedYear", "Tahun", "Pilih tahun", choices=c(input$initialYear:input$finalYear))
 })
 
 output$plotlyResultsBAU <- renderPlotly({
-  GDP_table <- bauResults$GDP_table
-  income_percapita_table <- bauResults$income_percapita_table  
-  income_table <- bauResults$income_table
-  labour_table <- bauResults$labour_table
-  energy_consumption_table <- bauResults$energy_consumption_table 
-  energy_emission_table <- bauResults$energy_emission_table 
-  waste_disposal_table <- bauResults$waste_disposal_table  
-  waste_emission_table <- bauResults$waste_emission_table 
-  total_emission_table <- bauResults$total_emission_table
+  resultGDP <- bauResults$resultGDP
+  resultIncomePerCapita <- bauResults$resultIncomePerCapita  
+  resultIncome <- bauResults$resultIncome
+  resultLabour <- bauResults$resultLabour
+  resultEnergyConsumption <- bauResults$resultEnergyConsumption 
+  resultEnergyEmission <- bauResults$resultEnergyEmission 
+  resultWasteDisposal <- bauResults$resultWasteDisposal  
+  resultWasteEmission <- bauResults$resultWasteEmission 
+  resultTotalEmission <- bauResults$resultTotalEmission
   # landCover_t1 <- bauResults$landCover_t1
   # landCover_t1_years <- bauResults$landCover_t1_years
   
   if(input$bauResults == "Proyeksi PDRB"){
     removeUI(selector = '#baupdrb')
-    graph <- GDP_table[GDP_table$year==input$selectedYear,]
+    graph <- resultGDP[resultGDP$year==input$selectedYear,]
     GDPvalues <- as.matrix(graph$GDP)
     GDPTotal <- colSums(GDPvalues)
     insertUI(
@@ -1664,7 +1713,7 @@ output$plotlyResultsBAU <- renderPlotly({
     # ggplot(data=graph, aes(x=sector, y=GDP)) + 
     #   geom_bar(colour="blue", stat="identity") + 
     #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-    GDP_all <- aggregate(x = GDP_table$GDP, by = list(GDP_table$year), FUN = sum)
+    GDP_all <- aggregate(x = resultGDP$GDP, by = list(resultGDP$year), FUN = sum)
     colnames(GDP_all) = c("year", "PDRB")
     gplot4<-ggplot(data=GDP_all, aes(x=year, y=PDRB, group=1)) + geom_line() + geom_point()
     ggplotly(gplot4)
@@ -1672,27 +1721,27 @@ output$plotlyResultsBAU <- renderPlotly({
     
   } else if(input$bauResults == "Proyeksi Upah per Kapita"){
     removeUI(selector = '#baupdrb')
-    gplot5<-ggplot(data=income_percapita_table, aes(x=year, y=Income.per.capita, group=1)) + geom_line() + geom_point()
+    gplot5<-ggplot(data=resultIncomePerCapita, aes(x=year, y=Income.per.capita, group=1)) + geom_line() + geom_point()
     ggplotly(gplot5)
     
   } else if(input$bauResults == "Proyeksi Upah Gaji"){
     removeUI(selector = '#baupdrb')
-    graph <- income_table[income_table$year==input$selectedYear,]
+    graph <- resultIncome[resultIncome$year==input$selectedYear,]
     # ggplot(data=graph, aes(x=sector, y=income)) +
     #   geom_bar(colour="blue", stat="identity") +
     #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-    income_all <- aggregate(x = income_table$income, by = list(income_table$year), FUN = sum)
+    income_all <- aggregate(x = resultIncome$income, by = list(resultIncome$year), FUN = sum)
     colnames(income_all) = c("year", "income")
     gplot6<-ggplot(data=income_all, aes(x=year, y=income, group=1)) + geom_line() + geom_point()
     ggplotly(gplot6)
     
   } else if(input$bauResults == "Proyeksi Tenaga Kerja"){
     removeUI(selector = '#baupdrb')
-    graph <- labour_table[labour_table$year==input$selectedYear,]
+    graph <- resultLabour[resultLabour$year==input$selectedYear,]
     # ggplot(data=graph, aes(x=sector, y=labour)) +
     #   geom_bar(colour="blue", stat="identity") +
     #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-    labour_all <- aggregate(x = labour_table$labour, by = list(labour_table$year), FUN = sum)
+    labour_all <- aggregate(x = resultLabour$labour, by = list(resultLabour$year), FUN = sum)
     colnames(labour_all) = c("year", "Labour")
     gplot7<-ggplot(data=labour_all, aes(x=year, y=Labour, group=1)) + geom_line() + geom_point()
     ggplotly(gplot7)
@@ -1700,59 +1749,59 @@ output$plotlyResultsBAU <- renderPlotly({
     
   } else if(input$bauResults == "Proyeksi Konsumsi Energi"){
     removeUI(selector = '#baupdrb')
-    graph <- energy_consumption_table[energy_consumption_table$year==input$selectedYear,]
+    graph <- resultEnergyConsumption[resultEnergyConsumption$year==input$selectedYear,]
     # ggplot(data=graph, aes(x=sector, y=Tconsumption)) +
     #   geom_bar(colour="blue", stat="identity") +
     #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-    energy_all <- aggregate(x = energy_consumption_table$Tconsumption, by = list(energy_consumption_table$year), FUN = sum)
+    energy_all <- aggregate(x = resultEnergyConsumption$Tconsumption, by = list(resultEnergyConsumption$year), FUN = sum)
     colnames(energy_all) = c("year", "Energy")
     gplot8<-ggplot(data=energy_all, aes(x=year, y=Energy, group=1)) + geom_line() + geom_point()
     ggplotly(gplot8)
     
   } else if(input$bauResults == "Proyeksi Emisi Terkait Konsumsi Energi"){
     removeUI(selector = '#baupdrb')
-    graph <- energy_emission_table[energy_emission_table$year==input$selectedYear,]
+    graph <- resultEnergyEmission[resultEnergyEmission$year==input$selectedYear,]
     # ggplot(data=graph, aes(x=sector, y=Temission)) +
     #   geom_bar(colour="blue", stat="identity") +
     #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-    em_energy_all <- aggregate(x = energy_emission_table$Temission, by = list(energy_emission_table$year), FUN = sum)
+    em_energy_all <- aggregate(x = resultEnergyEmission$Temission, by = list(resultEnergyEmission$year), FUN = sum)
     colnames(em_energy_all) = c("year", "EmEnergy")
     gplot9<-ggplot(data=em_energy_all, aes(x=year, y=EmEnergy, group=1)) + geom_line() + geom_point()
     ggplotly(gplot9)
     
   } else if(input$bauResults == "Proyeksi Buangan Limbah"){
     removeUI(selector = '#baupdrb')
-    graph <- waste_disposal_table[waste_disposal_table$year==input$selectedYear,]
+    graph <- resultWasteDisposal[resultWasteDisposal$year==input$selectedYear,]
     # ggplot(data=graph, aes(x=sector, y=Tconsumption)) +
     #   geom_bar(colour="blue", stat="identity") +
     #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-    waste_all <- aggregate(x = waste_disposal_table$Tconsumption, by = list(waste_disposal_table$year), FUN = sum)
+    waste_all <- aggregate(x = resultWasteDisposal$Tconsumption, by = list(resultWasteDisposal$year), FUN = sum)
     colnames(waste_all) = c("year", "Waste")
     gplot10<-ggplot(data=waste_all, aes(x=year, y=Waste, group=1)) + geom_line() + geom_point()
     ggplotly(gplot10)
     
   } else if(input$bauResults == "Proyeksi Emisi Terkait Buangan Limbah"){
     removeUI(selector = '#baupdrb')
-    graph <- waste_emission_table[waste_emission_table$year==input$selectedYear,]
+    graph <- resultWasteEmission[resultWasteEmission$year==input$selectedYear,]
     # ggplot(data=graph, aes(x=sector, y=Temission)) +
     #   geom_bar(colour="blue", stat="identity") +
     #   coord_flip() + guides(fill=FALSE) + xlab("Sektor") + ylab("Nilai")
-    em_waste_all <- aggregate(x = waste_emission_table$Temission, by = list(waste_emission_table$year), FUN = sum)
+    em_waste_all <- aggregate(x = resultWasteEmission$Temission, by = list(resultWasteEmission$year), FUN = sum)
     colnames(em_waste_all) = c("year", "EmWaste")
     gplot11<-ggplot(data=em_waste_all, aes(x=year, y=EmWaste, group=1)) + geom_line() + geom_point()
     ggplotly(gplot11)
     
   } else if(input$bauResults == "Proyeksi Total Emisi"){
     removeUI(selector = '#baupdrb')
-    gplot12<-ggplot(data=total_emission_table[total_emission_table$Year > input$dateFrom,], aes(x=Year, y=TotalEmission, group=1)) + geom_line() + geom_point()
+    gplot12<-ggplot(data=resultTotalEmission[resultTotalEmission$Year > input$initialYear,], aes(x=Year, y=TotalEmission, group=1)) + geom_line() + geom_point()
     ggplotly(gplot12)
   } else if(input$bauResults == "Proyeksi Intensitas Emisi"){
     removeUI(selector = '#baupdrb')
-    GDP_all <- aggregate(x = GDP_table$GDP, by = list(GDP_table$year), FUN = sum)
+    GDP_all <- aggregate(x = resultGDP$GDP, by = list(resultGDP$year), FUN = sum)
     colnames(GDP_all) = c("year", "PDRB")
-    GDP_all$emisi <- total_emission_table$TotalEmission
+    GDP_all$emisi <- resultTotalEmission$TotalEmission
     GDP_all$intensitas <-  GDP_all$emisi / GDP_all$PDRB 
-    gplot13<-ggplot(data=GDP_all[GDP_all$year > input$dateFrom,], aes(x=year, y=intensitas, group=1)) + geom_line() + geom_point()
+    gplot13<-ggplot(data=GDP_all[GDP_all$year > input$initialYear,], aes(x=year, y=intensitas, group=1)) + geom_line() + geom_point()
     ggplotly(gplot13)
   } else if(input$bauResults=="Proyeksi Tutupan Lahan"){
     removeUI(selector='#baupdrb')
@@ -1773,39 +1822,39 @@ output$plotlyResultsBAU <- renderPlotly({
 })
 
 output$tableResultsBAU <- renderDataTable({
-  GDP_table <- bauResults$GDP_table
-  income_percapita_table <- bauResults$income_percapita_table  
-  income_table <- bauResults$income_table
-  labour_table <- bauResults$labour_table
-  energy_consumption_table <- bauResults$energy_consumption_table 
-  energy_emission_table <- bauResults$energy_emission_table 
-  waste_disposal_table <- bauResults$waste_disposal_table  
-  waste_emission_table <- bauResults$waste_emission_table 
-  total_emission_table <- bauResults$total_emission_table
+  resultGDP <- bauResults$resultGDP
+  resultIncomePerCapita <- bauResults$resultIncomePerCapita  
+  resultIncome <- bauResults$resultIncome
+  resultLabour <- bauResults$resultLabour
+  resultEnergyConsumption <- bauResults$resultEnergyConsumption 
+  resultEnergyEmission <- bauResults$resultEnergyEmission 
+  resultWasteDisposal <- bauResults$resultWasteDisposal  
+  resultWasteEmission <- bauResults$resultWasteEmission 
+  resultTotalEmission <- bauResults$resultTotalEmission
   resultLandCover <- bauResults$resultLandCover
   
   if(input$bauResults == "Proyeksi PDRB"){
-    tables <- GDP_table[GDP_table$year==input$selectedYear,]
+    tables <- resultGDP[resultGDP$year==input$selectedYear,]
     tables
   } else if(input$bauResults == "Proyeksi Upah per Kapita"){
     return(NULL)
   } else if(input$bauResults == "Proyeksi Upah Gaji"){
-    tables <- income_table[income_table$year==input$selectedYear,]
+    tables <- resultIncome[resultIncome$year==input$selectedYear,]
     tables
   } else if(input$bauResults == "Proyeksi Tenaga Kerja"){
-    tables <- labour_table[labour_table$year==input$selectedYear,]
+    tables <- resultLabour[resultLabour$year==input$selectedYear,]
     tables
   } else if(input$bauResults == "Proyeksi Konsumsi Energi"){
-    tables <- energy_consumption_table[energy_consumption_table$year==input$selectedYear,]
+    tables <- resultEnergyConsumption[resultEnergyConsumption$year==input$selectedYear,]
     tables
   } else if(input$bauResults == "Proyeksi Emisi Terkait Konsumsi Energi"){
-    tables <- energy_emission_table[energy_emission_table$year==input$selectedYear,]
+    tables <- resultEnergyEmission[resultEnergyEmission$year==input$selectedYear,]
     tables
   } else if(input$bauResults == "Proyeksi Buangan Limbah"){
-    tables <- waste_disposal_table[waste_disposal_table$year==input$selectedYear,]
+    tables <- resultWasteDisposal[resultWasteDisposal$year==input$selectedYear,]
     tables
   } else if(input$bauResults == "Proyeksi Emisi Terkait Buangan Limbah"){
-    tables <- waste_emission_table[waste_emission_table$year==input$selectedYear,]
+    tables <- resultWasteEmission[resultWasteEmission$year==input$selectedYear,]
     tables
   } else if(input$bauResults == "Proyeksi Total Emisi"){
     return(NULL)
@@ -1823,32 +1872,32 @@ output$downloadTableBAU <- downloadHandler(
   filename = input$bauResults,
   contentType = "text/csv",
   content = function(file) {
-    GDP_table <- bauResults$GDP_table
-    income_percapita_table <- bauResults$income_percapita_table  
-    income_table <- bauResults$income_table
-    labour_table <- bauResults$labour_table
-    energy_consumption_table <- bauResults$energy_consumption_table 
-    energy_emission_table <- bauResults$energy_emission_table 
-    waste_disposal_table <- bauResults$waste_disposal_table  
-    waste_emission_table <- bauResults$waste_emission_table 
-    total_emission_table <- bauResults$total_emission_table
+    resultGDP <- bauResults$resultGDP
+    resultIncomePerCapita <- bauResults$resultIncomePerCapita  
+    resultIncome <- bauResults$resultIncome
+    resultLabour <- bauResults$resultLabour
+    resultEnergyConsumption <- bauResults$resultEnergyConsumption 
+    resultEnergyEmission <- bauResults$resultEnergyEmission 
+    resultWasteDisposal <- bauResults$resultWasteDisposal  
+    resultWasteEmission <- bauResults$resultWasteEmission 
+    resultTotalEmission <- bauResults$resultTotalEmission
     
     if(input$bauResults == "Proyeksi PDRB"){
-      tables <- GDP_table[GDP_table$year==input$selectedYear,]
+      tables <- resultGDP[resultGDP$year==input$selectedYear,]
     } else if(input$bauResults == "Proyeksi Upah per Kapita"){
       return(NULL)
     } else if(input$bauResults == "Proyeksi Upah Gaji"){
-      tables <- income_table[income_table$year==input$selectedYear,]
+      tables <- resultIncome[resultIncome$year==input$selectedYear,]
     } else if(input$bauResults == "Proyeksi Tenaga Kerja"){
-      tables <- labour_table[labour_table$year==input$selectedYear,]
+      tables <- resultLabour[resultLabour$year==input$selectedYear,]
     } else if(input$bauResults == "Proyeksi Konsumsi Energi"){
-      tables <- energy_consumption_table[energy_consumption_table$year==input$selectedYear,]
+      tables <- resultEnergyConsumption[resultEnergyConsumption$year==input$selectedYear,]
     } else if(input$bauResults == "Proyeksi Emisi Terkait Konsumsi Energi"){
-      tables <- energy_emission_table[energy_emission_table$year==input$selectedYear,]
+      tables <- resultEnergyEmission[resultEnergyEmission$year==input$selectedYear,]
     } else if(input$bauResults == "Proyeksi Buangan Limbah"){
-      tables <- waste_disposal_table[waste_disposal_table$year==input$selectedYear,]
+      tables <- resultWasteDisposal[resultWasteDisposal$year==input$selectedYear,]
     } else if(input$bauResults == "Proyeksi Emisi Terkait Buangan Limbah"){
-      tables <- waste_emission_table[waste_emission_table$year==input$selectedYear,]
+      tables <- resultWasteEmission[resultWasteEmission$year==input$selectedYear,]
     } else if(input$bauResults == "Proyeksi Total Emisi"){
       return(NULL)
     }
@@ -1947,7 +1996,7 @@ output$tableResultsBAU_lahan <- renderDataTable({
   eksporLahan_table<-as.data.frame(results2$lahanResult_6)
   belpemLahan_table<-as.data.frame(results2$lahanResult_7)
   belrtLahan_table<-as.data.frame(results2$lahanResult_8)
-  labour_table<-as.data.frame(results2$lahanResult_9)
+  resultLabour<-as.data.frame(results2$lahanResult_9)
   
   if(input$lahanResults== "Proyeksi Output"){
     tables <- OutputLahan_table[OutputLahan_table$year==input$selectedYear2,]
@@ -1982,7 +2031,7 @@ output$tableResultsBAU_lahan <- renderDataTable({
     tables
   } 
   else if(input$lahanResults == "Proyeksi Tenaga Kerja"){
-    tables <- labour_table[labour_table$year==input$selectedYear2,]
+    tables <- resultLabour[resultLabour$year==input$selectedYear2,]
     tables
   }
 })
@@ -2002,7 +2051,7 @@ output$downloadTableBAU_lahan <- downloadHandler(
     eksporLahan_table<-as.data.frame(results2$lahanResult_6)
     belpemLahan_table<-as.data.frame(results2$lahanResult_7)
     belrtLahan_table<-as.data.frame(results2$lahanResult_8)
-    labour_table<-as.data.frame(results2$lahanResult_9)
+    resultLabour<-as.data.frame(results2$lahanResult_9)
     
     if(input$lahanResults== "Proyeksi Output"){
       tables <- OutputLahan_table[OutputLahan_table$year==input$selectedYear2,]
@@ -2032,7 +2081,7 @@ output$downloadTableBAU_lahan <- downloadHandler(
       tables <- belrtLahan_table[belrtLahan_table$year==input$selectedYear2,]
     } 
     else if(input$lahanResults == "Proyeksi Tenaga Kerja"){
-      tables <- labour_table[labour_table$year==input$selectedYear2,]
+      tables <- resultLabour[resultLabour$year==input$selectedYear2,]
     }
     else if(input$lahanResults == "Proyeksi Neraca Perdagangan"){
       return(NULL)
@@ -2073,7 +2122,7 @@ output$selectizeSector <- renderUI({
 
 # observe({
 #   resultOfBAU <- allInputsBAU()
-#   finalDemandSeriesTable <- resultOfBAU$FDSeries
+#   finalDemandSeriesTable <- resultOfBAU$bauSeriesOfFinalDemandComponent
 #   
 #   if(input$interTableOutput=="Permintaan Akhir"){
 #     req(input$selectMultiSector)
@@ -2106,7 +2155,7 @@ output$selectizeSector <- renderUI({
 # })
 
 output$yearSelectionInter <- renderUI({
-  selectInput("selectedYearInter", "Tahun", "Pilih tahun", choices=c(input$dateFrom:input$dateTo))
+  selectInput("selectedYearInter", "Tahun", "Pilih tahun", choices=c(input$initialYear:input$finalYear))
 })  
 
 #### END : tampilkan result BAU sektor lahan====

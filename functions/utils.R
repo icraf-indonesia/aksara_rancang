@@ -1,4 +1,13 @@
-##-- Caixas ----
+##-- Encrypting password ----
+# digest(user$password, algo = "md5", serialize = F)
+# user$encrypt<-str_rev(sapply(user$password, digest, algo="md5"))
+str_rev <- function(x) sapply(lapply(strsplit(x, NULL), rev), paste, collapse="")
+password_verification <- function(hash, password){
+  hash_encrypt <- str_rev(sapply(password, digest, algo="md5"))
+  ifelse(hash==hash_encrypt, return(TRUE), return(FALSE))
+}
+
+##-- Box ----
 box_voronoys <- function(texto, cor){
   HTML(paste('<div class = "box_voronoys" style = "border:1px solid', 
              cor, '; background-color: ', 

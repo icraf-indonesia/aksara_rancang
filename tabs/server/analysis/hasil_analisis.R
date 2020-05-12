@@ -1,187 +1,5 @@
 ### Server: Hasil Analisis ####
 
-###*historical input####
-allInputs <- eventReactive(input$button, {
-  inSector <- input$ioSector
-  if(is.null(inSector))
-    return(NULL)
-  
-  inIntermediateDemand <- input$ioIntermediateDemand
-  if(is.null(inIntermediateDemand))
-    return(NULL)
-  
-  inFinalDemand <- input$ioFinalDemand
-  if(is.null(inFinalDemand))
-    return(NULL)
-  
-  inAddedValue <- input$ioAddedValue
-  if(is.null(inAddedValue))
-    return(NULL)    
-  
-  inLabour <- input$satelliteLabour
-  if(is.null(inLabour))
-    return(NULL)
-  
-  inEnergy <- input$energyTable
-  if(is.null(inEnergy))
-    return(NULL) 
-  
-  inWaste <- input$wasteTable
-  if(is.null(inWaste))
-    return(NULL)
-  
-  inAgriculture <- input$agricultureTable
-  if(is.null(inAgriculture))
-    return(NULL)
-  
-  inEmissionFactorEnergiTable <- input$emissionFactorEnergiTable
-  if(is.null(inEmissionFactorEnergiTable))
-    return(NULL)
-  
-  inEmissionFactorLandWasteTable <- input$emissionFactorLandWasteTable
-  if(is.null(inEmissionFactorLandWasteTable))
-    return(NULL)
-  
-  inEmissionFactorAgricultureTable <- input$emissionFactorAgricultureTable
-  if(is.null(inEmissionFactorLandWasteTable))
-    return(NULL)
-  
-  inFinalDemandComp <- input$ioFinalDemandComponent
-  if(is.null(inFinalDemandComp))
-    return(NULL) 
-  
-  inAddedValueComp <- input$ioAddedValueComponent
-  if(is.null(inAddedValueComp))
-    return(NULL)  
-  
-  ioSector <- read.table(inSector$datapath, header=FALSE, sep=",")
-  ioIntermediateDemand <- read.table(inIntermediateDemand$datapath, header=FALSE, sep=",")
-  ioFinalDemand <- read.table(inFinalDemand$datapath, header=FALSE, sep=",")
-  ioAddedValue <- read.table(inAddedValue$datapath, header=FALSE, sep=",")
-  satelliteLabour <- read.table(inLabour$datapath, header=TRUE, sep=",")
-  satelliteEnergy <- read.table(inEnergy$datapath, header=TRUE, sep=",")
-  satelliteWaste <- read.table(inWaste$datapath, header=TRUE, sep=",")
-  satelliteAgriculture <- read.table(inAgriculture$datapath, header=TRUE, sep=",")
-  emissionFactorEnergy <- read.table(inEmissionFactorEnergiTable$datapath, header=TRUE, sep=",")
-  emissionFactorWaste <- read.table(inEmissionFactorLandWasteTable$datapath, header=TRUE, sep=",")
-  emissionFactorAgriculture <- read.table(inEmissionFactorAgricultureTable$datapath, header=TRUE, sep=",")
-  ioFinalDemandComponent <- read.table(inFinalDemandComp$datapath, header=FALSE, sep=",")
-  ioAddedValueComponent <- read.table(inAddedValueComp$datapath, header=FALSE, sep=",")
-  
-  # Row explicit definition
-  rowImport <- 1
-  rowIncome <- 2
-  rowProfit <- 3
-  
-  # initialYear <- input$dateFrom
-  # finalYear <- input$dateTo
-  # iteration <- finalYear - initialYear
-  
-  matrixIoIntermediateDemand <- as.matrix(ioIntermediateDemand)
-  matrixIoAddedValue <- as.matrix(ioAddedValue)
-  nrowMatrixIoAddedValue <- nrow(matrixIoAddedValue)
-  ioDimention <- ncol(ioIntermediateDemand)
-  
-  colSumsMatrixIoIntermediateDemand <- colSums(matrixIoIntermediateDemand)
-  colSumsMatrixIoAddedValue <- colSums(matrixIoAddedValue)
-  ioTotalOutput <- colSumsMatrixIoIntermediateDemand + colSumsMatrixIoAddedValue # ioTotalInput 
-  ioTotalOutputInverse <- 1/ioTotalOutput
-  ioTotalOutputInverse[is.infinite(ioTotalOutputInverse)] <- 0
-  ioTotalOutputInverse <- diag(ioTotalOutputInverse)
-  A <- matrixIoIntermediateDemand %*% ioTotalOutputInverse
-  I <- as.matrix(diag(ioDimention))
-  ioLeontif <- ioLeontif
-  ioLeontiefInverse <- solve(ioLeontif)
-  
-  # Backward Linkage
-  analysisDBL <- colSums(ioLeontiefInverse)
-  analysisBPD <- analysisDBL/(mean(analysisDBL))
-  # Forward Linkage
-  analysisDFL <- rowSums(ioLeontiefInverse)
-  analysisFPD <- analysisDFL/(mean(analysisDFL))
-  # GDP
-  analysisGDP <- colSums(matrixIoAddedValue[rowIncome:nrowMatrixIoAddedValue,])
-  analysisTotalGDP <- sum(analysisGDP)
-  # Multiplier Output (MO)
-  analysisMO <- colSums(ioLeontiefInverse)
-  # Coefficient Income (CI) & Multiplier Income (MI)
-  analysisCI <- as.matrix(matrixIoAddedValue[rowIncome,]) / ioTotalOutput
-  analysisMI <- ioLeontiefInverse %*% analysisCI
-  analysisMI[is.na(analysisMI)] <- 0
-  # Coefficient Labour (CL) & Multiplier Labour (ML)
-  analysisCL <- as.matrix(satelliteLabour[,3]) / ioTotalOutput
-  analysisML <- ioLeontiefInverse %*% analysisCL
-  analysisML[is.na(analysisML)] <- 0
-  # Coefficient Energy Used (CE) & Multiplier Energy (ME)
-  analysisCE <- as.matrix(satelliteEnergy[,3]) / ioTotalOutput
-  analysisME <- ioLeontiefInverse %*% analysisCE
-  analysisME[is.na(analysisME)] <- 0
-  # Coefficient Waste Product (CW) & Multiplier Waste (MW)
-  analysisCW <- as.matrix(satelliteWaste[,3]) / ioTotalOutput
-  analysisMW <- ioLeontiefInverse %*% analysisCW
-  analysisMW[is.na(analysisMW)] <- 0
-  # Ratio Wages / Business Surplus
-  analysisRatioWS <- t(as.matrix(ioAddedValue[2,] / ioAddedValue[3,]))
-  analysisRatioWS[is.na(analysisRatioWS)] <- 0
-  analysisRatioWS[analysisRatioWS == Inf] <- 0
-  colnames(analysisRatioWS) <- "ratio_ws"
-  # Satellite account by sectoral GDP
-  analysisEnergyByGDP <- as.matrix(satelliteEnergy[,3]) / analysisTotalGDP
-  analysisWasteByGDP <- as.matrix(satelliteWaste[,3]) / analysisTotalGDP
-  analysisAgricultureByGDP <- as.matrix(satelliteAgriculture[,3]) / analysisTotalGDP
-  # Emission from energy
-  emissionFactorEnergyDiagonal <- diag(emissionFactorEnergy[,2], ncol = nrow(emissionFactorEnergy), nrow = nrow(emissionFactorEnergy))
-  emissionEnergy <- as.matrix(satelliteEnergy[,4:ncol(satelliteEnergy)]) %*% emissionFactorEnergyDiagonal
-  emissionEnergyTotal <- rowSums(emissionEnergy)
-  # Emission from waste
-  emissionFactorWasteDiagonal <- diag(emissionFactorWaste[,2], ncol = nrow(emissionFactorWaste), nrow = nrow(emissionFactorWaste))
-  emissionWaste <- as.matrix(satelliteWaste[,4:ncol(satelliteWaste)]) %*% emissionFactorWasteDiagonal
-  emissionWasteTotal <- rowSums(emissionWaste)
-  # Wages
-  analysisWages <- as.matrix(t(ioAddedValue[2,]))
-  colnames(analysisWages) <- "wages"
-  # Income per capita
-  analysisIncomePerCapita <- sum(as.matrix(matrixIoAddedValue[rowIncome,])) / population
-  
-  result <- cbind(analysisIncomePerCapita,
-                  analysisBPD,
-                  analysisFPD, 
-                  analysisGDP, 
-                  analysisMO, 
-                  analysisMI,
-                  analysisML,
-                  analysisME,
-                  analysisMW,
-                  analysisWages,
-                  analysisRatioWS, 
-                  analysisCE,
-                  analysisCW,
-                  emissionEnergyTotal,
-                  emissionWasteTotal
-  )
-  colnames(result)[1] <- "Sektor"
-  
-  list_table <- list(result=result, 
-                     ioSector=ioSector, 
-                     ioIntermediateDemand=ioIntermediateDemand, 
-                     ioFinalDemand=ioFinalDemand, 
-                     ioAddedValue=ioAddedValue, 
-                     satelliteLabour=satelliteLabour, 
-                     satelliteEnergy=satelliteEnergy, 
-                     satelliteWaste=satelliteWaste,
-                     satelliteAgriculture=satelliteAgriculture,
-                     ioFinalDemandComponent=ioFinalDemandComponent, 
-                     ioAddedValueComponent=ioAddedValueComponent,
-                     emissionFactorAgriculture=emissionFactorAgriculture,
-                     emissionFactorWaste=emissionFactorWaste,
-                     emissionFactorEnergy=emissionFactorEnergy,
-                     analysisIncomePerCapita=analysisIncomePerCapita
-  ) 
-  list_table
-})
-
-output$yearIO <- renderText({ paste0("Tahun Tabel IO: ", allDataProv$ioPeriod) })
-
 output$sectorSelection <- renderUI({
   if(debugMode){
     sec <- blackBoxInputs()
@@ -348,10 +166,7 @@ output$plotlyResults <- renderPlotly({
     removeUI(selector = '#pdrb')
     removeUI(selector = '#capita')
     if(input$pprkLand == "Koefisien Kebutuhan Lahan") {
-      graph <- data.frame(Sektor= c(as.character(sec$ioSector[,1]), "sektor yang tidak menghasilkan output"),
-                          Kategori = c(as.character(sec$ioSector[,2]), "Jasa lainnya"),
-                          Land.Requirement.Coefficient= sec$analysisLRC, 
-                          stringsAsFactors = FALSE)
+      graph <- subset(landTable_his, select=c(Sektor, Kategori, LRC))
       colnames(graph) <- c("Sektor", "Kategori", "LRC")
       gplot2<-ggplot(data=graph, aes(x=Sektor, y=LRC, fill=Kategori)) +
         geom_bar(colour="black", stat="identity")+ coord_flip() + theme_void() +
@@ -363,10 +178,7 @@ output$plotlyResults <- renderPlotly({
       #          xaxis = list(title = "Koefisien Kebutuhan Lahan"),
       #          yaxis = list(title ="Sectors"))
     } else if(input$pprkLand == "Koefisien Produktivitas Lahan") {
-      graph <- data.frame(Sektor= c(as.character(sec$ioSector[,1]), "sektor yang tidak menghasilkan output"),
-                          Kategori = c(as.character(sec$ioSector[,2]), "Jasa lainnya"),
-                          Land.Productivity.Coefficient= sec$analysisLPC, 
-                          stringsAsFactors = FALSE)
+      graph <- subset(landTable_his, select=c(Sektor, Kategori, LPC))
       colnames(graph) <- c("Sektor", "Kategori", "LPC")
       gplot2<-ggplot(data=graph, aes(x=Sektor, y=LPC, fill=Kategori)) +
         geom_bar(colour="black", stat="identity")+ coord_flip() + theme_void() +
@@ -494,16 +306,18 @@ output$tableResults <- renderDataTable({
     }
   } else if (input$categorySector=="Lahan"){
     if(input$pprkLand == "Matriks Distribusi Lahan"){
-      tables <- data.frame(Sektor = c(as.character(sec$ioSector[,1]), "sektor yang tidak menghasilkan output"), allDataProv$LDMProp_his, stringsAsFactors = FALSE)
+      # removeUI(selector = '#plotlyResults') 
+      tables <- subset(landTable_his <- sec$landTable_his, select=-Kategori)
       tables
     } else if(input$pprkLand == "Koefisien Kebutuhan Lahan") {
-      tables <- data.frame(Sektor= c(as.character(sec$ioSector[,1]), "sektor yang tidak menghasilkan output"), Land.Requirement.Coefficient= sec$analysisLRC, stringsAsFactors = FALSE)
+      tables <- subset(landTable_his <- sec$landTable_his, select=c(Sektor, LRC, Kategori))
       tables
     } else if(input$pprkLand == "Koefisien Produktivitas Lahan") {
-      tables <- data.frame(Sektor=c(as.character(sec$ioSector[,1]), "sektor yang tidak menghasilkan output"), Land.Productivity.Coefficient= sec$analysisLPC, stringsAsFactors = FALSE)
+      tables <- subset(landTable_his <- sec$landTable_his, select=c(Sektor, LPC, Kategori))
       tables
     } else {
-      tables <- data.frame(Sektor=c(as.character(sec$ioSector[,1]), "sektor yang tidak menghasilkan output"), Land.Requirement= sec$landReq_his, stringsAsFactors = FALSE)
+      # removeUI(selector = '#plotlyResults')
+      tables <- landTable_his <- sec$landTable_his[,c("Sektor", colnames(landTable_his <- sec$landTable_his)[ncol(landTable_his <- sec$landTable_his)-2])]
       tables
     }
   } else {
@@ -567,13 +381,14 @@ output$downloadTable <- downloadHandler(
       } 
     } else if (input$categorySector== "Lahan"){
       if(input$pprkLand == "Matriks Distribusi Lahan"){
-        tables <- data.frame(Sektor = c(as.character(sec$ioSector[,1]), "sektor yang tidak menghasilkan output"), allDataProv$LDMProp_his, stringsAsFactors = FALSE)
+        tables <- subset(landTable_his, select=-Kategori)
       } else if(input$pprkLand == "Koefisien Kebutuhan Lahan") {
-        tables <- data.frame(Sektor= c(as.character(sec$ioSector[,1]), "sektor yang tidak menghasilkan output"), Land.Requirement.Coefficient= sec$analysisLRC, stringsAsFactors = FALSE)
+        tables <- subset(landTable_his, select=c(Sektor, LRC, Kategori))
       } else if(input$pprkLand == "Koefisien Produktivitas Lahan") {
-        tables <- data.frame(Sektor=c(as.character(sec$ioSector[,1]), "sektor yang tidak menghasilkan output"), Land.Productivity.Coefficient= sec$analysisLPC, stringsAsFactors = FALSE)
+        tables <- subset(landTable_his, select=c(Sektor, LPC, Kategori))
       } else {
-        tables <- data.frame(Sektor=c(as.character(sec$ioSector[,1]), "sektor yang tidak menghasilkan output"), Land.Requirement= sec$landReq_his, stringsAsFactors = FALSE)
+        # removeUI(selector = '#plotlyResults')
+        tables <- landTable_his[,c("Sektor", colnames(landTable_his)[ncol(landTable_his)-2])]
       }
     } else {
       if(input$pprkResults == "Angka Pengganda Buangan Limbah"){
@@ -587,3 +402,55 @@ output$downloadTable <- downloadHandler(
     write.table(tables, file, quote=FALSE, row.names=FALSE, sep=",")
   }
 )
+
+output$downloadReport <- downloadHandler(
+  filename = "report.doc",
+  content = function(file){
+    file.copy(paste0("data/", allDataProv$prov, "/", allDataProv$prov, "_analisa_deskriptif.doc"), file)
+  }
+)
+
+output$SatelitEnergi <- renderDataTable({
+  if(debugMode){
+    sec <- blackBoxInputs()
+  } else {
+    sec <- allInputs()
+  }
+  satelliteEnergy   <- sec$satelliteEnergy
+}, extensions = "FixedColumns", options=list(paging = FALSE, scrollY='70vh', scrollX=TRUE, fixedColumns=list(leftColumns=3)))  
+
+output$SatelitLimbah <- renderDataTable({
+  if(debugMode){
+    sec <- blackBoxInputs()
+  } else {
+    sec <- allInputs()
+  }
+  satelliteWaste <- sec$satelliteWaste
+}, extensions = "FixedColumns", options=list(paging = FALSE, scrollY='70vh', scrollX=TRUE, fixedColumns=list(leftColumns=3)))
+
+output$SatelitLahan <- renderDataTable({
+  if(debugMode){
+    sec <- blackBoxInputs()
+  } else {
+    sec <- allInputs()
+  }
+  LDM <- sec$LDM
+}, extensions = "FixedColumns", options=list(paging = FALSE, scrollY='70vh', scrollX=TRUE, fixedColumns=list(leftColumns=3)))
+
+output$SatelitPertanian <- renderDataTable({
+  if(debugMode){
+    sec <- blackBoxInputs()
+  } else {
+    sec <- allInputs()
+  }
+  satelliteAgriculture <- sec$satelliteAgriculture
+}, extensions = "FixedColumns", options=list(paging = FALSE, scrollY='70vh', scrollX=TRUE, fixedColumns=list(leftColumns=3)))
+
+output$TutupanLahan <- renderDataTable({
+  if(debugMode){
+    sec <- blackBoxInputs()
+  } else {
+    sec <- allInputs()
+  }
+  landcover <- sec$landcover
+}, extensions = "FixedColumns", options=list(paging = FALSE, scrollY='70vh', scrollX=TRUE, fixedColumns=list(leftColumns=3)))
