@@ -1,8 +1,14 @@
 land <- tabPanel(
   title = "Lahan", 
   value = "land",
+  column(width = 12,
+         br(),
+         wellPanel(
+           HTML("<h1>Akun Satelit: Lahan<h1>"),
+         )
+  ),
   div(fluidRow(
-      h1(style="padding-left: 15px;", "Pilih Akun Satellit Lahan"),
+      h3(style="padding-left: 15px;", "Pilih Data Input BAU"),
       br(),
       box(width=12,
          #        tabPanel("Tabel LDM Proporsi", id="TabPanelBAUDataLDMProp",
