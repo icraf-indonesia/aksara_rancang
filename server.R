@@ -1,4 +1,6 @@
 shinyServer(function(input, output, session, data, type){
+  ##-- LOGIN ----
+  source("tabs/server/login.R", local = TRUE)
   ##-- HOME ----
   source("tabs/server/home.R", local = TRUE)
   ##-- ANALYSIS ----

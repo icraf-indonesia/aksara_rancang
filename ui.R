@@ -4,10 +4,8 @@ shinyUI(
     tags$head(
       tags$link(rel = "shortcut icon", href = "img/rancang.ico"),
       #-- biblio js ----
-      tags$link(rel="stylesheet", type = "text/css",
-                href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"),
-      tags$link(rel="stylesheet", type = "text/css",
-                href = "https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro")
+      tags$link(rel="stylesheet", type = "text/css", href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"),
+      tags$link(rel="stylesheet", type = "text/css", href = "https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro")
     ),
     ##-- Logo ----
     list(tags$head(HTML('<link rel="icon", href="img/rancang.svg", type="image/png" />'))),
@@ -17,19 +15,7 @@ shinyUI(
         )
     ),
     ##-- Header ----
-    navbarPage(
-      title = div(img(src="img/rancang.png", height = "75px"), style = "padding-left:100px;"),
-      id = "navbar",
-      selected = "home",
-      theme = "styles.css", 
-      fluid = T,
-      home,
-      tabAnalysis,
-      tabSatellite,
-      tabScenario,
-      tabTradeoff,
-      tabHelp
-    ),
+    uiOutput("mainbody"),
     ##-- Footer ----
     div(class = "footer",
         includeHTML("html/footer.html")

@@ -35,9 +35,11 @@ source("functions/module.R")
 source("functions/utils.R")
 source("functions/plot_functions.R")
 
+user_database<-readRDS("data/user_database")
+
 ##-- Template tabs function ----
 tab_files <- list.files(path = "tabs", full.names = T, recursive = T)
 tab_files <- tab_files[-grep(x = tab_files, pattern = "server")]
 
 suppressMessages(lapply(tab_files, source))
-user_database<-readRDS("data/user_database")
+

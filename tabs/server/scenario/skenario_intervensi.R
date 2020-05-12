@@ -128,39 +128,51 @@ observeEvent(input$showInterventionTable, {
   bauSeriesOfFinalDemand = dataBau$bauSeriesOfFinalDemand
 
   #1 Function for ...
-  functionSatelliteImpact <- function(type = "energy", satellite = data.frame(), matrix_output = matrix(), emission_factor = data.frame()) {
+  functionSatelliteImpact <- function(type = "energy",
+                                      satellite = data.frame(),
+                                      matrix_output = matrix(),
+                                      emission_factor = data.frame(),
+                                      additional_satellite= NULL,
+                                      additional_emission_factor= NULL) {
     impact <- list()
-
+   
     # impact$consumption
     impact$consumption <- satellite
-
+   
     # calculate the proportion
     if(type != "labour"){
       proportionConsumption <- impact$consumption[, 4:ncol(impact$consumption)] / impact$consumption[, 3]
       impact$consumption[, 4:ncol(impact$consumption)] <- proportionConsumption
     }
-
+   
     # calculate the coefficient & the new total satellite consumption
-    coefficientConsumption <- as.matrix(impact$consumption[,3]) / ioTotalOutput
+    coefficientConsumption <- as.matrix(impact$consumption[,3]) / matrix_output
     impact$consumption[,3] <- coefficientConsumption * matrix_output
-
+   
     # calculate emission
     if(type != "labour"){
-
+     
       colnames(impact$consumption)[3] <- "Tconsumption"
-
+     
       # get the new satellite consumption for each sector
       # total consumption * proportion
       impact$consumption[,4:ncol(impact$consumption)] <- impact$consumption[,4:ncol(impact$consumption)] * impact$consumption[, 3]
-
+      if(!is.null(additional_satellite)){
+        impact$consumption[,4:ncol(impact$consumption)]<-impact$consumption[,4:ncol(impact$consumption)]+additional_satellite[,4:ncol(additional_satellite)]
+        impact$consumption[,3]<-rowSums(impact$consumption[,4:ncol(impact$consumption)])
+      }
+     
       # checking the order of factor emission
       orderEnergyType <- names(impact$consumption)[4:ncol(impact$consumption)]
       emissionFactor <- numeric()
+      if (!is.null(additional_emission_factor)){
+        emission_factor<-emission_factor[,2]+additional_emission_factor[,2]
+      }
       for(m in 1:length(orderEnergyType)){
         emissionFactor <- c(emissionFactor, emission_factor[which(emission_factor[,1]==orderEnergyType[m]), 2])
       }
       emissionFactor <- diag(emissionFactor, nrow = length(emissionFactor), ncol = length(emissionFactor))
-
+     
       # impact$emission
       impact$emission <- impact$consumption
       impact$emission[,4:ncol(impact$emission)] <- as.matrix(impact$consumption[,4:ncol(impact$consumption)]) %*% emissionFactor
@@ -168,10 +180,9 @@ observeEvent(input$showInterventionTable, {
       impact$emission[is.na(impact$emission)] <- 0
       colnames(impact$emission)[3] <- "Temission"
     }
-
+   
     impact$consumption[is.na(impact$consumption)] <- 0
     return(impact)
-
   }
 
   #2 Function for calculating Land Requirement Coefficient, Land Requirement, & land Cover

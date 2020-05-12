@@ -7,15 +7,18 @@ generate_table<-function(table, first_year, second_year, value=0.05){
   }
   table
 }
+
 observeEvent(input$generateBAUTable, {
   allDataProv$growthRate <- data.frame(Lapangan_usaha=as.character(allDataProv$ioSector[,1])) # reset table
   allDataProv$growthRate <- generate_table(allDataProv$growthRate, as.numeric(input$initialYear), as.numeric(input$finalYear))
   recordActivities(paste0("Membuat tabel proyeksi BAU tahun ", input$initialYear, "-", input$finalYear), "Berhasil", paste0(Sys.time()))
   notif_id <<- showNotification("Tabel berhasil dimuat", duration = 4, closeButton = TRUE, type = "warning")
 })
+
 output$tableBAUType <- renderRHandsontable({
   rhandsontable(allDataProv$growthRate, fixedColumnsLeft=1, height=640) %>% hot_cols(format="0%") # load table
 })
+
 observeEvent(input$saveTableBauType, {
   # if(input$typeIntervention=='Tipe 1'){
   #   allDataProv$growthRate <- generate_table(allDataProv$growthRate, as.numeric(input$initialYear), as.numeric(input$finalYear), value=as.numeric(input$gdpRate/100))
@@ -429,8 +432,7 @@ observeEvent(input$selectProjType,{
     insertUI(selector='#inputProjType',
              where='afterEnd',
              ui= uiOutput('projTypeEconomyUI'))
-  }
-  else {
+  } else {
     removeUI(selector='#projTypeEconomyUI')
     insertUI(selector='#inputProjType',
              where = 'afterEnd',
@@ -440,36 +442,33 @@ observeEvent(input$selectProjType,{
 })
 
 observeEvent(input$buttonBAU,{
-  removeUI(selector='#gdpRateUI') 
+  # removeUI(selector='#gdpRateUI')
   insertUI(selector='#inputProjType',
            where='afterEnd',
            ui= uiOutput('resultUI'))
 })
 
 output$projTypeEconomyUI<-renderUI(
-  tagList(selectInput("typeIntervention", "Tipe Intervensi", choices = c("Tipe 1", "Tipe 2")),
-          selectInput("initialYear", "Tahun awal:", choices = 1990:2100, selected=2015),
-          selectInput("finalYear", "Tahun akhir:", choices = 1990:2100, selected=2030),
-          # fileInput("populationTable", "Tabel Populasi per Tahun", buttonLabel="Browse...", placeholder="No file selected"),
-          # fileInput("emissionSectorRADTable", "Tabel Emisi Sumber Lain", buttonLabel="Browse...", placeholder="No file selected"),
-          actionButton("generateBAUTable", "Buat Tabel"),
-          hr(),
-          selectInput("bauResults",
-                      label="Pilih output yang ingin ditampilkan",
-                      choices=c("Proyeksi PDRB",
-                                "Proyeksi Upah per Kapita",
-                                "Proyeksi Upah Gaji",
-                                "Proyeksi Tenaga Kerja",
-                                "Proyeksi Konsumsi Energi",
-                                "Proyeksi Emisi Terkait Konsumsi Energi",
-                                "Proyeksi Buangan Limbah",
-                                "Proyeksi Emisi Terkait Buangan Limbah",
-                                "Proyeksi Total Emisi",
-                                "Proyeksi Intensitas Emisi",
-                                "Proyeksi Tutupan Lahan",
-                                "Proyeksi Emisi Terkait Tutupan Lahan"
-                      ))
-          # actionButton("showResult", "Tampilkan")
+  tagList(
+    fluidRow(
+      column(2, 
+        selectInput("typeIntervention", "Tipe Intervensi", choices = c("Tipe 1", "Tipe 2"))
+      ),
+      column(2, 
+        selectInput("initialYear", "Tahun awal:", choices = 1990:2100, selected=2015)
+      ),
+      column(2, 
+        selectInput("finalYear", "Tahun akhir:", choices = 1990:2100, selected=2030)
+      ),
+      column(6, 
+        style = "padding-top: 55px;",
+        actionButton("generateBAUTable", "Buat Tabel")
+      )
+    )
+    # fileInput("populationTable", "Tabel Populasi per Tahun", buttonLabel="Browse...", placeholder="No file selected"),
+    # fileInput("emissionSectorRADTable", "Tabel Emisi Sumber Lain", buttonLabel="Browse...", placeholder="No file selected"),
+    # hr()
+    # actionButton("showResult", "Tampilkan")
   )
 )
 
@@ -478,17 +477,46 @@ output$projTypeEconomyUI<-renderUI(
 # })
 
 output$resultUI<-renderUI(
-  tagList(h3("Hasil Analisis"),
-          tags$div(id='bauplaceholder'),
-          conditionalPanel(
-            condition="input.bauResults!='Proyeksi Upah per Kapita' & input.bauResults!='Proyeksi Total Emisi'",
-            uiOutput("yearSelection")),
-          plotlyOutput("plotlyResultsBAU"),
-          hr(),
-          fluidRow(column(width=12,
-                          box(width=NULL,
-                              dataTableOutput('tableResultsBAU'),
-                              downloadButton('downloadTableBAU', 'Download Table (.csv)'))))
+  tagList(
+    h3("Hasil Analisis"),
+    fluidRow(
+      column(2,
+        selectInput("bauResults",
+          label="Pilih output yang ingin ditampilkan",
+          choices=c("Proyeksi PDRB",
+                  "Proyeksi Upah per Kapita",
+                  "Proyeksi Upah Gaji",
+                  "Proyeksi Tenaga Kerja",
+                  "Proyeksi Konsumsi Energi",
+                  "Proyeksi Emisi Terkait Konsumsi Energi",
+                  "Proyeksi Buangan Limbah",
+                  "Proyeksi Emisi Terkait Buangan Limbah",
+                  "Proyeksi Total Emisi",
+                  "Proyeksi Intensitas Emisi",
+                  "Proyeksi Tutupan Lahan",
+                  "Proyeksi Emisi Terkait Tutupan Lahan"
+          )
+        )     
+      ),
+      column(2,
+        conditionalPanel(
+          condition="input.bauResults!='Proyeksi Upah per Kapita' & input.bauResults!='Proyeksi Total Emisi'",
+          uiOutput("yearSelection")
+        )
+      )
+    ),
+    br(),
+    tags$div(id='bauplaceholder'),
+    plotlyOutput("plotlyResultsBAU"),
+    br(),
+    fluidRow(
+      column(width=12,
+        box(width=NULL,
+          dataTableOutput('tableResultsBAU'),
+          downloadButton('downloadTableBAU', 'Download Table (.csv)')
+        )
+      )
+    )
   )
 )
 
@@ -550,7 +578,6 @@ observeEvent(input$buttonBAU, {
   LU_tahun<-sec$LU_tahun
   GDPAll<-sec$GDPAll
   tahun<-sec$tahun
-  
   
   # tin cek dulu LDMProp-nya !
   ###### gunakan LDMProp yang ditentukan di menu sebelumnya #####
@@ -924,7 +951,6 @@ observeEvent(input$buttonBAU, {
   }
   ###END : Define function ####
   
-  sec <- blackBoxInputs()
   analysisResult <- sec$result
   
   rowImport <- 1
@@ -1397,8 +1423,14 @@ observeEvent(input$buttonBAU, {
   bauResults$bauAllResult = bauAllResult
   # bauResults$landCover_t1=landCover_t1
   # bauResults$landCover_t1_years=landCover_t1_years
+  bauResults$resultFertilizerUsed = resultFertilizerUsed #pertanian
+  bauResults$resultFertilizerEmission = resultFertilizerEmission #pertanian
+  bauResults$bauSeriesOfImpactAgriculture = bauSeriesOfImpactAgriculture #pertanian
+  bauResults$resultLandReq = resultLandReq
+  bauResults$bauAllResult = bauAllResult
+  bauResults$resultLandEmission = resultLandEmission
   
-  updateTabItems(session, "tabs", selected = "pageFive")
+  updateTabItems(session, "tabs", selected = "intScenario")
 })
 
 #### BEGIN : input BAU sektor lahan, edit tabel land cover ====
@@ -2090,24 +2122,6 @@ output$downloadTableBAU_lahan <- downloadHandler(
   }
 )  
 
-# observe({
-#   resultsBAU <- allInputsBAU()
-#   fd_table <- resultsBAU[[10]]
-#   output$interactiveFD <- renderDataTable({
-#     datatable(fd_table, selection='none', editable=TRUE, options=list(pageLength=50))
-#   })
-#   proxy = dataTableProxy('interactiveFD')
-#   observeEvent(input$x1_cell_edit, {
-#     info = input$x1_cell_edit
-#     str(info)
-#     i = info$row
-#     j = info$col + 1  # column index offset by 1
-#     v = info$value
-#     fd_table[i, j] <<- DT::coerceValue(v, fd_table[i, j])
-#     replaceData(proxy, fd_table, resetPaging = FALSE, rownames = FALSE)
-#   })
-# })
-
 output$selectizeSector <- renderUI({
   if(debugMode){
     sec <- blackBoxInputs()
@@ -2120,39 +2134,6 @@ output$selectizeSector <- renderUI({
   ), multiple=TRUE)
 })
 
-# observe({
-#   resultOfBAU <- allInputsBAU()
-#   finalDemandSeriesTable <- resultOfBAU$bauSeriesOfFinalDemandComponent
-#   
-#   if(input$interTableOutput=="Permintaan Akhir"){
-#     req(input$selectMultiSector)
-#     selectedSector <- input$selectMultiSector
-#     lenSelSector <- length(selectedSector)
-#     
-#     startCol <- grep(paste0("y", input$yearInter), colnames(finalDemandSeriesTable))
-#     
-#     lapply(1:lenSelSector, function(x){
-#       selectedSectorFinDem <- finalDemandSeriesTable[finalDemandSeriesTable$Sector==selectedSector[x],]
-#       output[[paste0("INV_", x)]] = renderUI({
-#         req(input$selectMultiSector)
-#         div(
-#           numericInput(inputId=paste0("num_inv_", x), label=paste0("Intervensi ", x), min=0, value=selectedSectorFinDem[, startCol]),
-#           sliderInput(inputId=paste0("slide_inv_", x), label=as.character(selectedSectorFinDem[,1]), min=0, max=100, post=" %", value=0, step=.5)
-#         )
-#       })
-#       
-#       observeEvent(input$paste0("num_inv_", x), {
-#         
-#       })
-#     })
-#     
-#     output$rowIntervention <- renderUI({
-#       lapply(1:lenSelSector, function(i){
-#         uiOutput(paste0("INV_", i))
-#       })
-#     })
-#   }
-# })
 
 output$yearSelectionInter <- renderUI({
   selectInput("selectedYearInter", "Tahun", "Pilih tahun", choices=c(input$initialYear:input$finalYear))

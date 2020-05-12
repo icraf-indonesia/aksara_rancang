@@ -173,7 +173,7 @@ output$ListTable <- renderDataTable({
 
 calculateTradeOff <- eventReactive(input$tradeOffRunButton,{
   #observeEvent(input$tradeOffRunButton, {
-  browser()
+
   #nama dile yang msuk ke sini sudah hasil filter diloadRDSAll yang sudah di jalankan run buttonnya saja yang masuk 
   ###### BEGIN: call variables #####
   dataHistoris = blackBoxInputs()
@@ -303,6 +303,12 @@ calculateTradeOff <- eventReactive(input$tradeOffRunButton,{
   bauSeriesOfFinalDemandTable = dataBau$bauSeriesOfFinalDemandTable
   bauSeriesOfImpactAgriculture = dataBau$bauSeriesOfImpactAgriculture
   bauSeriesOfFinalDemand = dataBau$bauSeriesOfFinalDemand
+  resultFertilizerUsed = dataBau$resultFertilizerUsed
+  resultFertilizerEmission = dataBau$resultFertilizerEmission
+  bauSeriesOfImpactAgriculture = dataBau$bauSeriesOfImpactAgriculture
+  resultLandReq = dataBau$resultLandReq
+  bauAllResult = dataBau$bauAllResult
+  resultLandEmission = dataBau$resultLandEmission
   
   Nama.File = unlist(lapply(loadRDSAll(), function(x)x[[1]]))
   scenarioPath <- data.frame(path=Nama.File)
