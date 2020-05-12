@@ -166,7 +166,10 @@ output$plotlyResults <- renderPlotly({
     removeUI(selector = '#pdrb')
     removeUI(selector = '#capita')
     if(input$pprkLand == "Koefisien Kebutuhan Lahan") {
-      graph <- subset(landTable_his, select=c(Sektor, Kategori, LRC))
+      graph <- data.frame(Sektor= c(as.character(sec$ioSector[,1]), "sektor yang tidak menghasilkan output"),
+                          Kategori = c(as.character(sec$ioSector[,2]), "Jasa lainnya"),
+                          Land.Requirement.Coefficient= sec$analysisLRC, 
+                          stringsAsFactors = FALSE)
       colnames(graph) <- c("Sektor", "Kategori", "LRC")
       gplot2<-ggplot(data=graph, aes(x=Sektor, y=LRC, fill=Kategori)) +
         geom_bar(colour="black", stat="identity")+ coord_flip() + theme_void() +
@@ -178,7 +181,10 @@ output$plotlyResults <- renderPlotly({
       #          xaxis = list(title = "Koefisien Kebutuhan Lahan"),
       #          yaxis = list(title ="Sectors"))
     } else if(input$pprkLand == "Koefisien Produktivitas Lahan") {
-      graph <- subset(landTable_his, select=c(Sektor, Kategori, LPC))
+      graph <- data.frame(Sektor= c(as.character(sec$ioSector[,1]), "sektor yang tidak menghasilkan output"),
+                          Kategori = c(as.character(sec$ioSector[,2]), "Jasa lainnya"),
+                          Land.Productivity.Coefficient= sec$analysisLPC, 
+                          stringsAsFactors = FALSE)
       colnames(graph) <- c("Sektor", "Kategori", "LPC")
       gplot2<-ggplot(data=graph, aes(x=Sektor, y=LPC, fill=Kategori)) +
         geom_bar(colour="black", stat="identity")+ coord_flip() + theme_void() +
@@ -306,18 +312,16 @@ output$tableResults <- renderDataTable({
     }
   } else if (input$categorySector=="Lahan"){
     if(input$pprkLand == "Matriks Distribusi Lahan"){
-      # removeUI(selector = '#plotlyResults') 
-      tables <- subset(landTable_his <- sec$landTable_his, select=-Kategori)
+      tables <- data.frame(Sektor = c(as.character(sec$ioSector[,1]), "sektor yang tidak menghasilkan output"), allDataProv$LDMProp_his, stringsAsFactors = FALSE)
       tables
     } else if(input$pprkLand == "Koefisien Kebutuhan Lahan") {
-      tables <- subset(landTable_his <- sec$landTable_his, select=c(Sektor, LRC, Kategori))
+      tables <- data.frame(Sektor= c(as.character(sec$ioSector[,1]), "sektor yang tidak menghasilkan output"), Land.Requirement.Coefficient= sec$analysisLRC, stringsAsFactors = FALSE)
       tables
     } else if(input$pprkLand == "Koefisien Produktivitas Lahan") {
-      tables <- subset(landTable_his <- sec$landTable_his, select=c(Sektor, LPC, Kategori))
+      tables <- data.frame(Sektor=c(as.character(sec$ioSector[,1]), "sektor yang tidak menghasilkan output"), Land.Productivity.Coefficient= sec$analysisLPC, stringsAsFactors = FALSE)
       tables
     } else {
-      # removeUI(selector = '#plotlyResults')
-      tables <- landTable_his <- sec$landTable_his[,c("Sektor", colnames(landTable_his <- sec$landTable_his)[ncol(landTable_his <- sec$landTable_his)-2])]
+      tables <- data.frame(Sektor=c(as.character(sec$ioSector[,1]), "sektor yang tidak menghasilkan output"), Land.Requirement= sec$landReq_his, stringsAsFactors = FALSE)
       tables
     }
   } else {
@@ -381,14 +385,13 @@ output$downloadTable <- downloadHandler(
       } 
     } else if (input$categorySector== "Lahan"){
       if(input$pprkLand == "Matriks Distribusi Lahan"){
-        tables <- subset(landTable_his, select=-Kategori)
+        tables <- data.frame(Sektor = c(as.character(sec$ioSector[,1]), "sektor yang tidak menghasilkan output"), allDataProv$LDMProp_his, stringsAsFactors = FALSE)
       } else if(input$pprkLand == "Koefisien Kebutuhan Lahan") {
-        tables <- subset(landTable_his, select=c(Sektor, LRC, Kategori))
+        tables <- data.frame(Sektor= c(as.character(sec$ioSector[,1]), "sektor yang tidak menghasilkan output"), Land.Requirement.Coefficient= sec$analysisLRC, stringsAsFactors = FALSE)
       } else if(input$pprkLand == "Koefisien Produktivitas Lahan") {
-        tables <- subset(landTable_his, select=c(Sektor, LPC, Kategori))
+        tables <- data.frame(Sektor=c(as.character(sec$ioSector[,1]), "sektor yang tidak menghasilkan output"), Land.Productivity.Coefficient= sec$analysisLPC, stringsAsFactors = FALSE)
       } else {
-        # removeUI(selector = '#plotlyResults')
-        tables <- landTable_his[,c("Sektor", colnames(landTable_his)[ncol(landTable_his)-2])]
+        tables <- data.frame(Sektor=c(as.character(sec$ioSector[,1]), "sektor yang tidak menghasilkan output"), Land.Requirement= sec$landReq_his, stringsAsFactors = FALSE)
       }
     } else {
       if(input$pprkResults == "Angka Pengganda Buangan Limbah"){
