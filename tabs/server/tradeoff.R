@@ -519,6 +519,7 @@ calculateTradeOff <- eventReactive(input$tradeOffRunButton,{
   list(tradeOffTablePlot = tradeOffTablePlot,
        tradeOffResultCombined = tradeOffResultCombined,
        tradeOffSummary = tradeOffSummary)
+  #browser()
 })
 
 

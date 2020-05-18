@@ -110,7 +110,7 @@ observeEvent(input$runHistoris, {
   baselineEmission <- readRDS(paste0(datapath, "otherEm"))
   LU_tahun<-readRDS(paste0(datapath,"LU_tahun"))
   # print(LU_tahun)
-  LDMProp_his<-readRDS(paste0(datapath,"LDMProp"))
+  LDMProp_his<-readRDS(paste0(datapath,"LDMProp52"))
   row.names(LDMProp_his)<-ioSector[,1]
   # landDemand <- readRDS(paste0(datapath, "landDemand"))
   # landDemand_prop <- readRDS(paste0(datapath, "landDemand_prop"))

@@ -11,7 +11,7 @@ username<-"dw"
 # password <- "1234"
 selectedProv = "JaBar"
 datapath <- paste0("_DB/data/", selectedProv, "/")
-datapathCSV <- ("_DB/input csv")
+
 
 
 ioSector <- read.table("_DB/jabar_in_redcluwe/01_sektor.csv ", header = F, sep = ",")

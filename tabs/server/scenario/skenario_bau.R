@@ -455,7 +455,7 @@ output$projTypeEconomyUI<-renderUI(
         selectInput("typeIntervention", "Tipe Intervensi", choices = c("Tipe 1", "Tipe 2"))
       ),
       column(2, 
-        selectInput("initialYear", "Tahun awal:", choices = 1990:2100, selected=2015)
+        selectInput("initialYear", "Tahun awal:", choices = 1990:2100, selected=2016)
       ),
       column(2, 
         selectInput("finalYear", "Tahun akhir:", choices = 1990:2100, selected=2030)
@@ -1114,38 +1114,27 @@ observeEvent(input$buttonBAU, {
   listYear <- paste0("y", sec$ioPeriod)
   
   for(step in 1:(iteration+1)){
-    for (i in 1:6){   # 5 tipe yg akan dirun otomatis
+    for (i in 1:6){   # 6 tipe yg akan dirun otomatis
       timeStep <- paste0("y", projectionYear)
-            eval(parse(text=paste0(
-            "bauSeriesOfImpactLand2$",timeStep,"<-tryCatch({
-              functionSatelliteLand2 (type ='projected',
-                                landCoverProjection = as.matrix(bauSeriesOfImpactLand1[['",timeStep,"']][['landCover']][['luas.land.use']]) ,
-                                landCoverProjectionMin=  as.matrix(bauSeriesOfImpactLand1[[paste0('y',",projectionYear,"-1)]][['landCover']][['luas.land.use']]),
-                                LUTMTemplate = LUTMTemplate_his,
-                                advanceMode = FALSE,
-                                runNum =",i," ,
-                                GDP=as.matrix(bauSeriesOfGDP$",timeStep,")
-        )
-      }, warning = function (a){NA}, error = function(b){NA})"
-            )))
-    #   eval(parse(text=paste0(
-    #     "bauSeriesOfImpactLand2$",timeStep,"<-
-    #       functionSatelliteLand2 (type ='projected',
-    #                         landCoverProjection = as.matrix(bauSeriesOfImpactLand1[['",timeStep,"']][['landCover']][['luas.land.use']]) ,
-    #                         landCoverProjectionMin=  as.matrix(bauSeriesOfImpactLand1[[paste0('y',",projectionYear,"-1)]][['landCover']][['luas.land.use']]),
-    #                         LUTMTemplate = sec$LUTMTemplate_his, 
-    #                         advanceMode = FALSE,
-    #                         runNum =",i," , 
-    #                         GDP=as.matrix(bauSeriesOfGDP$",timeStep,")
-    # )"
-    #   )))
+      eval(parse(text=paste0(
+        "bauSeriesOfImpactLand2$",timeStep,"<-tryCatch({
+    functionSatelliteLand2 (type ='projected',
+                            landCoverProjection = as.matrix(bauSeriesOfImpactLand1[['",timeStep,"']][['landCover']][['luas.land.use']]) ,
+                            landCoverProjectionMin=  as.matrix(bauSeriesOfImpactLand1[[paste0('y',",projectionYear,"-1)]][['landCover']][['luas.land.use']]),
+                            LUTMTemplate = sec$LUTMTemplate_his, 
+                            advanceMode = FALSE,
+                            runNum =",i," , 
+                            GDP=as.matrix(bauSeriesOfGDP$",timeStep,")
+    )
+  }, warning = function (a){NA}, error = function(b){NA})"
+      )))
       if(any(is.na(bauSeriesOfImpactLand2[[timeStep]]))==FALSE){
         print(paste0("use constraint ", i ," to make LUTM ",timeStep))
         break
       } else {
         if(i==6){
           print(paste0("tidak berhasil menghitung LUTM ",timeStep))
-        }
+        } 
       }
     }
     listYear <- c(listYear, timeStep)
@@ -1371,6 +1360,7 @@ observeEvent(input$buttonBAU, {
     eval(parse(text=paste0("bauSeriesOfEmissionBySector$y", t_curr, " <- add_MEcons + add_MWdisp + add_MF + add_MLand")))
   }
   
+  #browser()
   # resultTotalGDP <- colSums(bauSeriesOfGDP[,2:(ncol(bauSeriesOfGDP)-1)])
   bauAllResult <- subset(resultTotalEmission, select=c(Year, TotalEmission, CummulativeEmission))
   # bauAllResult <- cbind(bauAllResult, resultTotalGDP)
@@ -1387,6 +1377,7 @@ observeEvent(input$buttonBAU, {
   ggplot(data=bauAllResult, aes(x=Year, y=CummulativeGDP, group=1)) + geom_line() + geom_point()
   ggplot(data=bauAllResult, aes(x=Year, y=CummulativeEmissionIntensity, group=1)) + geom_line() + geom_point()
   
+  #browser()
   #####END : BAU projection visualization #### 
   
   recordActivities("Simulasi skenario BAU", "Berhasil", paste0(Sys.time()))
