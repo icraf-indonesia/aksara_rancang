@@ -124,17 +124,23 @@ observeEvent(input$runHistoris, {
   # print(ioPeriod)
   rtffile <- readRDS(paste0(datapath, "rtffile"))
   
-  # growthRate <- read.table("_DB/jabar_in_redcluwe/growth5_1630.csv", header = T, sep = ",")
   
   ### Start : Land Section ###
-  # datapath <- paste0("data/", selectedProv, "/")
-  LUTMDatabase<-as.data.frame(read.csv("data/LUTMDatabaseID.csv"))
-  LDMProp_his<-read.csv(paste0(datapath, "LDMProp.csv"))
-  LUTMTemplate_his<-read.csv(paste0(datapath,"LUTM_template.csv"))
-  LRCRate_his<-read.csv(paste0(datapath,"LRCRate.csv"),header = FALSE)
-  LRCRate_2<-read.csv(paste0(datapath,"LRCRate_2.csv"),header=FALSE)
-  # LRCRate_2<-read.csv(paste0(datapath,"LRCRate.csv"),header=FALSE)  #delete after use
-  carbonStock_his<-data.matrix(read.csv(paste0(datapath,"carbonStock.csv")))
+  ## CSV file
+  # LUTMDatabase<-as.data.frame(read.csv("data/LUTMDatabaseID.csv"))
+  # LDMProp_his<-read.csv(paste0(datapath, "LDMProp.csv"))
+  # LUTMTemplate_his<-read.csv(paste0(datapath,"LUTM_template.csv"))
+  # LRCRate_his<-read.csv(paste0(datapath,"LRCRate.csv"),header = FALSE)
+  # LRCRate_2<-read.csv(paste0(datapath,"LRCRate_2.csv"),header=FALSE)
+  # carbonStock_his<-data.matrix(read.csv(paste0(datapath,"carbonStock.csv")))
+  
+  # rds file
+  LUTMDatabase<-readRDS("data/LUTMDatabaseID")
+  LDMProp_his<-readRDS(paste0(datapath, "LDMProp"))
+  LUTMTemplate_his<-readRDS(paste0(datapath,"LUTM_template"))
+  LRCRate_his<-readRDS(paste0(datapath,"LRCRate"))
+  LRCRate_2<-readRDS(paste0(datapath,"LRCRate_2"))
+  carbonStock_his<-readRDS(paste0(datapath,"carbonStock"))
   carbonStock_his<-as.matrix(carbonStock_his[,3])
   ### End : Land Section ###
   
