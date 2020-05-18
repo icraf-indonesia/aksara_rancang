@@ -103,10 +103,10 @@ loadRDSAll <- reactive({
   selectedProv = dataHistoris$selectedProv
   username = dataHistoris$username
   
-  alamatFileEnergy <- paste0("_DB/skenarioData/", selectedProv, "/", "energi")
-  alamatFileLand <- paste0("_DB/skenarioData/", selectedProv, "/", "lahan")
-  alamatFileWaste <- paste0("_DB/skenarioData/", selectedProv, "/", "limbah")
-  alamatFileAgri <- paste0("_DB/skenarioData/", selectedProv, "/", "pertanian")
+  alamatFileEnergy <- paste0("skenarioData/", selectedProv, "/", "energi")
+  alamatFileLand <- paste0("skenarioData/", selectedProv, "/", "lahan")
+  alamatFileWaste <- paste0("skenarioData/", selectedProv, "/", "limbah")
+  alamatFileAgri <- paste0("skenarioData/", selectedProv, "/", "pertanian")
   
   nameFilesEnergy <- list.files(path = alamatFileEnergy,
                                 pattern = paste0("^", username))

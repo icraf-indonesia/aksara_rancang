@@ -506,7 +506,7 @@ observeEvent(input$showInterventionTable, {
   
   #alamat rds untuk menampilkan daftar di ListTableReact
   selectedSektor <- "lahan"
-  alamatFile <- paste0("_DB/skenarioData/", selectedProv, "/", selectedSektor)
+  alamatFile <- paste0("skenarioData/", selectedProv, "/", selectedSektor)
   
   landData <- list(
     listConsumZero=satelliteLand,
@@ -535,7 +535,7 @@ observeEvent(input$showInterventionTable, {
   
   #alamat rds untuk menampilkan daftar di ListTableReact
   selectedSektor <- "energi"
-  alamatFile <- paste0("_DB/skenarioData/", selectedProv, "/", selectedSektor)
+  alamatFile <- paste0("skenarioData/", selectedProv, "/", selectedSektor)
   
   energyData <- list(
     faktorEmisi=faktorEmisi,
@@ -567,7 +567,7 @@ observeEvent(input$showInterventionTable, {
   
   #alamat rds untuk menampilkan daftar di ListTableReact
   selectedSektor <- "limbah"
-  alamatFile <- paste0("_DB/skenarioData/", selectedProv, "/", selectedSektor)
+  alamatFile <- paste0("skenarioData/", selectedProv, "/", selectedSektor)
   
   wasteData <- list(
     faktorEmisi=faktorEmisi,
@@ -598,7 +598,7 @@ observeEvent(input$showInterventionTable, {
   
   #alamat rds untuk menampilkan daftar di ListTableReact
   selectedSektor <- "pertanian"
-  alamatFile <- paste0("_DB/skenarioData/", selectedProv, "/", selectedSektor)
+  alamatFile <- paste0("skenarioData/", selectedProv, "/", selectedSektor)
   
   agriData <- list(
     faktorEmisi=faktorEmisi,
