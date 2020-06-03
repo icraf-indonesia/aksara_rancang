@@ -1364,7 +1364,8 @@ observeEvent(input$buttonBAU, {
   # resultTotalGDP <- colSums(bauSeriesOfGDP[,2:(ncol(bauSeriesOfGDP)-1)])
   bauAllResult <- subset(resultTotalEmission, select=c(Year, TotalEmission, CummulativeEmission))
   # bauAllResult <- cbind(bauAllResult, resultTotalGDP)
-  bauAllResult$ResultTotalGDP<-colSums(bauSeriesOfGDP[,2:(ncol(bauSeriesOfGDP)-1)])
+  # bauAllResult$ResultTotalGDP<-colSums(bauSeriesOfGDP[,2:(ncol(bauSeriesOfGDP)-1)])
+  bauAllResult$ResultTotalGDP<-colSums(bauSeriesOfGDP[,which(colnames(bauSeriesOfGDP)==paste0("y",initialYear)):ncol(bauSeriesOfGDP)])
   bauAllResult$CummulativeGDP <- cumsum(bauAllResult$ResultTotalGDP)
   bauAllResult$EmissionIntensity <- bauAllResult$TotalEmission / bauAllResult$ResultTotalGDP
   bauAllResult$CummulativeEmissionIntensity <-cumsum(bauAllResult$EmissionIntensity)

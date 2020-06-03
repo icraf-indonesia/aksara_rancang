@@ -1946,7 +1946,8 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
     # scenarioResultTotalGDP <- colSums(scenarioSeriesOfGDP[,2:(ncol(scenarioSeriesOfGDP)-1)])
     scenarioAllResult <- subset(scenarioResultTotalEmission, select=c(Year, TotalEmission, CummulativeEmission))
     # scenarioAllResult <- cbind(scenarioAllResult, scenarioResultTotalGDP)
-    scenarioAllResult$ResultTotalGDP<-colSums(scenarioSeriesOfGDP[,2:(ncol(scenarioSeriesOfGDP)-1)])
+    # scenarioAllResult$ResultTotalGDP<-colSums(scenarioSeriesOfGDP[,2:(ncol(scenarioSeriesOfGDP)-1)])
+    scenarioAllResult$ResultTotalGDP<-colSums(scenarioSeriesOfGDP[,which(colnames(scenarioSeriesOfGDP)==paste0("y",initialYear)):ncol(scenarioSeriesOfGDP)])
     scenarioAllResult$CummulativeGDP <- cumsum(scenarioAllResult$ResultTotalGDP)
     scenarioAllResult$EmissionIntensity <- scenarioAllResult$TotalEmission / scenarioAllResult$ResultTotalGDP
     scenarioAllResult$CummulativeEmissionIntensity <-cumsum(scenarioAllResult$EmissionIntensity)
