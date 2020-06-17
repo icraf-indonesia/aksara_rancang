@@ -1605,7 +1605,7 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
         functionSatelliteLand2 (type ='projected',
                                 landCoverProjection = as.matrix(scenarioSeriesOfImpactLand1[['",timeStep,"']][['landCover']][['luas.land.use']]),
                                 landCoverProjectionMin = as.matrix(scenarioSeriesOfImpactLand1[[paste0('y',",projectionYear,"-1)]][['landCover']][['luas.land.use']]),
-                                inputLandCover = scenarioSeriesOfImpactLand3[['",timeStep,"']][['landCover']],
+                                inputLandCover = scenarioSeriesOfImpactLand3[['",timeStep,"']][['inputLandCover']],
                                 LUTMTemplate = scenarioSeriesOfImpactLand3[['",timeStep,"']][['LUTMTemplate']],
                                 advanceMode = FALSE,
                                 runNum =",i," ,
