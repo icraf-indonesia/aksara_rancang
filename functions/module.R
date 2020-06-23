@@ -141,6 +141,7 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
   bauSeriesOfImpactAgriculture = dataBau$bauSeriesOfImpactAgriculture
   bauSeriesOfFinalDemand = dataBau$bauSeriesOfFinalDemand
   bauAllResult = dataBau$bauAllResult
+  fdZero = dataBau$fdZero
   
   #1 Function for ...
   functionSatelliteImpact <- function(type = "energy", 
