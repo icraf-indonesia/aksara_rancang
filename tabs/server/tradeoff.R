@@ -351,7 +351,7 @@ calculateTradeOff <- eventReactive(input$tradeOffRunButton,{
     eval(parse(text = paste0(a,"$scenarioAllResult[,2:7]<-",a,"$scenarioAllResult[,2:7]-bauAllResult[,2:7]")))
   }
   
-  
+
   # create all combinations
   scenarioCombination<-list()
   for (i in 4:nrow(scenarioPath)){

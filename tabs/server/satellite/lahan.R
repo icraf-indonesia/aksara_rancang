@@ -519,6 +519,8 @@ observeEvent(input$buttonBAU, {
   ###### gunakan LDMProp yang ditentukan di menu sebelumnya #####
   if (input$LDMPropUse=="LDM historis"){
     LDMProp=sec$LDMProp_his
+  } else if (is.null(input$LDMPropUse)){
+    LDMProp=sec$LDMProp_his
   } else {
     LDMProp = readRDS(paste0("LDMData/Prov/",input$LDMPropUse))  #ganti mas alfa
   }

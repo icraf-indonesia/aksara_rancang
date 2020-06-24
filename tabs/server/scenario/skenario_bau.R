@@ -581,7 +581,9 @@ observeEvent(input$buttonBAU, {
   
   # tin cek dulu LDMProp-nya !
   ###### gunakan LDMProp yang ditentukan di menu sebelumnya #####
-  if (input$LDMPropUse=="LDM historis"){
+  if (input$LDMPropUse=="LDM historis" ){
+    LDMProp=sec$LDMProp_his
+  } else if (is.null(input$LDMPropUse)){
     LDMProp=sec$LDMProp_his
   } else {
     LDMProp = readRDS(paste0("LDMData/Prov/",input$LDMPropUse))  #ganti mas alfa
@@ -962,7 +964,8 @@ observeEvent(input$buttonBAU, {
   iteration <- finalYear - initialYear
   
   bauSeriesOfGDP <- data.frame(Sektor = allDataProv$ioSector[,1], stringsAsFactors = FALSE)
-  bauSeriesOfGDP$y2015 <- analysisResult$analysisGDP
+  # bauSeriesofGDP$y2015 <- analysisResult$analysisGDP
+  eval(parse(text=paste0("bauSeriesOfGDP$y",allDataProv$ioPeriod," <- analysisResult$analysisGDP")))
   
   # Final Demand
   matrixIoFinalDemand <- as.matrix(sec$ioFinalDemand)
@@ -975,7 +978,7 @@ observeEvent(input$buttonBAU, {
   matrixIoAddedValue <- as.matrix(sec$ioAddedValue)
   colSumsMatrixIoAddedValue <- colSums(matrixIoAddedValue)
   ioTotalOutput <- colSumsMatrixIoIntermediateDemand + colSumsMatrixIoAddedValue 
-  bauSeriesOfOutput <- ioTotalOutput
+  bauSeriesOfOutput <- as.matrix(ioTotalOutput)
   
   # Series of Intervention Point
   bauSeriesOfIntermediateDemand <- list()
@@ -1013,10 +1016,20 @@ observeEvent(input$buttonBAU, {
   # browser()
   # economic & impact (energy, waste, & agriculture projection 
   for(step in 1:(iteration+1)){
-    projectionFinalDemand <- growthRateSeries[, step] * bauSeriesOfFinalDemand[, step]
+    
+    # projectionFinalDemand <- growthRateSeries[, step] * bauSeriesOfFinalDemand[, step]
+    # bauSeriesOfFinalDemand <- cbind(bauSeriesOfFinalDemand, projectionFinalDemand)
+    # projectionOutput <- allDataProv$ioLeontiefInverse %*% projectionFinalDemand 
+    # bauSeriesOfOutput <- cbind(bauSeriesOfOutput, projectionOutput)
+    
+    #edit
+    # browser()
+    projectionGDP<-growthRateSeries[, step] * bauSeriesOfGDP[, step+1]
+    projectionOutput<-growthRateSeries[, step] * bauSeriesOfOutput[, step]
+    projectionFinalDemand <- allDataProv$ioLeontif %*% projectionOutput
+    bauSeriesOfOutput <-cbind(bauSeriesOfOutput, projectionOutput)
     bauSeriesOfFinalDemand <- cbind(bauSeriesOfFinalDemand, projectionFinalDemand)
-    projectionOutput <- allDataProv$ioLeontiefInverse %*% projectionFinalDemand 
-    bauSeriesOfOutput <- cbind(bauSeriesOfOutput, projectionOutput)
+    bauSeriesOfGDP<-cbind(bauSeriesOfGDP,projectionGDP)
     
     # notes on the year
     timeStep <- paste0("y", projectionYear)
@@ -1026,8 +1039,8 @@ observeEvent(input$buttonBAU, {
     eval(parse(text=paste0("bauSeriesOfIntermediateDemand$", timeStep, " <-  sec$analysisCT %*% diag(as.vector(projectionOutput), ncol = sec$ioDimention, nrow= sec$ioDimention)")))
     eval(parse(text=paste0("bauSeriesOfAddedValue$", timeStep, " <-  sec$analysisCPI %*% diag(as.vector(projectionOutput), ncol = sec$ioDimention, nrow= sec$ioDimention)")))
     
-    # GDP projection 
-    eval(parse(text = paste0("bauSeriesOfGDP$", timeStep, "<- colSums(bauSeriesOfAddedValue$", timeStep, "[setdiff(1:nrow(matrixIoAddedValue), rowImport),])")))
+    # GDP projection #edit
+    # eval(parse(text = paste0("bauSeriesOfGDP$", timeStep, "<- colSums(bauSeriesOfAddedValue$", timeStep, "[setdiff(1:nrow(matrixIoAddedValue), rowImport),])")))
     
     # Impact projection
     eval(parse(text= paste0("bauSeriesOfImpactLabour$", timeStep, " <- functionSatelliteImpact('labour', satellite = satelliteLabour, matrix_output = as.matrix(projectionOutput))")))
@@ -1040,6 +1053,7 @@ observeEvent(input$buttonBAU, {
     
   }
   
+  colnames(bauSeriesOfGDP) <- c("Sektor", listYear) #edit
   colnames(bauSeriesOfOutput) <- as.character(listYear)
   colnames(bauSeriesOfFinalDemand)<- as.character(listYear)
   
