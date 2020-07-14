@@ -31,7 +31,9 @@ output$plotlyResults <- renderPlotly({
       insertUI(
         selector="#placeholder",
         ui = tags$div(
-          valueBox(format(GDPTotal, nsmall = 2, big.mark = ".", decimal.mark = ","), "Juta Rupiah", icon = icon("credit-card"), width = 12),
+          output$valuePDRB <- renderValueBox({
+            valueBox(format(GDPTotal, nsmall = 2, big.mark = ".", decimal.mark = ","), "Juta Rupiah", icon = icon("credit-card"), color = "blue" ,width = 12)
+          }),
           id='pdrb'
         )
       )
@@ -69,7 +71,9 @@ output$plotlyResults <- renderPlotly({
       insertUI(
         selector="#placeholder",
         ui = tags$div(
-          valueBox(format(analysisIncomePerCapita, nsmall = 2, big.mark = ".", decimal.mark = ","), "Juta Rupiah/Jiwa", icon = icon("credit-card"), width = 8),
+          output$valueCapita <- renderValueBox({
+            valueBox(format(analysisIncomePerCapita, nsmall = 2, big.mark = ".", decimal.mark = ","), "Juta Rupiah/Jiwa", icon = icon("credit-card"), width = 12)
+          }),
           id='capita'
         )
       )

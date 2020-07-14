@@ -55,15 +55,34 @@ hasil_analisis <- tabPanel(
     ),
   
     ### Output ####
+    # column(width = 12,
+    #        conditionalPanel(
+    #          condition = "input.pageTwo > 0",
+    #          conditionalPanel(
+    #            condition = "input.pprkResults!=='PDRB'",
+    #            valueBoxOutput('valuePDRB')
+    #          ),
+    #        )
+    # ),
     column(width = 12,
-      conditionalPanel(condition = "input.pageTwo > 0",
+      conditionalPanel(
+        condition = "input.pageTwo > 0",
         fluidRow(
           column(width=12,
             box(width=NULL,
               h3(textOutput("tableDesc")),
               hr(),
+              conditionalPanel(
+                condition = "input.pprkResults=='PDRB'",
+                div(style="background-color: #eaeaea", valueBoxOutput('valuePDRB', width = "100%")),
+                br()
+              ),
+              conditionalPanel(
+                condition = "input.pprkResults!='Pendapatan per kapita'",
               div(style="overflow-x: scroll", dataTableOutput('tableResults')),
+              br(),
               downloadButton('downloadTable', 'Download Table (.csv)')
+              )
             )
           )
         )
@@ -85,6 +104,16 @@ hasil_analisis <- tabPanel(
         conditionalPanel(
           condition="input.pprkResults!='Pendapatan per kapita'",
           plotlyOutput("plotlyResults")
+        )
+      )
+    ),
+    column(
+      width = 12,
+      conditionalPanel(
+        condition = "input.pageTwo > 0",
+        conditionalPanel(
+          condition="input.pprkResults=='Pendapatan per kapita'",
+          div(style="background-color: #eaeaea", valueBoxOutput('valueCapita', width = "100%"))
         )
       )
     )

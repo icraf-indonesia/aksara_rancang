@@ -11,14 +11,14 @@ waste <- tabPanel(
   column(width = 12,
      withSpinner(rHandsontableOutput("SatelitLimbah"), type = 6),
      style = "padding-bottom: 10px;"
-  ),
+  )
   # column(width = 12,
   #        withSpinner(dataTableOutput("testEditTable"), type = 6),
   #        style = "padding-bottom: 10px;"
   # )
-  actionBttn(inputId = "saveBttn",
-         label = "Simpan",
-         style = "fill",
-         color = "success",
-         icon = icon("check"), size = "sm")
+  # actionBttn(inputId = "saveBttn",
+  #        label = "Simpan",
+  #        style = "fill",
+  #        color = "success",
+  #        icon = icon("check"), size = "sm")
 )

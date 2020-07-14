@@ -24,15 +24,14 @@ data_historis <- tabPanel(
   ),
   ##-- Outputs ----
   conditionalPanel(condition = "input.runHistoris > 0",
-    h3(style="padding-left: 15px;", textOutput("yearIO")), # move to the top of as title of IO table
     tabBox(
       id="tabPanelHistori", width = 12, 
         tabPanel("Tabel Input-Output", id="boxIO",
-          
-          div(style="overflow-x: scroll; padding-top: 20px;", dataTableOutput('tableIO'))
+                 h3(textOutput("yearIO")), # move to the top of as title of IO table
+                 div(style="overflow-x: scroll; padding-top: 0px;", dataTableOutput('tableIO'))
         ),
         tabPanel("Tabel Tenaga Kerja", id="boxLabour", 
-          div(style="overflow-x: scroll; padding-top: 20px;", dataTableOutput('SatelitTenagaKerja'))
+                 div(style="overflow-x: scroll; padding-top: 20px;", dataTableOutput('SatelitTenagaKerja'))
         )
     )
   )                                    
