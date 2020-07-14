@@ -513,20 +513,20 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
     showModal(modalDialog(sidebarLayout(sidebarPanel(
       fluidRow(
         textInput(ns("intervensiDef"),
-                  label="nama skenario"
+                  label="Nama Skenario"
         ),
         selectInput(ns("tahunAwal"),
-                    label="tahun awal",
+                    label="Tahun Awal",
                     choices=c(2016:2030)),
         selectInput(ns("tahunAkhir"),
-                    label="tahun akhir",
+                    label="Tahun Akhir",
                     choices=c(2016:2030)),
         textAreaInput(ns("deskripsi"),
                       label = "Deskripsi Skenario",
                       width = "330px")
       ),
       tags$br(),
-      actionButton(ns("defHit"),"tampilkan"),
+      actionButton(ns("defHit"),"Tampilkan"),
       width=5
     ),
     mainPanel(
@@ -535,8 +535,8 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
     )),
     title="Deskripsi Skenario",
     footer= tagList(
-      actionButton(ns("saveModalDef"), "simpan skenario"),
-      actionButton(ns("cancelModalDef"), "batal")
+      actionButton(ns("saveModalDef"), "Simpan Skenario"),
+      actionButton(ns("cancelModalDef"), "Batal")
     ),
     size="l",
     easyClose = FALSE
@@ -564,10 +564,10 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
     
     tableDef <- data.frame(gabung)
     colnames(tableDef) <- "Keterangan"
-    rownames(tableDef) <- c("nama skenario",
-                            "tahun awal",
-                            "tahun akhir",
-                            "deskripsi")
+    rownames(tableDef) <- c("Nama Skenario",
+                            "Tahun Awal",
+                            "Tahun Akhir",
+                            "Deskripsi")
     
     tableDef
   })
@@ -705,13 +705,13 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
                 sidebarPanel(
                   fluidRow(
                     selectInput(ns("intervensiEcon"),
-                                label="pilih intervensi",
-                                choices=c("Final Demand","AV","Input-Output")),
+                                label="Pilih Intervensi",
+                                choices=c("Final Demand","Added Value","Input-Output")),
                     pickerInput(ns("sektorEcon"),
-                                label="pilih sektor", selected = Sector[1],
+                                label="Pilih Sektor", selected = Sector[1],
                                 choices=Sector,options = list(`actions-box` = TRUE),multiple = T)),
                   tags$br(),
-                  actionButton(ns("econHit"),"tentukan tahun intervensi"),
+                  actionButton(ns("econHit"),"Tentukan Tahun Intervensi"),
                   width=5
                 ),
                 mainPanel(
@@ -727,20 +727,20 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
             #                                                                              #
             ################################################################################
             tabPanel(
-              h2("Satelit akun lahan"),
+              h2("Satelit Akun Lahan"),
               sidebarLayout(
                 sidebarPanel(
                   fluidPage(
                     pickerInput(ns("pilihtahunSatLand"),
-                                label="pilih tahun intervensi", selected = loadFileRDS()$tahunAwal,
+                                label="Pilih Tahun Intervensi", selected = loadFileRDS()$tahunAwal,
                                 choices=c(loadFileRDS()$tahunAwal : loadFileRDS()$tahunAkhir),
                                 options = list(`actions-box` = TRUE),multiple = T),
                     selectInput(ns("banyakTupla"),
-                                label="banyaknya perubahan tutupan lahan",
+                                label="Banyaknya Perubahan Tutupan Lahan",
                                 choices=c(1:10))
                   ),
                   tags$br(),
-                  actionButton(ns("satLandHit"),"tampilkan tabel"),
+                  actionButton(ns("satLandHit"),"Tampilkan Tabel"),
                   width=5
                 ),
                 mainPanel(
@@ -770,13 +770,13 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
                 sidebarPanel(
                   fluidRow(
                     selectInput(ns("intervensiEcon"),
-                                label="pilih intervensi",
-                                choices=c("Final Demand","AV","Input-Output")),
+                                label="Pilih Intervensi",
+                                choices=c("Final Demand","Added Value","Input-Output")),
                     pickerInput(ns("sektorEcon"),
-                                label="pilih sektor", selected = Sector[1],
+                                label="Pilih Sektor", selected = Sector[1],
                                 choices=Sector,options = list(`actions-box` = TRUE),multiple = T)),
                   tags$br(),
-                  actionButton(ns("econHit"),"tentukan tahun intervensi"),
+                  actionButton(ns("econHit"),"Tentukan Tahun Intervensi"),
                   width=5
                 ),
                 mainPanel(
@@ -792,18 +792,18 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
             #                                                                              #
             ################################################################################
             tabPanel(
-              h2("Satelit akun"),
+              h2("Satelit Akun"),
               sidebarLayout(sidebarPanel(
                 fluidRow(
                   selectInput(ns("intervensiSat"),
-                              label="pilih intervensi",
-                              choices=c("konsumsi energi","faktor emisi")),
+                              label="Pilih Intervensi",
+                              choices=c("Konsumsi Energi","Faktor Emisi")),
                   pickerInput(ns("sektorSat"),
-                              label="pilih sektor",selected = Sector[1],
+                              label="Pilih Sektor",selected = Sector[1],
                               choices=Sector,options = list(`actions-box` = TRUE),multiple = T)
                 ),
                 tags$br(),
-                actionButton(ns("satHit"),"tentukan tahun intervensi"),
+                actionButton(ns("satHit"),"Tentukan Tahun Intervensi"),
                 width=5
               ),
               mainPanel(
@@ -842,10 +842,10 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
   
   output$FDUIManual<- renderUI({
     tagList(pickerInput(ns("pilihtahunFD"),
-                        label="pilih tahun", selected = loadFileRDS()$tahunAwal,
+                        label="Pilih Tahun", selected = loadFileRDS()$tahunAwal,
                         choices=c(loadFileRDS()$tahunAwal : loadFileRDS()$tahunAkhir),options = list(`actions-box` = TRUE),multiple = T),
             tags$br(),
-            actionButton(ns('showYearEco'), 'tampilkan tabel'),
+            actionButton(ns('showYearEco'), 'Tampilkan Tabel'),
             tags$br(),
             tags$br(),
             tags$div(id = 'SuntingPlaceHolder')
@@ -861,13 +861,13 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
   
   output$SuntingUITable<- renderUI({
     tagList(
-      tags$b('Sunting secara manual'),
+      tags$b('Sunting Secara Manual'),
       tags$br(),
-      tags$h6("Nilai yang diinputkan adalah selisih dari BAU"),
+      tags$h6("Nilai Yang Diinputkan Adalah Selisih Dari BAU"),
       tags$br(),
       rHandsontableOutput(ns('editFD')),
       tags$br(),
-      actionButton(ns('saveModalFD'),' simpan tabel '),
+      actionButton(ns('saveModalFD'),' Simpan Tabel '),
       tags$div(id = 'objDownloadFD')
     )
   })
@@ -930,9 +930,9 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
   
   output$downButtonFD<- renderUI({
     tagList(tags$br(),
-            renderText("tabel diatas sudah tersimpan"),
+            renderText("Tabel Diatas Sudah Tersimpan"),
             tags$br(),
-            actionButton(ns('downloadFD'),'download tabel')
+            actionButton(ns('downloadFD'),'Download Tabel')
     )
   })
   
@@ -979,15 +979,15 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
   output$satLandUIManual<- renderUI({
     
     tagList(
-      tags$b('Sunting secara manual'),
+      tags$b('Sunting Secara Manual'),
       tags$br(),
-      tags$h6("Nilai yang diinputkan adalah selisih dari BAU"),
+      tags$h6("Nilai Yang Diinputkan Adalah Selisih Dari BAU"),
       tags$br(),
       rHandsontableOutput(ns('editSatLand')),
       tags$br(),
-      tags$h6("untuk memilih tipe tutupan lahan disediakan menu dropdown pada kolom 1 dan 2"),
+      tags$h6("Untuk Memilih Tipe Tutupan Lahan Disediakan Menu Dropdown Pada Kolom 1 Dan 2"),
       tags$br(),
-      actionButton(ns('saveModalSatLand'), 'simpan tabel'), 
+      actionButton(ns('saveModalSatLand'), 'Simpan Tabel'), 
       tags$br(), 
       tags$br(),
       tags$div(id='teksLandSatSave')

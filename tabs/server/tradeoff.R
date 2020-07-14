@@ -21,13 +21,13 @@ output$tradeOffResultVisualization <- renderUI({
       )
     ), 
     selectInput('selectTradeOffCombination', 
-                label = "pilih kombinasi skenario yang akan ditampilkan",
-                choices= c("seluruh kombinasi skenario", 
-                           "kombinasi skenario terbaik", 
-                           "kombinasi skenario emisi naik & PDRB naik",
-                           "kombinasi skenario emisi naik & PDRB turun", 
-                           "kombinasi skenario emisi turun & PDRB turun", 
-                           "kombinasi skenario emisi turun & PDRB naik"
+                label = "Pilih kombinasi skenario yang akan ditampilkan",
+                choices= c("Seluruh kombinasi skenario", 
+                           "Kombinasi skenario terbaik", 
+                           "Kombinasi skenario emisi naik & PDRB naik",
+                           "Kombinasi skenario emisi naik & PDRB turun", 
+                           "Kombinasi skenario emisi turun & PDRB turun", 
+                           "Kombinasi skenario emisi turun & PDRB naik"
                 )), 
     plotlyOutput('tradeOffPlotEmission'), 
     plotlyOutput('tradeOffPlotGDP'),
@@ -43,23 +43,23 @@ tradeOffPlot <-reactive({
   tradeOffSummary<- calculateTradeOff$tradeOffSummary
   
   #what to plot
-  if(input$selectTradeOffCombination=="seluruh kombinasi skenario"){
+  if(input$selectTradeOffCombination=="Seluruh kombinasi skenario"){
     table<-tradeOffResultCombined
-  } else if (input$selectTradeOffCombination== "kombinasi skenario terbaik"){
+  } else if (input$selectTradeOffCombination== "Kombinasi skenario terbaik"){
     tradeOffSummaryQ3<-filter(tradeOffSummary,tradeOffSummary$penurunan.emisi>0 & tradeOffSummary$peningkatan.PDRB>0 )
     bestScenID<-tradeOffSummaryQ3$ID[tradeOffSummaryQ3$penurunan.intensitasEmisi == min(tradeOffSummaryQ3$penurunan.intensitasEmisi)]
     table<-filter(tradeOffResultCombined, Category=="Q3" & ID==bestScenID)
     table<-rbind(table, filter(tradeOffResultCombined, ID=="BAU"))
-  } else if (input$selectTradeOffCombination== "kombinasi skenario emisi naik & PDRB naik"){
+  } else if (input$selectTradeOffCombination== "Kombinasi skenario emisi naik & PDRB naik"){
     table<-filter(tradeOffResultCombined, Category=="Q1")
     table<-rbind(table, filter(tradeOffResultCombined, ID=="BAU"))
-  } else if (input$selectTradeOffCombination== "kombinasi skenario emisi naik & PDRB turun"){
+  } else if (input$selectTradeOffCombination== "Kombinasi skenario emisi naik & PDRB turun"){
     table<-filter(tradeOffResultCombined, Category=="Q2")
     table<-rbind(table, filter(tradeOffResultCombined, ID=="BAU"))
-  } else if (input$selectTradeOffCombination== "kombinasi skenario emisi turun & PDRB turun"){
+  } else if (input$selectTradeOffCombination== "Kombinasi skenario emisi turun & PDRB turun"){
     table<-filter(tradeOffResultCombined, Category=="Q4")
     table<-rbind(table, filter(tradeOffResultCombined, ID=="BAU"))
-  } else if (input$selectTradeOffCombination== "kombinasi skenario emisi turun & PDRB naik"){
+  } else if (input$selectTradeOffCombination== "Kombinasi skenario emisi turun & PDRB naik"){
     table<-filter(tradeOffResultCombined, Category=="Q3")
     table<-rbind(table, filter(tradeOffResultCombined, ID=="BAU"))
   }
@@ -476,10 +476,10 @@ calculateTradeOff <- eventReactive(input$tradeOffRunButton,{
   
   idPlotSun <- data.frame(
     ID=c("Q1","Q2","Q3","Q4"),
-    label=c("kombinasi skenario <br> emisi naik & PDRB naik",
-            "kombinasi skenario <br> emisi naik & PDRB turun",
-            "kombinasi skenario <br> emisi turun & PDRB naik",
-            "kombinasi skenario <br> emisi turun & PDRB turun")
+    label=c("Kombinasi skenario <br> emisi naik & PDRB naik",
+            "Kombinasi skenario <br> emisi naik & PDRB turun",
+            "Kombinasi skenario <br> emisi turun & PDRB naik",
+            "Kombinasi skenario <br> emisi turun & PDRB turun")
   )
   labelPlotSun <- data.frame(
     label=tradeOffSummary$ID
@@ -540,6 +540,6 @@ bestScenario <- eventReactive(input$tradeOffRunButton,{
 })
 
 output$textBestScenario <- renderPrint({
-  paste0("skenario terbaik adalah ", bestScenario(), 
+  paste0("Skenario terbaik adalah ", bestScenario(), 
          ", karena memiliki intensitas emisi terendah diantara kombinasi lainnya pada kelompok skenario yang mengalami penurunan emisi dan kenaikan PDRB" )
 })
