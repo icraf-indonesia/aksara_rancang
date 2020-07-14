@@ -489,15 +489,15 @@ observeEvent(input$showInterventionTable, {
   ####  BEGIN: create energyData #####
   LDMProp_his<-allDataProv$LDMProp_his
   selectedProv<-allDataProv$selectedProv
-  
   ### DATA MASTER
   fdBau <- bauSeriesOfFinalDemandTable[,-2] #tabel 2015 nya ga masuk
   fdBau$Sektor <- as.character(fdBau$Sektor) 
   
   ## FD zero
   fdZero <- fdBau
-  fdZero[,2:16] <- 0
-  
+  fdZero[,2:ncol(fdZero)] <- 0
+  bauResults$fdZero<-fdZero
+
   ### BEGIN : SEKTOR LAHAN ####
   # inSatelliteLand <-paste0("data/", selectedProv, "/inputLandCoverZero.csv")
   # satelliteLand <- read.table(inSatelliteLand, header = T, sep = ",")

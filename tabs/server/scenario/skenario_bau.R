@@ -581,7 +581,9 @@ observeEvent(input$buttonBAU, {
   
   # tin cek dulu LDMProp-nya !
   ###### gunakan LDMProp yang ditentukan di menu sebelumnya #####
-  if (input$LDMPropUse=="LDM historis"){
+  if (input$LDMPropUse=="LDM historis" ){
+    LDMProp=sec$LDMProp_his
+  } else if (is.null(input$LDMPropUse)){
     LDMProp=sec$LDMProp_his
   } else {
     LDMProp = readRDS(paste0("LDMData/Prov/",input$LDMPropUse))  #ganti mas alfa
@@ -962,7 +964,8 @@ observeEvent(input$buttonBAU, {
   iteration <- finalYear - initialYear
   
   bauSeriesOfGDP <- data.frame(Sektor = allDataProv$ioSector[,1], stringsAsFactors = FALSE)
-  bauSeriesOfGDP$y2015 <- analysisResult$analysisGDP
+  # bauSeriesofGDP$y2015 <- analysisResult$analysisGDP
+  eval(parse(text=paste0("bauSeriesOfGDP$y",allDataProv$ioPeriod," <- analysisResult$analysisGDP")))
   
   # Final Demand
   matrixIoFinalDemand <- as.matrix(sec$ioFinalDemand)
@@ -975,7 +978,7 @@ observeEvent(input$buttonBAU, {
   matrixIoAddedValue <- as.matrix(sec$ioAddedValue)
   colSumsMatrixIoAddedValue <- colSums(matrixIoAddedValue)
   ioTotalOutput <- colSumsMatrixIoIntermediateDemand + colSumsMatrixIoAddedValue 
-  bauSeriesOfOutput <- ioTotalOutput
+  bauSeriesOfOutput <- as.matrix(ioTotalOutput)
   
   # Series of Intervention Point
   bauSeriesOfIntermediateDemand <- list()
@@ -1013,10 +1016,20 @@ observeEvent(input$buttonBAU, {
   # browser()
   # economic & impact (energy, waste, & agriculture projection 
   for(step in 1:(iteration+1)){
-    projectionFinalDemand <- growthRateSeries[, step] * bauSeriesOfFinalDemand[, step]
+    
+    # projectionFinalDemand <- growthRateSeries[, step] * bauSeriesOfFinalDemand[, step]
+    # bauSeriesOfFinalDemand <- cbind(bauSeriesOfFinalDemand, projectionFinalDemand)
+    # projectionOutput <- allDataProv$ioLeontiefInverse %*% projectionFinalDemand 
+    # bauSeriesOfOutput <- cbind(bauSeriesOfOutput, projectionOutput)
+    
+    #edit
+    # browser()
+    projectionGDP<-growthRateSeries[, step] * bauSeriesOfGDP[, step+1]
+    projectionOutput<-growthRateSeries[, step] * bauSeriesOfOutput[, step]
+    projectionFinalDemand <- allDataProv$ioLeontif %*% projectionOutput
+    bauSeriesOfOutput <-cbind(bauSeriesOfOutput, projectionOutput)
     bauSeriesOfFinalDemand <- cbind(bauSeriesOfFinalDemand, projectionFinalDemand)
-    projectionOutput <- allDataProv$ioLeontiefInverse %*% projectionFinalDemand 
-    bauSeriesOfOutput <- cbind(bauSeriesOfOutput, projectionOutput)
+    bauSeriesOfGDP<-cbind(bauSeriesOfGDP,projectionGDP)
     
     # notes on the year
     timeStep <- paste0("y", projectionYear)
@@ -1026,8 +1039,8 @@ observeEvent(input$buttonBAU, {
     eval(parse(text=paste0("bauSeriesOfIntermediateDemand$", timeStep, " <-  sec$analysisCT %*% diag(as.vector(projectionOutput), ncol = sec$ioDimention, nrow= sec$ioDimention)")))
     eval(parse(text=paste0("bauSeriesOfAddedValue$", timeStep, " <-  sec$analysisCPI %*% diag(as.vector(projectionOutput), ncol = sec$ioDimention, nrow= sec$ioDimention)")))
     
-    # GDP projection 
-    eval(parse(text = paste0("bauSeriesOfGDP$", timeStep, "<- colSums(bauSeriesOfAddedValue$", timeStep, "[setdiff(1:nrow(matrixIoAddedValue), rowImport),])")))
+    # GDP projection #edit
+    # eval(parse(text = paste0("bauSeriesOfGDP$", timeStep, "<- colSums(bauSeriesOfAddedValue$", timeStep, "[setdiff(1:nrow(matrixIoAddedValue), rowImport),])")))
     
     # Impact projection
     eval(parse(text= paste0("bauSeriesOfImpactLabour$", timeStep, " <- functionSatelliteImpact('labour', satellite = satelliteLabour, matrix_output = as.matrix(projectionOutput))")))
@@ -1040,6 +1053,7 @@ observeEvent(input$buttonBAU, {
     
   }
   
+  colnames(bauSeriesOfGDP) <- c("Sektor", listYear) #edit
   colnames(bauSeriesOfOutput) <- as.character(listYear)
   colnames(bauSeriesOfFinalDemand)<- as.character(listYear)
   
@@ -1371,12 +1385,12 @@ observeEvent(input$buttonBAU, {
   bauAllResult$CummulativeEmissionIntensity <-cumsum(bauAllResult$EmissionIntensity)
   
   
-  ggplot(data=bauAllResult, aes(x=Year, y=TotalEmission, group=1)) + geom_line() + geom_point()
-  ggplot(data=bauAllResult, aes(x=Year, y=CummulativeEmission, group=1)) + geom_line() + geom_point()
-  ggplot(data=bauAllResult, aes(x=Year, y=EmissionIntensity, group=1)) + geom_line() + geom_point()
-  ggplot(data=bauAllResult, aes(x=Year, y=ResultTotalGDP, group=1)) + geom_line() + geom_point()
-  ggplot(data=bauAllResult, aes(x=Year, y=CummulativeGDP, group=1)) + geom_line() + geom_point()
-  ggplot(data=bauAllResult, aes(x=Year, y=CummulativeEmissionIntensity, group=1)) + geom_line() + geom_point()
+  # ggplot(data=bauAllResult, aes(x=Year, y=TotalEmission, group=1)) + geom_line() + geom_point()
+  # ggplot(data=bauAllResult, aes(x=Year, y=CummulativeEmission, group=1)) + geom_line() + geom_point()
+  # ggplot(data=bauAllResult, aes(x=Year, y=EmissionIntensity, group=1)) + geom_line() + geom_point()
+  # ggplot(data=bauAllResult, aes(x=Year, y=ResultTotalGDP, group=1)) + geom_line() + geom_point()
+  # ggplot(data=bauAllResult, aes(x=Year, y=CummulativeGDP, group=1)) + geom_line() + geom_point()
+  # ggplot(data=bauAllResult, aes(x=Year, y=CummulativeEmissionIntensity, group=1)) + geom_line() + geom_point()
   
   #browser()
   #####END : BAU projection visualization #### 
@@ -1394,6 +1408,8 @@ observeEvent(input$buttonBAU, {
   bauResults$resultEnergyEmission = resultEnergyEmission
   bauResults$resultWasteDisposal = resultWasteDisposal
   bauResults$resultWasteEmission = resultWasteEmission
+  bauResults$resultLandReq = resultLandReq
+  bauResults$resultLandEmission = resultLandEmission
   bauResults$resultTotalEmission = resultTotalEmission
   bauResults$bauSeriesOfImpactLabour = bauSeriesOfImpactLabour
   bauResults$bauSeriesOfImpactEnergy = bauSeriesOfImpactEnergy
@@ -1719,6 +1735,9 @@ output$plotlyResultsBAU <- renderPlotly({
   resultWasteDisposal <- bauResults$resultWasteDisposal  
   resultWasteEmission <- bauResults$resultWasteEmission 
   resultTotalEmission <- bauResults$resultTotalEmission
+  resultLandEmission <- bauResults$resultLandEmission
+  resultLandReq <- bauResults$resultLandReq
+  bauAllResult <-   bauResults$bauAllResult 
   # landCover_t1 <- bauResults$landCover_t1
   # landCover_t1_years <- bauResults$landCover_t1_years
   
@@ -1821,26 +1840,20 @@ output$plotlyResultsBAU <- renderPlotly({
     ggplotly(gplot12)
   } else if(input$bauResults == "Proyeksi Intensitas Emisi"){
     removeUI(selector = '#baupdrb')
-    GDP_all <- aggregate(x = resultGDP$GDP, by = list(resultGDP$year), FUN = sum)
-    colnames(GDP_all) = c("year", "PDRB")
-    GDP_all$emisi <- resultTotalEmission$TotalEmission
-    GDP_all$intensitas <-  GDP_all$emisi / GDP_all$PDRB 
-    gplot13<-ggplot(data=GDP_all[GDP_all$year > input$initialYear,], aes(x=year, y=intensitas, group=1)) + geom_line() + geom_point()
+    # GDP_all <- aggregate(x = resultGDP$GDP, by = list(resultGDP$year), FUN = sum)
+    # colnames(GDP_all) = c("year", "PDRB")
+    # GDP_all$emisi <- resultTotalEmission$TotalEmission
+    # GDP_all$intensitas <-  GDP_all$emisi / GDP_all$PDRB 
+    # gplot13<-ggplot(data=GDP_all[GDP_all$year > input$initialYear,], aes(x=year, y=intensitas, group=1)) + geom_line() + geom_point()
+    gplot13<-ggplot(data=bauAllResult[bauAllResult$Year > input$initialYear,], aes(x=Year, y=EmissionIntensity, group=1)) + geom_line() + geom_point()
     ggplotly(gplot13)
-  } else if(input$bauResults=="Proyeksi Tutupan Lahan"){
+  } else if (input$bauResults=="Proyeksi Tutupan Lahan"){
+    return (NULL)
+  } else if(input$bauResults=="Proyeksi Emisi Terkait Tutupan Lahan"){
     removeUI(selector='#baupdrb')
-    landCoverData<-cbind(landCover_t1_years,colSums(landCover_t1))
-    colnames(landCoverData)<-c("year", "Tutupan_Lahan")
-    landCover_plot<-ggplot(data=landCoverData, aes(x=year, y=Tutupan_Lahan, group=1)) + geom_line() + geom_point()
-    ggplotly(landCover_plot)
-  } 
-  # else if(input$bauResults=="Proyeksi Emisi Terkait Tutupan Lahan"){
-  #   removeUI(selector='#baupdrb')
-  #   landCoverData<-cbind(landCover_t1_years,colSums(landCover_t1))
-  #   colnames(landCoverData)<-c("year", "Tutupan_Lahan")
-  #   landCover_plot<-ggplot(data=landCoverData, aes(x=year, y=Tutupan_Lahan, group=1)) + geom_line() + geom_point()
-  #   ggplotly(landCover_plot)
-  # }
+    gplot15<-ggplot(data=resultTotalEmission[resultTotalEmission$Year > input$initialYear,], aes(x=Year, y=emissionLand, group=1)) + geom_line() + geom_point()
+    ggplotly(gplot15)
+  }
   
   
 })
@@ -1856,6 +1869,7 @@ output$tableResultsBAU <- renderDataTable({
   resultWasteEmission <- bauResults$resultWasteEmission 
   resultTotalEmission <- bauResults$resultTotalEmission
   resultLandCover <- bauResults$resultLandCover
+  resultLandEmission <- bauResults$resultLandEmission
   
   if(input$bauResults == "Proyeksi PDRB"){
     tables <- resultGDP[resultGDP$year==input$selectedYear,]
@@ -1886,6 +1900,9 @@ output$tableResultsBAU <- renderDataTable({
     return(NULL)
   } else if (input$bauResults=='Proyeksi Tutupan Lahan'){
     tables <- resultLandCover[resultLandCover$year==input$selectedYear,]
+    tables
+  } else if(input$bauResults=="Proyeksi Emisi Terkait Tutupan Lahan"){
+    tables <- resultLandEmission[resultLandEmission$year==input$selectedYear,]
     tables 
   }
   datatable(tables, extensions = "FixedColumns", options=list(pageLength=100, scrollX=TRUE, scrollY="500px", fixedColumns=list(leftColumns=1)), rownames=FALSE)%>%
