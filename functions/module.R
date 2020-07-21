@@ -794,11 +794,8 @@ buttonModule <- function(input, output, session, data, type, dataBau, dataHistor
             #                                                                              #
             ################################################################################
             tabPanel(
-<<<<<<< HEAD
               h2("Satelit Akun"),
-=======
               h2("Akun satelit"),
->>>>>>> 1f57fe532b726b896608123e9c226b3e6823fc40
               sidebarLayout(sidebarPanel(
                 fluidRow(
                   selectInput(ns("intervensiSat"),
