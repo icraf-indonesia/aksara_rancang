@@ -4,7 +4,7 @@ energy <- tabPanel(
   column(width = 12,
      br(),
      wellPanel(
-       HTML("<h1>Akun Satelit: Energi & Transportasi<h1>"),
+       HTML("<h1>Akun Satelit: Energi & Transportasi<h1>")
      )
   ),
   ##-- Outputs ----

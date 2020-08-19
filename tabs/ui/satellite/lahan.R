@@ -4,7 +4,7 @@ land <- tabPanel(
   column(width = 12,
          br(),
          wellPanel(
-           HTML("<h1>Akun Satelit: Lahan<h1>"),
+           HTML("<h1>Akun Satelit: Lahan<h1>")
          )
   ),
   div(fluidRow(
@@ -19,7 +19,7 @@ land <- tabPanel(
              uiOutput('LDMTableTampilUI'),
              uiOutput('modalLDMUI'))
       )
-    ),
+    )
     # hr(),
     # uiOutput("projTypeLandUI")
   )

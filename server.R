@@ -1,4 +1,5 @@
 shinyServer(function(input, output, session, data, type){
+  user_database<-readRDS(rds_user)
   ##-- LOGIN ----
   source("tabs/server/login.R", local = TRUE)
   ##-- HOME ----

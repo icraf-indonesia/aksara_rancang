@@ -1,4 +1,5 @@
 ##-- Library ----
+library(plyr)
 library(dplyr)
 library(data.table)
 library(reshape2)
@@ -14,6 +15,7 @@ library(DT)
 library(shinyLP)
 library(rhandsontable)
 library(sodium)
+library(V8)
 library(shinyjs)
 library(digest)
 library(rintrojs)
@@ -28,14 +30,13 @@ library(rlist)
 # tab trade off -----------------------------------------------------------
 library(shinyBS)
 library(gtools)
-library(plyr)
 
 ##-- Template function ----
 source("functions/module.R")
 source("functions/utils.R")
 source("functions/plot_functions.R")
 
-user_database<-readRDS("data/user_database")
+rds_user<-"data/user_database"
 
 ##-- Template tabs function ----
 tab_files <- list.files(path = "tabs", full.names = T, recursive = T)
