@@ -335,6 +335,7 @@ blackBoxInputs <- function(){
   
   # Income per capita
   analysisIncomePerCapita <- sum(as.matrix(matrixIoAddedValue[rowIncome,])) / population #income_per_capita
+  # colnames(analysisIncomePerCapita) <- "analysisIncomePerCapita"
   
   # Coefficient technology (intermediate demand) or A
   analysisCT <- t( t(matrixIoIntermediateDemand) / ioTotalOutput)
@@ -442,7 +443,8 @@ blackBoxInputs <- function(){
                   analysisCE,
                   analysisCW,
                   emissionEnergyTotal,
-                  emissionWasteTotal
+                  emissionWasteTotal,
+                  analysisIncomePerCapita
   )
   colnames(result)[1] <- "Sektor"
   

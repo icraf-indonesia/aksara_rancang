@@ -298,7 +298,9 @@ output$tableResults <- renderDataTable({
       tables <- subset(analysisResult, select = c(Sektor, ratio_ws)) #analysisRatioWS
       tables
     } else if(input$pprkResults == "Pendapatan per kapita"){
-      return(NULL)
+      # return(NULL)
+      tables <- subset(analysisResult, select = c(Sektor, analysisIncomePerCapita)) 
+      tables
     } else if(input$pprkResults == "Perbandingan Angka Pengganda"){
       tables <- multiplierTable <- subset(analysisResult, select = c(Sektor, analysisMI, analysisMO, analysisML, analysisME, analysisMW)) 
       tables

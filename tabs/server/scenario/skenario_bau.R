@@ -437,7 +437,7 @@ observeEvent(input$selectProjType,{
     insertUI(selector='#inputProjType',
              where = 'afterEnd',
              ui=uiOutput('projTypeLandUI'))
-    
+
   }
 })
 
@@ -464,11 +464,26 @@ output$projTypeEconomyUI<-renderUI(
         style = "padding-top: 55px;",
         actionButton("generateBAUTable", "Buat Tabel")
       )
-    )
-    # fileInput("populationTable", "Tabel Populasi per Tahun", buttonLabel="Browse...", placeholder="No file selected"),
-    # fileInput("emissionSectorRADTable", "Tabel Emisi Sumber Lain", buttonLabel="Browse...", placeholder="No file selected"),
-    # hr()
-    # actionButton("showResult", "Tampilkan")
+    ),
+    hr(),
+    # tags$div(id="gdpRateUI", #karena id div ini g dpanggil jadi dia g muncul setelah klik buttonBAU
+             conditionalPanel(
+               condition = "input.typeIntervention=='Tipe 1'",
+               h3("Tipe 1: Pertumbuhan ekonomi sama untuk setiap lapangan usaha, namun berbeda setiap tahun"),
+               selectInput("yearBAUInv", "Pilih tahun:", choices = 2010:2030, selected=2015),
+               sliderInput("gdpRate", "Laju pertumbuhan ekonomi:", min=0, max=10, post="%", value=5, step=0.01, width = "600px")
+             ),
+             conditionalPanel(
+               condition = "input.typeIntervention=='Tipe 2'",
+               h3("Tipe 2: Pertumbuhan ekonomi berbeda baik untuk setiap lapangan usaha, maupun setiap tahun proyeksi")
+             ),
+             br(),
+             actionButton("saveTableBauType", "Simpan Tabel"),
+             actionButton("buttonBAU", "Jalankan Simulasi"),
+             br(), br(),
+             rHandsontableOutput('tableBAUType'),
+             br()
+    # )
   )
 )
 
@@ -1438,7 +1453,9 @@ observeEvent(input$buttonBAU, {
   bauResults$bauAllResult = bauAllResult
   bauResults$resultLandEmission = resultLandEmission
   
+  
   updateTabItems(session, "tabs", selected = "intScenario")
+  shinyalert("Berhasil!", "Buka tab Hasil Simulasi untuk melihat grafik ", type = "success")
 })
 
 #### BEGIN : input BAU sektor lahan, edit tabel land cover ====

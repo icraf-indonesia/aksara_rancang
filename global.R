@@ -25,6 +25,8 @@ library(stringr)
 library(gridExtra)
 library(limSolve)
 library(rlist)
+library(shinyalert)
+
 # tab trade off -----------------------------------------------------------
 library(shinyBS)
 library(gtools)
