@@ -4,7 +4,7 @@ waste <- tabPanel(
   column(width = 12,
      br(),
      wellPanel(
-       HTML("<h1>Akun Satelit: Limbah<h1>"),
+       HTML("<h1>Akun Satelit: Limbah<h1>")
      )
   ),
   ##-- Outputs ----

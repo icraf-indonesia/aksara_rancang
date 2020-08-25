@@ -9,9 +9,7 @@ login_page <- div(
       style = "text-align: center;",
       actionButton("loginButton", "MASUK", style = "color: white; background-color:#3c8dbc; padding: 10px 15px; width: 150px; cursor: pointer; font-size: 18px; font-weight: 600;"),
       shinyjs::hidden(
-        div(id = "nomatch",
-           tags$p("Oops! Email atau password Anda salah", style = "color: red; font-weight: 600; padding-top: 5px;font-size:16px;", class = "text-center")
-        )
+        div(id = "nomatch", tags$p("Oops! Email atau password Anda salah", style = "color: red; font-weight: 600; padding-top: 5px;font-size:16px;", class = "text-center"))
       )
     )
   )
