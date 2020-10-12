@@ -3,7 +3,7 @@ agriculture <- tabPanel(title = "Pertanian",
   column(width = 12,
     br(),
     wellPanel(
-     HTML("<h1>Akun Satelit: Pertanian<h1>"),
+     HTML("<h1>Akun Satelit: Pertanian<h1>")
     )
   ),
   ##-- Outputs ----

@@ -6,7 +6,7 @@ buttonUI <- function(id) {
     tags$br(),
     dataTableOutput(ns("ListTable")),
     uiOutput(ns("daftarDefineShow")),
-    tags$div(id = ns('scenarioResultPlaceholder')),
+    tags$div(id = ns('scenarioResultPlaceholder'))
     # shinyjs::useShinyjs(),
     # shinyjs::extendShinyjs(text = "shinyjs.refresh = function() { location.reload(); }")
   )
